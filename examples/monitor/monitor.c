@@ -43,7 +43,8 @@
 #include "mon/monitor.h"
 #include "mon/context.h"
 
-#define ENT_ID  0x1111
+#define ENT_ID   0x1111
+#define STATE_ID 0x2222
 
 /*---------------------------------------------------------------------------*/
 PROCESS(example_monitor_process, "Test monitor process");
@@ -66,7 +67,7 @@ PROCESS_THREAD(example_monitor_process, ev, data)
   monitor_info(MON_CT_TEST, ENT_ID, info, sizeof(info));
 
   /* record an event */
-  monitor_record(MON_CT_TEST, ENT_ID, MON_ST_DESTROY);
+  monitor_record(MON_CT_TEST, ENT_ID, STATE_ID);
 
   /* destroy entity */
   monitor_destroy(MON_CT_TEST, ENT_ID);
