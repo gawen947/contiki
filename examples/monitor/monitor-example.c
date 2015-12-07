@@ -42,10 +42,9 @@
 #include "contiki.h"
 #include "mon/monitor.h"
 #include "mon/context.h"
-#include "mon/context/test.h"
+#include "mon/context/control.h"
 
-#define ENT_ID   0x1111
-#define STATE_ID 0x2222
+#define STATE 0x2222
 
 /*---------------------------------------------------------------------------*/
 PROCESS(example_monitor_process, "Test monitor process");
@@ -58,14 +57,14 @@ PROCESS_THREAD(example_monitor_process, ev, data)
   PROCESS_BEGIN();
 
   /* create entity */
-  monitor_create(MON_CT_TEST, MON_ENT_TEST);
-  monitor_info(MON_CT_TEST, MON_ENT_TEST, info, sizeof(info));
+  monitor_create(MON_CT_CONTROL, MON_ENT_TEST);
+  monitor_info(MON_CT_CONTROL, MON_ENT_TEST, info, sizeof(info));
 
   /* record an event */
-  monitor_record(MON_CT_TEST, MON_ENT_TEST, STATE_ID);
+  monitor_record(MON_CT_CONTROL, MON_ENT_TEST, STATE);
 
   /* destroy entity */
-  monitor_destroy(MON_CT_TEST, MON_ENT_TEST);
+  monitor_destroy(MON_CT_CONTROL, MON_ENT_TEST);
 
   PROCESS_END();
 }

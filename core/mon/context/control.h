@@ -37,24 +37,16 @@
  *         David Hauweele <david@hauweele.net>
  */
 
-#ifndef TEST_H_
-#define TEST_H_
+#ifndef CONTROL_H_
+#define CONTROL_H_
 
 enum {
+  /** Establish endianness and device calls duration. */
+  MON_ENT_CAL, /* must be zero */
+
   /** Used for testing. */
   MON_ENT_TEST,
 
-  /** State establish endianness. */
-  MON_ENT_ENDIAN,
-
-  /** Monitor device calibration for record messages. */
-  MON_ENT_CAL_RECORD,
-
-  /** Monitor device calibration for information record. */
-  MON_ENT_CAL_INFO_U8,
-
-  /** Monitor device calibration for information record (2 bytes). */
-  MON_ENT_CAL_INFO_U16
 };
 
 /** Endianness states. This is just a number
@@ -62,4 +54,4 @@ enum {
     virtual device. */
 #define MON_ST_CHECK 0xaabb
 
-#endif /* TEST_H_ */
+#endif /* CONTROL_H_ */

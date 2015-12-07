@@ -42,7 +42,7 @@
 
 enum {
   /** Used for testing and examples. */
-  MON_CT_TEST,
+  MON_CT_CONTROL, /* must be zero */
 
   /** Process scheduler. */
   MON_CT_SCHED,
