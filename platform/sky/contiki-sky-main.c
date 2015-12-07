@@ -42,6 +42,7 @@
 #include "lib/random.h"
 #include "net/netstack.h"
 #include "net/mac/frame802154.h"
+#include "mon/monitor.h"
 
 #if NETSTACK_CONF_WITH_IPV6
 #include "net/ipv6/uip-ds6.h"
@@ -305,7 +306,10 @@ main(int argc, char **argv)
 #endif
 
   random_init(ds2411_id[0] + node_id);
-  
+
+  /* Initialize the monitor. */
+  monitor_init();
+
   leds_off(LEDS_BLUE);
   /*
    * Initialize Contiki and our processes.

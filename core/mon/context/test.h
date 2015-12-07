@@ -32,48 +32,34 @@
 
 /**
  * \file
- *         A simple example to test the monitor
+ *         List of state machine (context) available to monitor.
  * \author
  *         David Hauweele <david@hauweele.net>
  */
 
-#include <stdio.h>
+#ifndef TEST_H_
+#define TEST_H_
 
-#include "contiki.h"
-#include "mon/monitor.h"
-#include "mon/context.h"
+enum {
+  /** Used for testing. */
+  MON_ENT_TEST,
 
-#define ENT_ID   0x1111
-#define STATE_ID 0x2222
+  /** State establish endianness. */
+  MON_ENT_ENDIAN,
 
-/*---------------------------------------------------------------------------*/
-PROCESS(example_monitor_process, "Test monitor process");
-AUTOSTART_PROCESSES(&example_monitor_process);
-/*---------------------------------------------------------------------------*/
-PROCESS_THREAD(example_monitor_process, ev, data)
-{
-  static char info[] = "foobar";
+  /** Monitor device calibration for record messages. */
+  MON_ENT_CAL_RECORD,
 
-  PROCESS_BEGIN();
+  /** Monitor device calibration for information record. */
+  MON_ENT_CAL_INFO_U8,
 
-  printf("\ninit... ");
-  monitor_init();
-  printf("done!\n");
+  /** Monitor device calibration for information record (2 bytes). */
+  MON_ENT_CAL_INFO_U16
+};
 
-  printf("record:\n\n");
+/** Endianness states. This is just a number
+    that is used to check endianness in the
+    virtual device. */
+#define MON_ST_CHECK 0xaabb
 
-  /* create entity */
-  monitor_create(MON_CT_TEST, ENT_ID);
-  monitor_info(MON_CT_TEST, ENT_ID, info, sizeof(info));
-
-  /* record an event */
-  monitor_record(MON_CT_TEST, ENT_ID, STATE_ID);
-
-  /* destroy entity */
-  monitor_destroy(MON_CT_TEST, ENT_ID);
-
-  printf("\ndone!\n");
-
-  PROCESS_END();
-}
-/*---------------------------------------------------------------------------*/
+#endif /* TEST_H_ */

@@ -62,6 +62,8 @@
 
 #include "net/ip/uip.h"
 
+#include "mon/monitor.h"
+
 #include "dev/button-sensor.h"
 #include "dev/pir-sensor.h"
 #include "dev/vib-sensor.h"
@@ -241,6 +243,8 @@ main(int argc, char **argv)
 #endif
 
   serial_line_init();
+
+  monitor_init();
 
   autostart_start(autostart_processes);
 

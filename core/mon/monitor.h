@@ -48,7 +48,7 @@
 # define MONITOR_DEVICE MONITOR_DEVICE_CONF
 # define monitor_record MONITOR_DEVICE.record
 # define monitor_info   MONITOR_DEVICE.info
-# define monitor_init   MONITOR_DEVICE.init
+void monitor_init(void);
 extern const struct monitor_driver MONITOR_DEVICE;
 #else
 /* If the monitor is not enabled,
