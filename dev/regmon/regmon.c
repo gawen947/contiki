@@ -52,9 +52,9 @@
 
 static void record(int context, int entity, int state)
 {
-  MONCTX = msp_htons(context);
-  MONENT = msp_htons(entity);
-  MONSTI = msp_htons(state);
+  MONCTX = context;
+  MONENT = entity;
+  MONSTI = state;
 
   /* trigger */
   MONCTL |= 0x100;
@@ -62,8 +62,8 @@ static void record(int context, int entity, int state)
 
 static void info(int context, int entity, const void *info, int len)
 {
-  MONCTX = msp_htons(context);
-  MONENT = msp_htons(entity);
+  MONCTX = context;
+  MONENT = entity;
   MONSTI = (unsigned int)info;
 
   /* set len and trigger */

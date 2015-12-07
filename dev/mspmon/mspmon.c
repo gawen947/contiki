@@ -60,8 +60,6 @@ static void send_u16(uint16_t value)
 {
   uint16_t bit;
 
-  value = UIP_HTONS(value);
-
   for(bit = -1 ; bit ; bit >>=1, value <<= 1) {
     /* data */
     POUT = (POUT & ~DATA) | \
