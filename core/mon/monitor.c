@@ -62,7 +62,11 @@ void monitor_init(void)
   monitor_record(MON_CT_CONTROL, MON_ENT_CAL, 0);
 
   /* Check info duration. We do this two times to know additional number
-     of cycles per byte in the info buffer. */
+     of cycles per byte in the info buffer.
+     But first a dummy call to ensure uniform calling.
+     Otherwise we have an extra operation to fetch the
+     function pointer and the cycle count would be wrong. */
+  monitor_info(MON_CT_CONTROL, MON_ENT_CAL, &info, 1);
   monitor_info(MON_CT_CONTROL, MON_ENT_CAL, &info, 1);
   monitor_info(MON_CT_CONTROL, MON_ENT_CAL, &info, 2);
 }
