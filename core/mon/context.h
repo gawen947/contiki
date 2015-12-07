@@ -41,6 +41,9 @@
 #define CONTEXT_H_
 
 enum {
+  /** Used for testing and examples. */
+  MON_CT_TEST,
+
   /** Process scheduler. */
   MON_CT_SCHED,
 
@@ -54,10 +57,7 @@ enum {
   MON_CT_CPU,
 
   /** Tranceiver. */
-  MON_CT_RADIO,
-
-  /** Used for testing and examples. */
-  MON_CT_TEST
+  MON_CT_RADIO
 };
 
 #endif /* CONTEXT_H_ */
