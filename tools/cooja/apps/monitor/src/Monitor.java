@@ -27,6 +27,8 @@
  * SUCH DAMAGE.
  */
 
+import javax.swing.JScrollPane;
+
 import org.apache.log4j.Logger;
 import org.contikios.cooja.ClassDescription;
 import org.contikios.cooja.Cooja;
@@ -40,9 +42,12 @@ public class Monitor extends VisPlugin {
   private static final long serialVersionUID = 7594788981152030542L;
   private static Logger logger = Logger.getLogger(Monitor.class);
 
+  private Simulation simulation;
+
   
   public Monitor(Simulation simulation, Cooja gui) {
     super("Monitor", gui, false);
+    this.simulation = simulation;
     
     logger.info("Monitor plugin started at (ms): " + simulation.getSimulationTimeMillis());
   }
