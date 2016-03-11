@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
     { 0, "commit", "Display commit information" },
 #endif /* COMMIT */
     { 'H', "human", "Display trace or statistics in an human readable format" },
-    { 'm', "mode", "Select the output mode (use ? or list to display available modes)" },
+    { 'o', "output", "Select the output mode (use ? or list to display available modes)" },
     { 'p', "period", "Only display events within the specified period" },
     { 0, NULL, NULL }
   };
@@ -66,13 +66,13 @@ int main(int argc, char *argv[])
     { "commit", no_argument, NULL, OPT_COMMIT},
 #endif /* COMMIT */
     { "human", no_argument, NULL, 'H' },
-    { "output", required_argument, NULL, 'm' },
+    { "output", required_argument, NULL, 'o' },
     { "period", required_argument, NULL, 'p' },
     { NULL, 0, NULL, 0 }
   };
 
   while(1) {
-    int c = getopt_long(argc, argv, "hVHm:p:", long_opts, NULL);
+    int c = getopt_long(argc, argv, "hVHo:p:", long_opts, NULL);
 
     if(c == -1)
       break;
