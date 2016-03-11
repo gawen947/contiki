@@ -25,7 +25,7 @@
 #ifndef _VERSION_H_
 #define _VERSION_H_
 
-#define PACKAGE "wsn-tools"
+#define PACKAGE "Contiki Monitor Tools"
 
 #ifndef VERSION
 # define VERSION "unk"
