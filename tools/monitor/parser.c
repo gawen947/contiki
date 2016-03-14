@@ -151,6 +151,11 @@ static int parse_element_hdr(const struct trace *trace, unsigned short *type, un
   unsigned int len_field;
   uint16_t type_and_len;
 
+  /* Since the len is either 8 or 32bits,
+     we ensure that it is initialized
+     properly in both cases */
+  *len = 0;
+
   /* Parse the type_and_len (control) field. */
   RET(xiobuf_read(trace->input, &type_and_len, sizeof(type_and_len)));
 
@@ -167,7 +172,9 @@ static int parse_element_hdr(const struct trace *trace, unsigned short *type, un
   /* Parse the len */
   ERR_ON_EOF(xiobuf_read(trace->input, len, len_field));
 
-  *len = be32toh(*len);
+  /* Convert endianness when needed. */
+  if(type_and_len & 1)
+    *len = be32toh(*len);
 
   return 0;
 }

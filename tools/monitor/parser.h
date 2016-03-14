@@ -29,7 +29,7 @@
 
 #include "iobuf.h"
 
-#define PARSER_MAJOR_VERSION 0
+#define PARSER_MAJOR_VERSION 1
 #define PARSER_MINOR_VERSION 0
 
 enum trace_error {
