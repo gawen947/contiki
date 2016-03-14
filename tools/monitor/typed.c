@@ -57,13 +57,10 @@ static void display_scope_bitmask_normal(const struct typed *t)
     printf("%sSIMULATION", (prec == 1 ? "/" : ""));
     prec = 1;
   }
-  if(used & SC_NODE) {
+  if(used & SC_NODE)
     printf("%sNODE", (prec == 1 ? "/" : ""));
-  }
 
-  if(used) /* unsupported scope type */
-    assert(0);
-  else /* no scope used */
+  if(used == 0) /* no scope used */
     printf("NONE");
 }
 
@@ -84,9 +81,7 @@ static void display_scope_bitmask_human(const struct typed *t)
     printf("%snode", (prec == 1 ? "/" : ""));
   }
 
-  if(used) /* unsupported scope type */
-    assert(0);
-  else /* no scope used */
+  if(used == 0) /* no scope used */
     printf("none");
 }
 
