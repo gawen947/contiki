@@ -231,10 +231,9 @@ static void post_process_event(struct context *ctx)
     printf("Event: %lu\n", event_id++);
 
     display_list_human(&scope_list);
-    fputc('\n', stdout);
     display_list_human(&event_list);
 
-    fputs("\n\n", stdout);
+    fputc('\n', stdout);
   } else {
     printf("EVENT:%lu ", event_id++);
 
