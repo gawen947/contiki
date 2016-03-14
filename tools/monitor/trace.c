@@ -147,6 +147,9 @@ int main(int argc, char *argv[])
         goto EXIT;
       }
       break;
+    case 'H':
+      ctx.human = 1;
+      break;
     case 'V':
       version(TARGET);
       exit_status = EXIT_SUCCESS;
