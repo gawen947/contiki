@@ -461,7 +461,7 @@ int trace_parse_by_events(const struct trace *trace,
 const char * trace_parse_error(enum trace_error error)
 {
   switch(error) {
-  case 0:
+  case E_SUCCESS:
     return "Success.";
   case E_EOF:
     return "End of file reached.";

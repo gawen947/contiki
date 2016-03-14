@@ -39,7 +39,7 @@ const struct output_mode * select_mode_by_name(const char *name)
   return NULL;
 }
 
-void walk_mode(void (*visit)(const struct output_mode *mode, void *data), void *data)
+void walk_modes(void (*visit)(const struct output_mode *mode, void *data), void *data)
 {
   const struct output_mode **mode;
 

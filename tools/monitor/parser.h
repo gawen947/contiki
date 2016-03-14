@@ -33,6 +33,7 @@
 #define PARSER_MINOR_VERSION 0
 
 enum trace_error {
+  E_SUCCESS = 0,   /* no error */
   E_EOF = INT_MIN, /* EOF reached (no more events) */
   E_SHORT,         /* missing data (falling short) */
   E_IOERR,         /* IO error */

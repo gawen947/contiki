@@ -18,7 +18,7 @@ BIN    ?= /bin
 CFLAGS += -DVERSION="\"$(shell cat VERSION)\""
 
 commit = $(shell ./hash.sh)
-ifneq ($(commit, UNKNOWN)
+ifneq ($(commit), UNKNOWN)
 	CFLAGS += -DCOMMIT="\"$(commit)\""
 	CFLAGS += -DPARTIAL_COMMIT="\"$(shell echo $(commit) | cut -c1-8)\""
 endif
