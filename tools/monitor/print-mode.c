@@ -213,7 +213,7 @@ static void pre_process_event(const struct scope *scope, enum event_element_type
   process_scope(scope);
 
   e  = list_add(&event_list);
-  *e = (struct display_element){ "EVENT", "Event type",
+  *e = (struct display_element){ "EVENT_TYPE", "Event type",
                                  { T_EVENT_TYPE,
                                    .value.event_type = type } };
 }
