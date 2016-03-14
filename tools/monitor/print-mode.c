@@ -233,12 +233,16 @@ static void post_process_event(struct context *ctx)
     display_list_human(&scope_list);
     fputc('\n', stdout);
     display_list_human(&event_list);
+
+    fputs("\n\n", stdout);
   } else {
     printf("EVENT:%lu ", event_id++);
 
     display_list_normal(&scope_list);
     fputc(':', stdout);
     display_list_normal(&event_list);
+
+    fputc('\n', stdout);
   }
 }
 
