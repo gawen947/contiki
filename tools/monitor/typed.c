@@ -78,7 +78,7 @@ static void display_scope_bitmask_human(const struct typed *t)
     prec = 1;
   }
   if(used & SC_NODE) {
-    printf("%snode", (prec == 1 ? "/" : ""));
+    printf("%snode", (prec == 1 ? " " : ""));
   }
 
   if(used == 0) /* no scope used */
