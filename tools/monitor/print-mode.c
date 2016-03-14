@@ -97,12 +97,12 @@ static void display_list_human(struct display_list *l)
 
   /* display each field */
   for(e = l->list ; e->human_name ; e++) {
-    fputs(e->human_name, stdout);
-
     /* pad before field name */
     size = HUMAN_DISPLAY_OFFSET;
     while(size--)
       fputc(' ', stdout);
+
+    fputs(e->human_name, stdout);
 
     /* pad after field name */
     size = strlen(e->human_name);
