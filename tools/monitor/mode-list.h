@@ -37,13 +37,3 @@ static const struct output_mode * avail_modes[] = {
 };
 
 #endif /* _MODE_LIST_H_ */
-
-
-
-
-
-
-
-
-
-
