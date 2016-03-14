@@ -28,15 +28,64 @@
 #include <stdlib.h>
 #include <getopt.h>
 #include <string.h>
+#include <err.h>
 
+#include "print-mode.h"
 #include "help.h"
 #include "version.h"
+#include "mode.h"
+#include "trace.h"
 
 #define TARGET "Trace"
+
+/* Process parse error and abort when needed. */
+static void parse_error(int ret)
+{
+  if(ret < 0)
+    errx(EXIT_FAILURE, "Parsing error: %s", trace_parse_error(ret));
+}
+
+static int parse(const struct context *ctx,
+                 const char *trace_path,
+                 const struct output_mode *mode)
+{
+  struct trace trace;
+  int ret, fd;
+
+  fd = open(trace_path, O_RDONLY);
+  if(fd < 1)
+    err(EXIT_FAILURE, "cannot open trace");
+
+  /* initialize the output module */
+  mode->before(ctx);
+
+  /* parse the trace */
+  ret = trace_open(fd, &trace);
+  parse_error(ret);
+
+  ret = trace_parse_by_events(&trace, &mode->parsed_by_events, (void *)ctx);
+  parse_error(ret);
+
+  ret = trace_close(&trace);
+  parse_error(ret);
+
+  /* destroy the output module
+     (and show results if needed) */
+  mode->after(ctx);
+
+  return EXIT_SUCCESS;
+}
+
+static void display_mode(const struct output_mode *mode, void *data)
+{
+  printf("%s\t%s\n", mode->name, mode->description);
+}
 
 int main(int argc, char *argv[])
 {
   const char *name;
+  const struct output_mode *mode = &print_mode;
+  struct context ctx = { 0 };
 
   int exit_status = EXIT_FAILURE;
 
@@ -55,7 +104,6 @@ int main(int argc, char *argv[])
 #endif /* COMMIT */
     { 'H', "human", "Display trace or statistics in an human readable format" },
     { 'o', "output", "Select the output mode (use ? or list to display available modes)" },
-    { 'p', "period", "Only display events within the specified period" },
     { 0, NULL, NULL }
   };
 
@@ -67,12 +115,11 @@ int main(int argc, char *argv[])
 #endif /* COMMIT */
     { "human", no_argument, NULL, 'H' },
     { "output", required_argument, NULL, 'o' },
-    { "period", required_argument, NULL, 'p' },
     { NULL, 0, NULL, 0 }
   };
 
   while(1) {
-    int c = getopt_long(argc, argv, "hVHo:p:", long_opts, NULL);
+    int c = getopt_long(argc, argv, "hVHo:", long_opts, NULL);
 
     if(c == -1)
       break;
@@ -84,6 +131,22 @@ int main(int argc, char *argv[])
       exit_status = EXIT_SUCCESS;
       goto EXIT;
 #endif /* COMMIT */
+    case 'o':
+      if(!strcmp(optarg, "list") || !strcmp(optarg, "?")) {
+        walk_modes(display_mode, NULL);
+
+        exit_status = EXIT_SUCCESS;
+        goto EXIT;
+      }
+
+      mode = select_mode_by_name(optarg);
+      if(!mode) {
+        /* mode not found */
+        fprintf(stderr, "error: Output mode not found.\n"
+                        "       Use list or ? to display availble modes\n");
+        goto EXIT;
+      }
+      break;
     case 'V':
       version(TARGET);
       exit_status = EXIT_SUCCESS;
@@ -95,6 +158,11 @@ int main(int argc, char *argv[])
       goto EXIT;
     }
   }
+
+  if((argc - optind) != 1)
+    errx(EXIT_FAILURE, "except trace-file");
+
+  exit_status = parse(&ctx, argv[optind], mode);
 
 EXIT:
   return exit_status;

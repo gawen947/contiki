@@ -10,7 +10,7 @@ DEP = $(SRC:.c=.d)
 
 TARGETS = trace
 
-TRACE_OBJ = version.o iobuf.o
+TRACE_OBJ = dump.o help.o iobuf.o mode.o parser.o print-mode.o stat-mode.o trace.o typed.o version.o
 
 PREFIX ?= /usr/local
 BIN    ?= /bin
