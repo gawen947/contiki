@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "utils.h"
 #include "mode.h"
 #include "trace.h"
 #include "stat-mode.h"
@@ -67,7 +68,7 @@ struct display_list {
   } value;
 };
 
-#define SEEN(seen_array, id) seen_array[id / 64] |= 1 << (id % 64)
+#define SEEN(seen_array, id)    seen_array[id / 64] |= 1 << (id % 64)
 #define IS_SEEN(seen_array, id) seen_array[id / 64] & (1 << (id % 64))
 
 static void before(const struct context *ctx)
@@ -75,10 +76,10 @@ static void before(const struct context *ctx)
   /* The stat module requires 32k for the seen arrays.
      Using HT we can probably reduce it to <16k but
      that would be slower. */
-  statistics.seen_nodes    = (uint64_t *)malloc(0xffff >> 3);
-  statistics.seen_contexts = (uint64_t *)malloc(0xffff >> 3);
-  statistics.seen_entities = (uint64_t *)malloc(0xffff >> 3);
-  statistics.seen_states   = (uint64_t *)malloc(0xffff >> 3);
+  statistics.seen_nodes    = (uint64_t *)xmalloc0(0xffff >> 3);
+  statistics.seen_contexts = (uint64_t *)xmalloc0(0xffff >> 3);
+  statistics.seen_entities = (uint64_t *)xmalloc0(0xffff >> 3);
+  statistics.seen_states   = (uint64_t *)xmalloc0(0xffff >> 3);
 }
 
 static unsigned long sum_seen(uint64_t *seen) {
