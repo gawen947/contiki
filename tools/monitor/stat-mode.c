@@ -215,7 +215,7 @@ static void display_list_normal(const struct display_list list[],
 static void after(const struct context *ctx)
 {
   struct display_list counters[] = {
-    { NULL, "Number of events", "events", .value.count = 0 },
+    { NULL, "Number of events", "times", .value.count = 0 },
     { "ev_unknown", "Unknown", NULL, .value.count = statistics.nb_unknown },
     { "ev_mon_create", "Mon create", NULL, .value.count = statistics.nb_mon_create },
     { "ev_mon_state", "Mon state", NULL, .value.count = statistics.nb_mon_state },
@@ -224,16 +224,16 @@ static void after(const struct context *ctx)
     { "ev_node_destroy", "Node destroy", NULL, .value.count = statistics.nb_node_destroy },
     { "ev_node_position", "Node position", NULL, .value.count = statistics.nb_node_position },
 
-    { NULL, "Number of scopes", "scopes", .value.count = 0 },
+    { NULL, "Number of scopes", "times", .value.count = 0 },
     { "sc_unknown", "Unknown", NULL, .value.count = statistics.nb_sc_unknown },
     { "sc_simulation", "Simulation", NULL, .value.count = statistics.nb_sc_simulation },
     { "sc_node", "Node", NULL, .value.count = statistics.nb_sc_node },
 
     { NULL, "Elements seen", NULL, .value.count = 0 },
-    { "nb_seen_nodes", "Nodes", "nodes", .value.count = sum_seen(statistics.seen_nodes) },
-    { "nb_seen_contexts", "Contexts", "contexts", .value.count = sum_seen(statistics.seen_contexts) },
-    { "nb_seen_entities", "Entities", "entities", .value.count = sum_seen(statistics.seen_entities) },
-    { "nb_seen_states", "States", "states", .value.count = sum_seen(statistics.seen_states) },
+    { "nb_seen_nodes", "Nodes", "distinct nodes", .value.count = sum_seen(statistics.seen_nodes) },
+    { "nb_seen_contexts", "Contexts", "distinct contexts", .value.count = sum_seen(statistics.seen_contexts) },
+    { "nb_seen_entities", "Entities", "distinct entities", .value.count = sum_seen(statistics.seen_entities) },
+    { "nb_seen_states", "States", "distinct states", .value.count = sum_seen(statistics.seen_states) },
     { NULL, NULL, NULL, .value.count = 0 }
   };
 
