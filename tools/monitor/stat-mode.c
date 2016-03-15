@@ -68,8 +68,8 @@ struct display_list {
   } value;
 };
 
-#define SEEN(seen_array, id)    seen_array[id / 64] |= 1 << (id % 64)
-#define IS_SEEN(seen_array, id) seen_array[id / 64] & (1 << (id % 64))
+#define SEEN(seen_array, id)    seen_array[id / 64] |= 1LLU << (id % 64)
+#define IS_SEEN(seen_array, id) seen_array[id / 64] & (1LLU << (id % 64))
 
 static void before(const struct context *ctx)
 {
@@ -112,7 +112,7 @@ static void display_seen_human(const struct display_list *e, const char *unit)
 
   for(i = 0 ; i < 0xffff ; i++) {
     if(IS_SEEN(e->value.seen, i)) {
-      printf(" %d", i);
+      printf(" %04x", i);
 
       if(++count > MAX_SEEN) {
         printf(" ...");
