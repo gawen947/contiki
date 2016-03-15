@@ -135,6 +135,9 @@ static void display_list_human(const struct display_list list[],
   for(l = list ; l->human_name ; l++) {
     if(!l->name)
       continue; /* skip titles */
+    if(l->value.count == 0)
+      continue; /* skip empty values */
+
 
     size = strlen(l->human_name);
     if(size > max)
@@ -161,6 +164,9 @@ static void display_list_human(const struct display_list list[],
 
       first = 0;
     } else {
+      if(l->value.count == 0)
+        continue; /* skip empty values */
+
       fputs(l->human_name, stdout);
 
       /* pad */
