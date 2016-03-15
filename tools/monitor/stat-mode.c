@@ -129,6 +129,7 @@ static void display_list_human(const struct display_list list[],
   const char *default_unit, *unit;
   int size;
   int max = 0;
+  int first = 1;
 
   /* Maximum statistics names. */
   for(l = list ; l->human_name ; l++) {
@@ -145,6 +146,9 @@ static void display_list_human(const struct display_list list[],
     size = strlen(l->human_name);
 
     if(!l->name) { /* title */
+      if(!first) /* newline before title */
+        fputc('\n', stdout);
+
       default_unit = l->unit;
 
       fputs(l->human_name, stdout);
@@ -154,12 +158,14 @@ static void display_list_human(const struct display_list list[],
         fputc('-', stdout);
 
       fputs("\n\n", stdout);;
+
+      first = 0;
     } else {
       fputs(l->human_name, stdout);
 
       /* pad */
       for(; size <= max ; size++)
-        fputc(' ', stderr);
+        fputc(' ', stdout);
 
       /* choose default unit when needed */
       unit = l->unit ? l->unit : default_unit;
@@ -235,6 +241,7 @@ static void after(const struct context *ctx)
 
   if(ctx->human) { /* human display */
     display_list_human(counters, display_counter_human);
+    fputc('\n', stdout);
     display_list_human(seen, display_seen_human);
   } else {
     display_list_normal(counters, display_counter_normal);
