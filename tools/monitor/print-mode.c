@@ -81,11 +81,13 @@ static void display_list_normal(const struct display_list *l)
   }
 }
 
-static void display_list_human(struct display_list *l)
+/* Find maximum of a display list. We use this for alignment
+   purposes when displaying event with the human flag set. */
+static unsigned int display_list_max(struct display_list *l)
 {
   const struct display_element *e;
-  int size;
-  int max = 0;
+  unsigned int size;
+  unsigned int max = 0;
 
   /* max field size */
   for(e = l->list ; e->human_name ; e++) {
@@ -94,6 +96,14 @@ static void display_list_human(struct display_list *l)
     if(size > max)
       max = size;
   }
+
+  return max;
+}
+
+static void display_list_human(struct display_list *l, unsigned int max)
+{
+  const struct display_element *e;
+  int size;
 
   /* display each field */
   for(e = l->list ; e->human_name ; e++) {
@@ -228,10 +238,16 @@ static void post_process_event(struct context *ctx)
   *e = (struct display_element){ NULL, NULL, {} };
 
   if(ctx->human) {
+    unsigned int max_scope = display_list_max(&scope_list);
+    unsigned int max_event = display_list_max(&event_list);
+    unsigned int max;
+
     printf("Event: %lu\n", event_id++);
 
-    display_list_human(&scope_list);
-    display_list_human(&event_list);
+    max = max_scope < max_event ? max_event : max_scope;
+
+    display_list_human(&scope_list, max);
+    display_list_human(&event_list, max);
 
     fputc('\n', stdout);
   } else {
