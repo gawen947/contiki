@@ -186,7 +186,7 @@ static void display_list_human(const struct display_list list[],
 
 static void display_counter_normal(const struct display_list *e)
 {
-  printf("%lu", e->value.count);
+  printf(":%lu", e->value.count);
 }
 
 static void display_seen_normal(const struct display_list *e)
@@ -206,7 +206,6 @@ static void display_list_normal(const struct display_list list[],
       continue;
 
     fputs(l->name, stdout);
-    fputc(':', stdout);
     display(l);
     fputc('\n', stdout);
   }
@@ -246,6 +245,7 @@ static void after(const struct context *ctx)
     { NULL, NULL, .value.count = 0 }
   };
 
+  /* FIXME: Use typed (typed.h) displays. */
   if(ctx->human) { /* human display */
     display_list_human(counters, display_counter_human);
     fputc('\n', stdout);
