@@ -29,6 +29,8 @@
 #include "iobuf.h"
 #include "parser.h"
 
+#include "dump.h"
+
 /* Size of the buffer used to parse event elements. */
 #define EVENT_BUFFER_SIZE 256
 
@@ -141,7 +143,7 @@ static int parse_node_time(const struct trace *trace, struct node_time *time)
   RET(xiobuf_read(trace->input, &time->node_ms, sizeof(double)));
 
   time->cycles  = be64toh(time->cycles);
-  time->node_ms = be64toh(time->node_ms);
+  time->node_ms = betohD(time->node_ms);
 
   return 0;
 }
@@ -197,7 +199,7 @@ static int parse_scope(const struct trace *trace, struct scope *scope)
 
     ERR_ON_EOF(xiobuf_read(trace->input, &scope->sim_us, sizeof(double)));
 
-    scope->sim_us = be64toh(scope->sim_us);
+    scope->sim_us = betohD(scope->sim_us);
     break;
   case SC_T_NODE:
     if(len != (sizeof(uint64_t) + sizeof(double) + sizeof(uint16_t)))
@@ -282,9 +284,9 @@ static int parse_event_node_position(const struct trace *trace, char event_buffe
   RET(xiobuf_read(trace->input, &event->y, sizeof(event->y)));
   RET(xiobuf_read(trace->input, &event->z, sizeof(event->z)));
 
-  event->x = be64toh(event->x);
-  event->y = be64toh(event->y);
-  event->z = be64toh(event->z);
+  event->x = betohD(event->x);
+  event->y = betohD(event->y);
+  event->z = betohD(event->z);
 
   return 0;
 }

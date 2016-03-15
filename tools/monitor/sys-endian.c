@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2016, David Hauweele <david@hauweele.net>
+/* Copyright (c) 2016, David Hauweele <david@hauweele.net>
    All rights reserved.
 
    Redistribution and use in source and binary forms, with or without
@@ -22,31 +22,24 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _SYS_ENDIAN_H_
+#include <string.h>
 
-#if defined(__FreeBSD__)
-# include <sys/endian.h>
-#elif defined(__APPLE__) || defined(__MACOSX__)
-# include <machine/endian.h>
-# include <libkern/OSByteOrder.h>
-# define htobe16(x) OSSwapHostToBigInt16(x)
-# define htole16(x) OSSwapHostToLittleInt16(x)
-# define be16toh(x) OSSwapBigToHostInt16(x)
-# define le16toh(x) OSSwapLittleToHostInt16(x)
-# define htobe32(x) OSSwapHostToBigInt32(x)
-# define htole32(x) OSSwapHostToLittleInt32(x)
-# define be32toh(x) OSSwapBigToHostInt32(x)
-# define le32toh(x) OSSwapLittleToHostInt32(x)
-# define htobe64(x) OSSwapHostToBigInt64(x)
-# define htole64(x) OSSwapHostToLittleInt64(x)
-# define be64toh(x) OSSwapBigToHostInt64(x)
-# define le64toh(x) OSSwapLittleToHostInt64(x)
-#else
-# include <endian.h>
-#endif
+#include "sys-endian.h"
 
-/* endianness conversion for double values */
-double betohD(double value);
-double htobeD(double value);
+double betohD(double value)
+{
+  uint64_t r = be64toh(*(uint64_t *)&value);
 
-#endif /* _SYS_ENDIAN_H_ */
+  memcpy(&value, &r, sizeof(double));
+
+  return value;
+}
+
+double htobeD(double value)
+{
+  uint64_t r = htobe64(*(uint64_t *)&value);
+
+  memcpy(&value, &r, sizeof(double));
+
+  return value;
+}
