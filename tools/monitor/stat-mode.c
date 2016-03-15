@@ -87,8 +87,8 @@ static unsigned long sum_seen(uint64_t *seen) {
   int n = 64;
   int i;
 
-  for(i = 0 ; i < (0xffff >> 6) ; i++) {
-    for(n = 64 ; n ; n--)
+  for(i = 0 ; i <= (0xffff >> 6) ; i++) {
+    for(n = 63 ; n >= 0 ; n--)
       count += (seen[i] >> n) & 1;
   }
 
