@@ -318,19 +318,32 @@ static const void * parse_event(const struct trace *trace, enum event_element_ty
 
   switch(event_type) {
   case EV_T_MON_CREATE:
-    ret = parse_event_mon_create(trace, event_buffer);
+    if(event_len != 1 + (sizeof(double) + sizeof(uint64_t)) * 3)
+      ret = E_ICONST;
+    else
+      ret = parse_event_mon_create(trace, event_buffer);
     break;
   case EV_T_MON_STATE:
-    ret = parse_event_mon_state(trace, event_buffer);
+    if(event_len != sizeof(uint16_t) * 3)
+      ret = E_ICONST;
+    else
+      ret = parse_event_mon_state(trace, event_buffer);
     break;
   case EV_T_MON_DATA:
-    ret = parse_event_mon_data(trace, event_buffer, event_len);
+    if(event_len < sizeof(uint16_t) * 2)
+      ret = E_ICONST;
+    else
+      ret = parse_event_mon_data(trace, event_buffer, event_len);
     break;
   case EV_T_NODE_CREATE:
   case EV_T_NODE_DESTROY:
+    if(event_len != 0)
+      ret = E_ICONST;
     /* Empty elements. No parsing needed. */
     break;
   case EV_T_NODE_POSITION:
+    if(event_len != sizeof(double) * 3)
+      ret = E_ICONST;
     ret = parse_event_node_position(trace, event_buffer);
     break;
   default:
