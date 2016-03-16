@@ -22,40 +22,21 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "mon-names.h"
+#ifndef _STATES_H_
+#define _STATES_H_
 
+#include <stdint.h>
 
-/* Includes IDs directly from Contiki. */
-#include "../../core/mon/states.h"
-#include "../../core/mon/context.h"
-#include "../../core/mon/context/control.h"
+/* Common state for all contexts. */
+enum {
+  /**< Create a new entity. */
+  MON_ST_CREATE = (uint16_t)-3,
 
-/* Macro to ease registering context, state, entities names. */
-#define REG_CTX(context) reg_context_name(context, #context)
-#define REG_ST(context, state) reg_state_name(context, state, #state)
-#define REG_ENT(context, entity) reg_entity_name(context, entity, #entity)
-#define REG_COMMON_ST(state) reg_common_state_name(state, #state)
-#define REG_COMMON_ENT(entity) reg_common_entity_name(entity, #entity)
+  /**< Destroy an entity. */
+  MON_ST_DESTROY,
 
-void register_mon_ids(void)
-{
-  /* Common state/entity names. */
-  REG_COMMON_ST(MON_ST_CREATE);
-  REG_COMMON_ST(MON_ST_DESTROY);
-  REG_COMMON_ST(MON_ST_INFO);
+  /**< Special state used by some driver to signal information. */
+  MON_ST_INFO
+};
 
-  /* Register context names. */
-  REG_CTX(MON_CT_CONTROL);
-  REG_CTX(MON_CT_SCHED);
-  REG_CTX(MON_CT_NETIN);
-  REG_CTX(MON_CT_NETOUT);
-  REG_CTX(MON_CT_CPU);
-  REG_CTX(MON_CT_RADIO);
-
-  /* Register control entities names. */
-  REG_ENT(MON_CT_CONTROL, MON_ENT_CAL);
-  REG_ENT(MON_CT_CONTROL, MON_ENT_TEST);
-
-  /* Regsiter control states names. */
-  REG_ST(MON_CT_CONTROL, MON_ST_CHECK);
-}
+#endif /* _STATES_H_ */

@@ -43,6 +43,7 @@
 #include <stdint.h>
 
 #include "contiki-conf.h"
+#include "states.h"
 
 #ifdef MONITOR_DEVICE_CONF
 # define MONITOR_DEVICE MONITOR_DEVICE_CONF
@@ -60,18 +61,6 @@ extern const struct monitor_driver MONITOR_DEVICE;
 
 #define monitor_create(context, entity)  monitor_record((context), (entity), MON_ST_CREATE)
 #define monitor_destroy(context, entity) monitor_record((context), (entity), MON_ST_DESTROY)
-
-/* Common state for all contexts. */
-enum {
-  /**< Create a new entity. */
-  MON_ST_CREATE = (uint16_t)-3,
-
-  /**< Destroy an entity. */
-  MON_ST_DESTROY,
-
-  /**< Special state used by some driver to signal information. */
-  MON_ST_INFO
-};
 
 /**
  *  The Contiki Monitor device driver.

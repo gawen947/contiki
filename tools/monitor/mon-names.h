@@ -36,10 +36,15 @@ void mon_names_set(int enabled);
 
 /* Register a name for a monitor ID. Note that for states and entities, the context
    must already be registered with a proper name, otherwise an error is generated.
-   Also note that you should register a name only to avoid memory leaks. */
+   Also note that you should register a name only to avoid memory leaks.
+
+   The common state and entity registering functions are for monitor IDs that are
+   common to all context. */
 void reg_context_name(unsigned short context, const char *name);
 void reg_state_name(unsigned short context, unsigned short state, const char *name);
 void reg_entity_name(unsigned short context, unsigned short entity, const char *name);
+void reg_common_state_name(unsigned short state, const char *name);
+void reg_common_entity_name(unsigned short state, const char *name);
 
 /* Get a previously registered name for a monitor ID. If the ID was not registered
    then NULL is returned instead. */

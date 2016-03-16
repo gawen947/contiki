@@ -35,6 +35,7 @@
 #define CONTEXT_HT_SIZE 16
 #define STATE_HT_SIZE   32 /* one for each context */
 #define ENTITY_HT_SIZE  32 /* one for each context */
+#define COMMON_HT_SIZE  8
 
 #define TO_KEY(id) (const void *)(unsigned long)(id)
 
@@ -55,6 +56,8 @@ struct stent_entry {
 
 /* All lookup start with the context ID. */
 static htable_t context_ht;
+static htable_t common_state_ht;
+static htable_t common_entity_ht;
 
 /* If needed the resolution can be disabled.
    All functions always return NULL. */
@@ -109,12 +112,16 @@ static void destroy_stent_entry(void *entry)
 
 void mon_names_init(void)
 {
-  context_ht = ht_create(CONTEXT_HT_SIZE, hash, compare, destroy_context_entry);
+  context_ht       = ht_create(CONTEXT_HT_SIZE, hash, compare, destroy_context_entry);
+  common_state_ht  = ht_create(COMMON_HT_SIZE, hash,compare, destroy_stent_entry);
+  common_entity_ht = ht_create(COMMON_HT_SIZE, hash,compare, destroy_stent_entry);
 }
 
 void mon_names_destroy(void)
 {
   ht_destroy(context_ht);
+  ht_destroy(common_state_ht);
+  ht_destroy(common_entity_ht);
 }
 
 void mon_names_set(int enabled_value)
@@ -152,6 +159,16 @@ static void reg_stent_name(htable_t stent_ht, unsigned short ID, const char *nam
 
   if(!ht_search(stent_ht, TO_KEY(ID), stent_entry))
     errx(EXIT_FAILURE, "Out of memory");
+}
+
+void reg_common_state_name(unsigned short state, const char *name)
+{
+  reg_stent_name(common_state_ht, state, name);
+}
+
+void reg_common_entity_name(unsigned short entity, const char *name)
+{
+  reg_stent_name(common_entity_ht, entity, name);
 }
 
 void reg_state_name(unsigned short context, unsigned short state, const char *name)
@@ -204,10 +221,19 @@ static const char *get_stent_name(htable_t stent_ht, unsigned short ID)
 
 const char * get_state_name(unsigned short context, unsigned short state)
 {
+  const struct context_entry *context_entry;
+  const struct stent_entry   *stent_entry;
+
   if(!enabled)
     return NULL;
 
-  const struct context_entry *context_entry = ht_search(context_ht, TO_KEY(context), NULL);
+  /* Check common state table first. */
+  stent_entry = ht_search(common_state_ht, TO_KEY(state), NULL);
+  if(stent_entry)
+    return stent_entry->name;
+
+  /* Get the context table and search its associated state table */
+  context_entry = ht_search(context_ht, TO_KEY(context), NULL);
   if(!context_entry)
     return NULL;
 
@@ -216,10 +242,19 @@ const char * get_state_name(unsigned short context, unsigned short state)
 
 const char * get_entity_name(unsigned short context, unsigned short entity)
 {
+  const struct context_entry *context_entry;
+  const struct stent_entry   *stent_entry;
+
   if(!enabled)
     return NULL;
 
-  const struct context_entry *context_entry = ht_search(context_ht, TO_KEY(context), NULL);
+  /* Check common entity table first. */
+  stent_entry = ht_search(common_entity_ht, TO_KEY(entity), NULL);
+  if(stent_entry)
+    return stent_entry->name;
+
+  /* Get the context table and search its associated entity table */
+  context_entry = ht_search(context_ht, TO_KEY(context), NULL);
   if(!context_entry)
     return NULL;
 
