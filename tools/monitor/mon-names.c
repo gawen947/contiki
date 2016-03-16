@@ -73,21 +73,13 @@ static uint32_t hash(const void *key)
   return a;
 }
 
-static bool compare(const void *a, const void *b)
+static bool compare(const void *key_a, const void *key_b)
 {
   /* We use the same comparison function
      for all htable types (context, entity
-     and states).
-
-     Actually we are just interested in
-     the ID that is the first field of
-     the structure. So we use a context
-     entry but all structures start with
-     their ID field. */
-  const struct context_entry *ctx_a = (const struct context_entry *)a;
-  const struct context_entry *ctx_b = (const struct context_entry *)b;
-
-  return ctx_a->context == ctx_b->context;
+     and states). Actually the key is always
+     a monitor ID, that is a short integer. */
+  return (unsigned long)key_a == (unsigned long)key_b;
 }
 
 static void destroy_context_entry(void *entry)
