@@ -30,7 +30,7 @@
 /* display configuration */
 #define OFFSET_FMT  "$%04x:"
 #define BYTE_FMT    "%02x"
-#define PADDING_FMT "  "
+#define PADDING_FMT "__"
 #define WORD_SZ     8
 
 #define DWORD_SZ    WORD_SZ << 1
@@ -89,7 +89,7 @@ void hex_dump(const unsigned char *data, int size)
   putchar('|');
   for(i = 0 ; i < DWORD_SZ ; i++, data++, size--) {
     if(size <= 0) {
-      putchar(' ');
+      putchar('.');
       continue;
     }
 
