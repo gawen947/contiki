@@ -29,6 +29,11 @@
 void mon_names_init(void);
 void mon_names_destroy(void);
 
+/* Enable or disable IDs names resolution.
+   If disabled the get functions always
+   return NULL. */
+void mon_names_set(int enabled);
+
 /* Register a name for a monitor ID. Note that for states and entities, the context
    must already be registered with a proper name, otherwise an error is generated.
    Also note that you should register a name only to avoid memory leaks. */

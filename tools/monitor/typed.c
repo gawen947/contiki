@@ -160,7 +160,7 @@ static void display_mon_ids(const struct typed *t)
     name = get_entity_name(t->value.mon_entity.context,
                            t->value.mon_entity.entity);
     if(!name)
-      printf("%04x", t->value.mon_context);
+      printf("%04x", t->value.mon_entity.entity);
     else
       fputs(name, stdout);
     break;
@@ -168,7 +168,7 @@ static void display_mon_ids(const struct typed *t)
     name = get_state_name(t->value.mon_state.context,
                            t->value.mon_state.state);
     if(!name)
-      printf("%04x", t->value.mon_context);
+      printf("%04x", t->value.mon_state.state);
     else
       fputs(name, stdout);
     break;

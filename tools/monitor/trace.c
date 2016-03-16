@@ -117,6 +117,7 @@ int main(int argc, char *argv[])
     { 0, "commit", "Display commit information" },
 #endif /* COMMIT */
     { 'H', "human", "Display trace or statistics in an human readable format" },
+    { 'i', "no-ids", "Disable resolution of monitor IDs names"},
     { 'o', "output", "Select the output mode (use ? or list to display available modes)" },
     { 0, NULL, NULL }
   };
@@ -128,6 +129,7 @@ int main(int argc, char *argv[])
     { "commit", no_argument, NULL, OPT_COMMIT},
 #endif /* COMMIT */
     { "human", no_argument, NULL, 'H' },
+    { "no-ids", no_argument, NULL, 'i' },
     { "output", required_argument, NULL, 'o' },
     { NULL, 0, NULL, 0 }
   };
@@ -136,7 +138,7 @@ int main(int argc, char *argv[])
   init();
 
   while(1) {
-    int c = getopt_long(argc, argv, "hVHo:", long_opts, NULL);
+    int c = getopt_long(argc, argv, "hVHio:", long_opts, NULL);
 
     if(c == -1)
       break;
@@ -166,6 +168,9 @@ int main(int argc, char *argv[])
       break;
     case 'H':
       ctx.human = 1;
+      break;
+    case 'i':
+      mon_names_set(0);
       break;
     case 'V':
       version(TARGET);

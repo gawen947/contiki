@@ -53,8 +53,12 @@ struct stent_entry {
   const char *name;
 };
 
-
+/* All lookup start with the context ID. */
 static htable_t context_ht;
+
+/* If needed the resolution can be disabled.
+   All functions always return NULL. */
+static int enabled = 1;
 
 static uint32_t hash(const void *key)
 {
@@ -111,6 +115,11 @@ void mon_names_init(void)
 void mon_names_destroy(void)
 {
   ht_destroy(context_ht);
+}
+
+void mon_names_set(int enabled_value)
+{
+  enabled = enabled_value;
 }
 
 void reg_context_name(unsigned short context, const char *name)
@@ -171,6 +180,9 @@ void reg_entity_name(unsigned short context, unsigned short entity, const char *
 
 const char * get_context_name(unsigned short context)
 {
+  if(!enabled)
+    return NULL;
+
   const struct context_entry *context_entry = ht_search(context_ht, TO_KEY(context), NULL);
   if(!context_entry)
     return NULL;
@@ -180,6 +192,9 @@ const char * get_context_name(unsigned short context)
 
 static const char *get_stent_name(htable_t stent_ht, unsigned short ID)
 {
+  if(!enabled)
+    return NULL;
+
   const struct stent_entry *stent_entry = ht_search(stent_ht, TO_KEY(ID), NULL);
   if(!stent_entry)
     return NULL;
@@ -189,6 +204,9 @@ static const char *get_stent_name(htable_t stent_ht, unsigned short ID)
 
 const char * get_state_name(unsigned short context, unsigned short state)
 {
+  if(!enabled)
+    return NULL;
+
   const struct context_entry *context_entry = ht_search(context_ht, TO_KEY(context), NULL);
   if(!context_entry)
     return NULL;
@@ -198,10 +216,12 @@ const char * get_state_name(unsigned short context, unsigned short state)
 
 const char * get_entity_name(unsigned short context, unsigned short entity)
 {
+  if(!enabled)
+    return NULL;
+
   const struct context_entry *context_entry = ht_search(context_ht, TO_KEY(context), NULL);
   if(!context_entry)
     return NULL;
 
   return get_stent_name(context_entry->entity_ht, entity);
-
 }
