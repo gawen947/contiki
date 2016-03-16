@@ -175,7 +175,7 @@ void reg_state_name(unsigned short context, unsigned short state, const char *na
 {
   const struct context_entry *context_entry = ht_search(context_ht, TO_KEY(context), NULL);
 
-  /* Non existing context entry. This should happen as we should only
+  /* Non existing context entry. This should not happen as we should only
      add states/entities to context that are already registered. */
   if(!context_entry)
     errx(EXIT_FAILURE, "Unregistered context %04X", context);
@@ -187,7 +187,7 @@ void reg_entity_name(unsigned short context, unsigned short entity, const char *
 {
   const struct context_entry *context_entry = ht_search(context_ht, TO_KEY(context), NULL);
 
-  /* Non existing context entry. This should happen as we should only
+  /* Non existing context entry. This should not happen as we should only
      add states/entities to context that are already registered. */
   if(!context_entry)
     errx(EXIT_FAILURE, "Unregistered context %04X", context);
