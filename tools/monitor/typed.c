@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <assert.h>
 
+#include "mon-names.h"
 #include "dump.h"
 #include "typed.h"
 
@@ -145,6 +146,8 @@ static void display_event_type_human(const struct typed *t)
 
 void display_typed_normal(const struct typed *t)
 {
+  const char *name;
+
   switch(t->type) {
   case T_SCOPE_BITMASK:
     display_scope_bitmask_normal(t);
@@ -152,8 +155,28 @@ void display_typed_normal(const struct typed *t)
   case T_EVENT_TYPE:
     display_event_type_normal(t);
     break;
-  case T_MONITOR:
-    printf("%04x", t->value.monitor);
+  case T_MON_CONTEXT:
+    name = get_context_name(t->value.mon_context);
+    if(!name)
+      printf("%04x", t->value.mon_context);
+    else
+      fputs(name, stdout);
+    break;
+  case T_MON_ENTITY:
+    name = get_entity_name(t->value.mon_entity.context,
+                           t->value.mon_entity.entity);
+    if(!name)
+      printf("%04x", t->value.mon_context);
+    else
+      fputs(name, stdout);
+    break;
+  case T_MON_STATE:
+    name = get_state_name(t->value.mon_state.context,
+                           t->value.mon_state.state);
+    if(!name)
+      printf("%04x", t->value.mon_context);
+    else
+      fputs(name, stdout);
     break;
   case T_POSITION:
   case T_TIME_MS:
@@ -180,6 +203,8 @@ void display_typed_normal(const struct typed *t)
 
 void display_typed_human(const struct typed *t)
 {
+  const char *name;
+
   switch(t->type) {
   case T_SCOPE_BITMASK:
     display_scope_bitmask_human(t);
@@ -187,8 +212,29 @@ void display_typed_human(const struct typed *t)
   case T_EVENT_TYPE:
     display_event_type_human(t);
     break;
-  case T_MONITOR:
-    printf("%04x", t->value.monitor);
+  case T_MON_CONTEXT:
+    /* FIXME: factorize with same behavior in display_typed_normal() */
+    name = get_context_name(t->value.mon_context);
+    if(!name)
+      printf("%04x", t->value.mon_context);
+    else
+      fputs(name, stdout);
+    break;
+  case T_MON_ENTITY:
+    name = get_entity_name(t->value.mon_entity.context,
+                           t->value.mon_entity.entity);
+    if(!name)
+      printf("%04x", t->value.mon_context);
+    else
+      fputs(name, stdout);
+    break;
+  case T_MON_STATE:
+    name = get_state_name(t->value.mon_state.context,
+                           t->value.mon_state.state);
+    if(!name)
+      printf("%04x", t->value.mon_context);
+    else
+      fputs(name, stdout);
     break;
   case T_POSITION:
     printf("%f", t->value.position);

@@ -310,22 +310,47 @@ static int ev_mon_create(const struct scope *scope, const struct ev_mon_create *
   return 0;
 }
 
-/* add a display element for context/entity/state in state/data events */
-static void display_add_mon(unsigned short value, const char *normal, const char *human)
+/* add a display element for context in state/data events */
+static void display_add_context(unsigned short context, const char *normal, const char *human)
 {
   struct display_element *e;
 
   e  = list_add(&event_list);
-  *e = (struct display_element){ normal, human, { T_MONITOR, .value.monitor = value }};
+  *e = (struct display_element){ normal, human, { T_MON_CONTEXT, .value.mon_context = context }};
 }
+
+static void display_add_state(unsigned short context,
+                              unsigned short state,
+                              const char *normal, const char *human)
+{
+  struct display_element *e;
+
+  e  = list_add(&event_list);
+  *e = (struct display_element){ normal, human, { T_MON_STATE,
+                                                  .value.mon_state = { .context = context,
+                                                                       .state   = state } } };
+}
+
+static void display_add_entity(unsigned short context,
+                               unsigned short entity,
+                               const char *normal, const char *human)
+{
+  struct display_element *e;
+
+  e  = list_add(&event_list);
+  *e = (struct display_element){ normal, human, { T_MON_ENTITY,
+                                                  .value.mon_entity = { .context  = context,
+                                                                        .entity   = entity } } };
+}
+
 
 static int ev_mon_state(const struct scope *scope, const struct ev_mon_state *event, void *data)
 {
   pre_process_event(scope, EV_T_MON_STATE);
 
-  display_add_mon(event->context, "CTX", "Context");
-  display_add_mon(event->entity, "ENT", "Entity");
-  display_add_mon(event->state, "STATE", "State");
+  display_add_context(event->context, "CTX", "Context");
+  display_add_entity(event->context, event->entity, "ENT", "Entity");
+  display_add_state(event->context, event->state, "STATE", "State");
 
   post_process_event((struct context *)data);
 
@@ -338,8 +363,8 @@ static int ev_mon_data(const struct scope *scope, const struct ev_mon_data *even
 
   pre_process_event(scope, EV_T_MON_DATA);
 
-  display_add_mon(event->context, "CTX", "Context");
-  display_add_mon(event->entity, "ENT", "Entity");
+  display_add_context(event->context, "CTX", "Context");
+  display_add_entity(event->context, event->entity, "ENT", "Entity");
 
   e  = list_add(&event_list);
   *e = (struct display_element){ "DATA", "Data",

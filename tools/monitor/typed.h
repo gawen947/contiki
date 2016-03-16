@@ -32,7 +32,9 @@
 enum data_type {
   T_SCOPE_BITMASK, /* scope bitmask (as used in the parser scope structure) */
   T_EVENT_TYPE,    /* one event type */
-  T_MONITOR,       /* context/entity/state from monitor */
+  T_MON_CONTEXT,   /* context ID from monitor */
+  T_MON_ENTITY,    /* entity ID from monitor */
+  T_MON_STATE,     /* state ID from monitor */
   T_POSITION,      /* one coordinate for a position */
   T_TIME_MS,       /* time in milliseconds */
   T_TIME_US,       /* time in microseconds */
@@ -56,7 +58,15 @@ struct typed {
   union {
     uint32_t scope_used;
     enum event_element_type event_type;
-    unsigned short monitor;
+    unsigned short mon_context;
+    struct {
+      unsigned short context;
+      unsigned short entity;
+    } mon_entity;
+    struct {
+      unsigned short context;
+      unsigned short state;
+    } mon_state;
     double position;
     double time_ms;
     double time_us;
