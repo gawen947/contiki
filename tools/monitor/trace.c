@@ -30,6 +30,8 @@
 #include <string.h>
 #include <err.h>
 
+#include "mon-ids.h"
+#include "mon-names.h"
 #include "print-mode.h"
 #include "help.h"
 #include "version.h"
@@ -37,6 +39,18 @@
 #include "trace.h"
 
 #define TARGET "Trace"
+
+/* Init and destroy internal data structures. */
+static void init(void)
+{
+  mon_names_init();
+  register_mon_ids();
+}
+
+static void destroy(void)
+{
+  mon_names_destroy();
+}
 
 /* Process parse error and abort when needed. */
 static void parse_error(int ret)
@@ -118,6 +132,9 @@ int main(int argc, char *argv[])
     { NULL, 0, NULL, 0 }
   };
 
+  /* init */
+  init();
+
   while(1) {
     int c = getopt_long(argc, argv, "hVHo:", long_opts, NULL);
 
@@ -168,5 +185,6 @@ int main(int argc, char *argv[])
   exit_status = parse(&ctx, argv[optind], mode);
 
 EXIT:
+  destroy();
   return exit_status;
 }

@@ -1,0 +1,215 @@
+/* Copyright (c) 2016, David Hauweele <david@hauweele.net>
+   All rights reserved.
+
+   Redistribution and use in source and binary forms, with or without
+   modification, are permitted provided that the following conditions are met:
+
+    1. Redistributions of source code must retain the above copyright notice, this
+       list of conditions and the following disclaimer.
+    2. Redistributions in binary form must reproduce the above copyright notice,
+       this list of conditions and the following disclaimer in the documentation
+       and/or other materials provided with the distribution.
+
+   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+   ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+   WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+   DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+   ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+   (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+   LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+   ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+#include <stdlib.h>
+#include <err.h>
+
+#include "htable.h"
+#include "mon-names.h"
+
+/* Here we associate a name to each context, or pair
+   context-entity, context-state. These are stored in the
+   form of small htables for fast lookups. */
+
+#define CONTEXT_HT_SIZE 16
+#define STATE_HT_SIZE   32 /* one for each context */
+#define ENTITY_HT_SIZE  32 /* one for each context */
+
+#define TO_KEY(id) (const void *)(unsigned long)(id)
+
+struct context_entry {
+  unsigned short context;
+  const char *name;
+
+  htable_t state_ht;
+  htable_t entity_ht;
+};
+
+/* We use the same entry type for both states and entities,
+   hence the name 'stent' entry. */
+struct stent_entry {
+  unsigned short ID;
+  const char *name;
+};
+
+
+static htable_t context_ht;
+
+static uint32_t hash(const void *key)
+{
+  unsigned short a = (unsigned short)key;
+
+  /* Robert Jenkin's integer hash.
+     Probably not the best suited
+     for our 16 bits ID. */
+  a = (a+0x7ed55d16) + (a<<12);
+  a = (a^0xc761c23c) ^ (a>>19);
+  a = (a+0x165667b1) + (a<<5);
+  a = (a+0xd3a2646c) ^ (a<<9);
+  a = (a+0xfd7046c5) + (a<<3);
+  a = (a^0xb55a4f09) ^ (a>>16);
+
+  return a;
+}
+
+static bool compare(const void *a, const void *b)
+{
+  /* We use the same comparison function
+     for all htable types (context, entity
+     and states).
+
+     Actually we are just interested in
+     the ID that is the first field of
+     the structure. So we use a context
+     entry but all structures start with
+     their ID field. */
+  const struct context_entry *ctx_a = (const struct context_entry *)a;
+  const struct context_entry *ctx_b = (const struct context_entry *)b;
+
+  return ctx_a->context == ctx_b->context;
+}
+
+static void destroy_context_entry(void *entry)
+{
+  struct context_entry *context_entry = (struct context_entry *)entry;
+
+  /* We only destroy the htables for states and entities
+     associated to this context. The name comes from
+     a string litteral (read only). */
+  ht_destroy(context_entry->state_ht);
+  ht_destroy(context_entry->entity_ht);
+
+  /* Now free the entry itself. */
+  free(context_entry);
+}
+
+static void destroy_stent_entry(void *entry)
+{
+  /* Again the name comes from a string litteral.
+     So we only have to free the entry itself. */
+  free(entry);
+}
+
+void mon_names_init(void)
+{
+  context_ht = ht_create(CONTEXT_HT_SIZE, hash, compare, destroy_context_entry);
+}
+
+void mon_names_destroy(void)
+{
+  ht_destroy(context_ht);
+}
+
+void reg_context_name(unsigned short context, const char *name)
+{
+  struct context_entry *context_entry = malloc(sizeof(struct context_entry));
+  if(!context_entry)
+    errx(EXIT_FAILURE, "Out of memory");
+
+  *context_entry = (struct context_entry){
+    .context   = context,
+    .name      = name,
+    .state_ht  = ht_create(STATE_HT_SIZE, hash, compare, destroy_stent_entry),
+    .entity_ht = ht_create(ENTITY_HT_SIZE, hash, compare, destroy_stent_entry)
+  };
+
+  if(!ht_search(context_ht, TO_KEY(context), context_entry))
+    errx(EXIT_FAILURE, "Out of memory");
+}
+
+static void reg_stent_name(htable_t stent_ht, unsigned short ID, const char *name)
+{
+  struct stent_entry *stent_entry = malloc(sizeof(struct stent_entry));
+  if(!stent_entry)
+    errx(EXIT_FAILURE, "Out of memory");
+
+  *stent_entry = (struct stent_entry){
+    .ID   = ID,
+    .name = name
+  };
+
+  if(!ht_search(stent_ht, TO_KEY(ID), stent_entry))
+    errx(EXIT_FAILURE, "Out of memory");
+}
+
+void reg_state_name(unsigned short context, unsigned short state, const char *name)
+{
+  const struct context_entry *context_entry = ht_search(context_ht, TO_KEY(context), NULL);
+
+  /* Non existing context entry. This should happen as we should only
+     add states/entities to context that are already registered. */
+  if(!context_entry)
+    errx(EXIT_FAILURE, "Unregistered context %04X", context);
+
+  reg_stent_name(context_entry->state_ht, state, name);
+}
+
+void reg_entity_name(unsigned short context, unsigned short entity, const char *name)
+{
+  const struct context_entry *context_entry = ht_search(context_ht, TO_KEY(context), NULL);
+
+  /* Non existing context entry. This should happen as we should only
+     add states/entities to context that are already registered. */
+  if(!context_entry)
+    errx(EXIT_FAILURE, "Unregistered context %04X", context);
+
+  reg_stent_name(context_entry->entity_ht, entity, name);
+}
+
+const char * get_context_name(unsigned short context)
+{
+  const struct context_entry *context_entry = ht_search(context_ht, TO_KEY(context), NULL);
+  if(!context_entry)
+    return NULL;
+
+  return context_entry->name;
+}
+
+static const char *get_stent_name(htable_t stent_ht, unsigned short ID)
+{
+  const struct stent_entry *stent_entry = ht_search(stent_ht, TO_KEY(ID), NULL);
+  if(!stent_entry)
+    return NULL;
+
+  return stent_entry->name;
+}
+
+const char * get_state_name(unsigned short context, unsigned short state)
+{
+  const struct context_entry *context_entry = ht_search(context_ht, TO_KEY(context), NULL);
+  if(!context_entry)
+    return NULL;
+
+  return get_stent_name(context_entry->state_ht, state);
+}
+
+const char * get_entity_name(unsigned short context, unsigned short entity)
+{
+  const struct context_entry *context_entry = ht_search(context_ht, TO_KEY(context), NULL);
+  if(!context_entry)
+    return NULL;
+
+  return get_stent_name(context_entry->entity_ht, entity);
+
+}
