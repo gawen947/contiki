@@ -56,6 +56,6 @@ void register_mon_ids(void)
   REG_ENT(MON_CT_CONTROL, MON_ENT_CAL);
   REG_ENT(MON_CT_CONTROL, MON_ENT_TEST);
 
-  /* Regsiter control states names. */
+  /* Register control states names. */
   REG_ST(MON_CT_CONTROL, MON_ST_CHECK);
 }
