@@ -31,31 +31,31 @@
 #include "../../core/mon/context/control.h"
 
 /* Macro to ease registering context, state, entities names. */
-#define REG_CTX(context) reg_context_name(context, #context)
-#define REG_ST(context, state) reg_state_name(context, state, #state)
-#define REG_ENT(context, entity) reg_entity_name(context, entity, #entity)
-#define REG_COMMON_ST(state) reg_common_state_name(state, #state)
-#define REG_COMMON_ENT(entity) reg_common_entity_name(entity, #entity)
+#define REG_CTX(context) reg_context_name(MON_CT_ ## context, #context)
+#define REG_ST(context, state) reg_state_name(context, MON_ST_ ## state, #state)
+#define REG_ENT(context, entity) reg_entity_name(context, MON_ENT_ ## entity, #entity)
+#define REG_COMMON_ST(state) reg_common_state_name(MON_ST_ ## state, #state)
+#define REG_COMMON_ENT(entity) reg_common_entity_name(MON_ENT_ ## entity, #entity)
 
 void register_mon_ids(void)
 {
   /* Common state/entity names. */
-  REG_COMMON_ST(MON_ST_CREATE);
-  REG_COMMON_ST(MON_ST_DESTROY);
-  REG_COMMON_ST(MON_ST_INFO);
+  REG_COMMON_ST(CREATE);
+  REG_COMMON_ST(DESTROY);
+  REG_COMMON_ST(INFO);
 
   /* Register context names. */
-  REG_CTX(MON_CT_CONTROL);
-  REG_CTX(MON_CT_SCHED);
-  REG_CTX(MON_CT_NETIN);
-  REG_CTX(MON_CT_NETOUT);
-  REG_CTX(MON_CT_CPU);
-  REG_CTX(MON_CT_RADIO);
+  REG_CTX(CONTROL); /* MON_CT_CONTROL */
+  REG_CTX(SCHED);
+  REG_CTX(NETIN);
+  REG_CTX(NETOUT);
+  REG_CTX(CPU);
+  REG_CTX(RADIO);
 
   /* Register control entities names. */
-  REG_ENT(MON_CT_CONTROL, MON_ENT_CAL);
-  REG_ENT(MON_CT_CONTROL, MON_ENT_TEST);
+  REG_ENT(MON_CT_CONTROL, CAL);
+  REG_ENT(MON_CT_CONTROL, TEST);
 
   /* Register control states names. */
-  REG_ST(MON_CT_CONTROL, MON_ST_CHECK);
+  REG_ST(MON_CT_CONTROL, CHECK);
 }
