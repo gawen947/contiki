@@ -40,7 +40,7 @@
 void register_mon_ids(void)
 {
   /* Common state/entity names. */
-  REG_COMMON_ST(CREATE);
+  REG_COMMON_ST(CREATE); /* MON_ST_CREATE */
   REG_COMMON_ST(DESTROY);
   REG_COMMON_ST(INFO);
 
@@ -53,9 +53,9 @@ void register_mon_ids(void)
   REG_CTX(RADIO);
 
   /* Register control entities names. */
-  REG_ENT(MON_CT_CONTROL, CAL);
+  REG_ENT(MON_CT_CONTROL, CAL); /* MON_ENT_CAL */
   REG_ENT(MON_CT_CONTROL, TEST);
 
   /* Register control states names. */
-  REG_ST(MON_CT_CONTROL, CHECK);
+  REG_ST(MON_CT_CONTROL, CHECK); /* MON_ST_CHECK */
 }
