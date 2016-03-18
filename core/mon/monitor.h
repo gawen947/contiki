@@ -43,7 +43,7 @@
 #include <stdint.h>
 
 #include "contiki-conf.h"
-#include "states.h"
+#include "mon/states.h"
 
 #ifdef MONITOR_DEVICE_CONF
 # define MONITOR_DEVICE MONITOR_DEVICE_CONF

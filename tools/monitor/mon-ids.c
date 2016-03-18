@@ -29,6 +29,7 @@
 #include "../../core/mon/states.h"
 #include "../../core/mon/context.h"
 #include "../../core/mon/context/control.h"
+#include "../../core/mon/context/mon-ct-radio.h"
 
 /* Macro to ease registering context, state, entities names. */
 #define REG_CTX(context) reg_context_name(MON_CT_ ## context, #context)
@@ -36,6 +37,33 @@
 #define REG_ENT(context, entity) reg_entity_name(context, MON_ENT_ ## entity, #entity)
 #define REG_COMMON_ST(state) reg_common_state_name(MON_ST_ ## state, #state)
 #define REG_COMMON_ENT(entity) reg_common_entity_name(MON_ENT_ ## entity, #entity)
+
+static void register_mon_ids_radio(void)
+{
+  /* Register radio states names. */
+  REG_ST(MON_CT_RADIO, RADIO_ON);
+  REG_ST(MON_CT_RADIO, RADIO_OFF);
+  REG_ST(MON_CT_RADIO, RADIO_CCA);
+  REG_ST(MON_CT_RADIO, RADIO_ISR);
+  REG_ST(MON_CT_RADIO, RADIO_POLL);
+  REG_ST(MON_CT_RADIO, RADIO_RDC);
+  REG_ST(MON_CT_RADIO, RADIO_READ);
+  REG_ST(MON_CT_RADIO, RADIO_PREPARE);
+  REG_ST(MON_CT_RADIO, RADIO_TRANSMIT);
+
+  /* Register radio entities names. */
+  REG_ENT(MON_CT_RADIO, CC2420);
+}
+
+static void register_mon_ids_control(void)
+{
+  /* Register control entities names. */
+  REG_ENT(MON_CT_CONTROL, CAL); /* MON_ENT_CAL */
+  REG_ENT(MON_CT_CONTROL, TEST);
+
+  /* Register control states names. */
+  REG_ST(MON_CT_CONTROL, CHECK); /* MON_ST_CHECK */
+}
 
 void register_mon_ids(void)
 {
@@ -52,10 +80,6 @@ void register_mon_ids(void)
   REG_CTX(CPU);
   REG_CTX(RADIO);
 
-  /* Register control entities names. */
-  REG_ENT(MON_CT_CONTROL, CAL); /* MON_ENT_CAL */
-  REG_ENT(MON_CT_CONTROL, TEST);
-
-  /* Register control states names. */
-  REG_ST(MON_CT_CONTROL, CHECK); /* MON_ST_CHECK */
+  register_mon_ids_control();
+  register_mon_ids_radio();
 }
