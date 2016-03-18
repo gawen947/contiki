@@ -38,18 +38,20 @@
 #define REG_COMMON_ST(state) reg_common_state_name(MON_ST_ ## state, #state)
 #define REG_COMMON_ENT(entity) reg_common_entity_name(MON_ENT_ ## entity, #entity)
 
+#define REG_RADIO_ST(state) reg_state_name(MON_CT_RADIO, MON_ST_RADIO_ ## state, #state)
+
 static void register_mon_ids_radio(void)
 {
   /* Register radio states names. */
-  REG_ST(MON_CT_RADIO, RADIO_ON);
-  REG_ST(MON_CT_RADIO, RADIO_OFF);
-  REG_ST(MON_CT_RADIO, RADIO_CCA);
-  REG_ST(MON_CT_RADIO, RADIO_ISR);
-  REG_ST(MON_CT_RADIO, RADIO_POLL);
-  REG_ST(MON_CT_RADIO, RADIO_RDC);
-  REG_ST(MON_CT_RADIO, RADIO_READ);
-  REG_ST(MON_CT_RADIO, RADIO_PREPARE);
-  REG_ST(MON_CT_RADIO, RADIO_TRANSMIT);
+  REG_RADIO_ST(ON);
+  REG_RADIO_ST(OFF);
+  REG_RADIO_ST(CCA);
+  REG_RADIO_ST(ISR);
+  REG_RADIO_ST(POLL);
+  REG_RADIO_ST(RDC);
+  REG_RADIO_ST(READ);
+  REG_RADIO_ST(PREPARE);
+  REG_RADIO_ST(TRANSMIT);
 
   /* Register radio entities names. */
   REG_ENT(MON_CT_RADIO, CC2420);
