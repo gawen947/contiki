@@ -41,6 +41,6 @@
 #ifndef PROJECT_CONF_H_
 #define PROJECT_CONF_H_
 
-#define MONITOR_DEVICE_CONF stdmon_driver
+#define MONITOR_DEVICE_CONF regmon_driver
 
 #endif /* PROJECT_CONF_H_ */
