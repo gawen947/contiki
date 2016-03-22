@@ -251,7 +251,7 @@ static void post_process_event(struct context *ctx)
 
     fputc('\n', stdout);
   } else {
-    printf("EVENT:%lu ", event_id++);
+    printf("EVENT=%lu ", event_id++);
 
     display_list_normal(&scope_list);
     fputc(':', stdout);
