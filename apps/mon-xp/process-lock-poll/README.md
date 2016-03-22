@@ -5,8 +5,14 @@ Experiment a process that locks the poll from the radio layer to the netstack pr
 This experiment is separated in two images.
 
 1) "ping" that just regularly pings (broadcast rime) the other node.
+   The interval between each message is 1 second, and the node sends
+   exactly 1000 messages.
+
 2) "lock" that receives the pings (on the radio layer) but a process tries to lock the scheduler and the netstack process (clear the watchdog to force this).
+
 3) "fair" that received the pings (on the radio layer) and the main process just wait for ~1000s (event wait) in a while loop.
+
+4) "balanced" that works for a limited number of CPU cycles and then repost itself on the scheduler.
 
 We use a Rime broadcast message as we want to avoid RPL and incidental traffic.
 
@@ -36,3 +42,7 @@ Time: POLL -> OFF
 
  474968 cyc.
  121.66 ms
+
+
+
+For detailed results with ping->balanced see results directory.

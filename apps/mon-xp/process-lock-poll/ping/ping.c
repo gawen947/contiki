@@ -36,6 +36,8 @@
 #include "net/rime/rime.h"
 #include "random.h"
 
+#define SEND_COUNT 1000
+
 static void recv(struct broadcast_conn *c, const linkaddr_t *from)
 {
   /* ignored */
@@ -48,22 +50,22 @@ PROCESS_THREAD(lock_poll_xp_ping, ev, data)
 {
   static struct broadcast_conn bc;
   static struct broadcast_callbacks bc_call = { recv };
-  static char payload[] = "foobar";
   static struct etimer et;
+  static char payload[] = "foobar";
   static int count;
 
   PROCESS_BEGIN();
 
   broadcast_open(&bc, 129, &bc_call);
 
-  while(1) {
-    etimer_set(&et, CLOCK_SECOND * 5);
+  for(count = SEND_COUNT ; count ; count--) {
+    etimer_set(&et, CLOCK_SECOND * 1);
 
     PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
 
     packetbuf_copyfrom(payload, sizeof(payload));
     broadcast_send(&bc);
-    printf("Sent %d...\n", count++);
+    printf("Sent %d...\n", count);
   }
 
   PROCESS_END();
