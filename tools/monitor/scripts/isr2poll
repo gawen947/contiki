@@ -1,0 +1,111 @@
+#!/usr/bin/env python
+#  Copyright (c) 2016, David Hauweele <david@hauweele.net>
+#  All rights reserved.
+#
+#  Redistribution and use in source and binary forms, with or without
+#  modification, are permitted provided that the following conditions are met:
+#
+#   1. Redistributions of source code must retain the above copyright notice, this
+#      list of conditions and the following disclaimer.
+#   2. Redistributions in binary form must reproduce the above copyright notice,
+#      this list of conditions and the following disclaimer in the documentation
+#      and/or other materials provided with the distribution.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+#  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+#  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+#  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+#  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+#  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+#  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+#  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+#  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+#  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+import sys
+
+import lib.parse
+import lib.utils
+
+if len(sys.argv) != 3:
+    print "usage: %s EVENT_1 EVENT_2" % (sys.argv[0],)
+    print
+    print "Read a trace from stdin and display the time"
+    print "of the transition from one event to another."
+    print "This is only from event 1 to event 2. The"
+    print "time reported is for event 1."
+    print
+    print "Event are specified should be MON_STATE events."
+    print "They are specified in the form CTX/ENT/STATE."
+
+    sys.exit(1)
+
+class MonState(object):
+    def __init__(self, line = None, ctx = None, ent = None, state = None):
+        if line:
+            mon_ids = line.split('/')
+            if len(mon_ids) != 3:
+                lib.utils.err(1, "invalid mon ids (should be CTX/ENT/STATE)")
+
+            self.context, self.entity, self.state = (mon_ids[0], mon_ids[1], mon_ids[2])
+        else:
+            self.context, self.entity, self.state = (ctx, ent, state)
+
+        self.context = self.context.strip('\n')
+        self.entity  = self.entity.strip('\n')
+        self.state   = self.state.strip('\n')
+
+    def __eq__(self, o):
+        return (o.context == self.context) and \
+               (o.entity  == self.entity)  and \
+               (o.state   == self.state)
+
+event_1 = MonState(sys.argv[1])
+event_2 = MonState(sys.argv[2])
+
+print "# event_1_ID event_2_ID event1_cyc event1_ms cyc_2_event2 ms_2_event2"
+
+event_1_time_ms  = None
+event_1_time_cyc = None
+event_1_id       = None
+for line in sys.stdin:
+    event = lib.parse.Event(line)
+
+    try:
+        event_type   = event.event["EVENT_TYPE"]
+    except KeyError:
+        lib.utils.err(1, "invalid event")
+
+    if event_type != "MON_STATE":
+        continue
+
+    try:
+        node_ms      = lib.utils.try_float(event.scope["NODE_TIME_MS"])
+        node_cyc     = lib.utils.try_int(event.scope["NODE_CYCLES"])
+        mon_state_ev = MonState(ctx   = event.event["CTX"],
+                                ent   = event.event["ENT"],
+                                state = event.event["STATE"])
+    except KeyError:
+        lib.utils.err(1, "invalid event")
+
+    if mon_state_ev == event_1:
+        event_1_time_ms  = lib.utils.try_float(node_ms)
+        event_1_time_cyc = lib.utils.try_int(node_cyc)
+        event_1_id       = event.id
+    elif mon_state_ev == event_2:
+        if event_1_id != None:
+            event_2_time_ms  = lib.utils.try_float(node_ms)
+            event_2_time_cyc = lib.utils.try_int(node_cyc)
+
+            delta_time_ms  = event_2_time_ms  - event_1_time_ms
+            delta_time_cyc = event_2_time_cyc - event_1_time_cyc
+
+            print "%d %d %d %f %d %f" % (event_1_id,
+                                         event.id,
+                                         event_1_time_cyc,
+                                         event_1_time_ms,
+                                         delta_time_cyc,
+                                         delta_time_ms)
+
+            # We don't parse until we have meet event_1 again.
+            event_1_id = None
