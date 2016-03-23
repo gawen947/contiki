@@ -24,6 +24,7 @@
 
 import sys
 import scipy
+import numpy
 
 import lib.utils
 
@@ -53,14 +54,18 @@ for line in sys.stdin:
     except IndexError:
         lib.utils.err(1, "invalid column")
 
-average = scipy.average(values)
-stddev  = scipy.std(values)
-v_sum   = sum(values)
-v_min   = min(values)
-v_max   = max(values)
-delta       = v_max - v_min
+average  = scipy.average(values)
+stddev   = scipy.std(values)
+ptile_5  = numpy.percentile(values, 5)
+ptile_95 = numpy.percentile(values, 95)
+v_sum    = sum(values)
+v_min    = min(values)
+v_max    = max(values)
+delta        = v_max - v_min
 
 print "# ( %f +/- %f ) " % (average, stddev)
+print "# 5th ptiles : %d" % (ptile_5,)
+print "# 95th ptiles: %d" % (ptile_95,)
 print "# sum: %d" % (v_sum,)
 print "# min: %d" % (v_min,)
 print "# max: %d" % (v_max,)
