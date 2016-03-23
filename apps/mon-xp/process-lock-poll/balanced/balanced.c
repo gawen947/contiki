@@ -37,7 +37,7 @@
 #include "mon/context.h"
 #include "mon/context/control.h"
 
-#define CYCLES 5000
+#define CYCLES 320000
 
 /*---------------------------------------------------------------------------*/
 PROCESS(lock_poll_xp_balanced_process, "process-lock-poll XP (rime) balanced process");
