@@ -37,7 +37,9 @@
 #include "mon/context.h"
 #include "mon/context/control.h"
 
-#define CYCLES 320000
+#ifndef CYCLES
+# error "CYCLES not defined => cannot compile!"
+#endif
 
 /*---------------------------------------------------------------------------*/
 PROCESS(lock_poll_xp_balanced_process, "process-lock-poll XP (rime) balanced process");
