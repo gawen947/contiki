@@ -36,7 +36,9 @@
 #include "net/rime/rime.h"
 #include "random.h"
 
-#define SEND_COUNT 1000
+#ifndef SEND_COUNT
+# error "SEND_COUNT not defined => cannot compile!"
+#endif
 
 static void recv(struct broadcast_conn *c, const linkaddr_t *from)
 {
