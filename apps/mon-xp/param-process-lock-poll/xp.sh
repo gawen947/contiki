@@ -23,7 +23,7 @@
 #  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # Shall we clean  the targets initially?
-PRE_CLEAN=false
+PRE_CLEAN=true
 
 # Shall we clean the targets each time?
 CLEAN_BUILD=false
