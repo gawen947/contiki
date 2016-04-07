@@ -15,7 +15,7 @@ TRACE_OBJ = mon-ids.o mon-names.o htable.o utils.o sys-endian.o dump.o help.o io
 PREFIX ?= /usr/local
 BIN    ?= /bin
 
-CFLAGS += -DVERSION="\"$(shell cat VERSION)\""
+CFLAGS += -D_BSD_SOURCE=1 -DVERSION="\"$(shell cat VERSION)\""
 
 commit = $(shell ./hash.sh)
 ifneq ($(commit), UNKNOWN)
