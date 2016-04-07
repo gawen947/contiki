@@ -22,7 +22,7 @@
       org.contikios.cooja.mspmote.SkyMoteType
       <identifier>balanced</identifier>
       <description>Mote #balanced</description>
-      <firmware EXPORT="copy">/usr/home/gawen/Documents/PhD/Coding/contiki/apps/mon-xp/param-process-lock-poll/balanced/balanced.sky</firmware>
+      <firmware EXPORT="copy">balanced/balanced.sky</firmware>
       <moteinterface>org.contikios.cooja.interfaces.Position</moteinterface>
       <moteinterface>org.contikios.cooja.interfaces.RimeAddress</moteinterface>
       <moteinterface>org.contikios.cooja.interfaces.IPAddress</moteinterface>
@@ -43,7 +43,7 @@
       org.contikios.cooja.mspmote.SkyMoteType
       <identifier>ping</identifier>
       <description>Mote #ping</description>
-      <firmware EXPORT="copy">/usr/home/gawen/Documents/PhD/Coding/contiki/apps/mon-xp/param-process-lock-poll/ping/ping.sky</firmware>
+      <firmware EXPORT="copy">ping/ping.sky</firmware>
       <moteinterface>org.contikios.cooja.interfaces.Position</moteinterface>
       <moteinterface>org.contikios.cooja.interfaces.RimeAddress</moteinterface>
       <moteinterface>org.contikios.cooja.interfaces.IPAddress</moteinterface>
