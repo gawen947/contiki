@@ -26,6 +26,7 @@
 #define _PARSER_H_
 
 #include <limits.h>
+#include <stdint.h>
 
 #include "iobuf.h"
 
