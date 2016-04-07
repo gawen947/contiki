@@ -127,7 +127,7 @@ static void display_list_human(const struct display_list list[],
                                                const char *unit))
 {
   const struct display_list *l;
-  const char *default_unit, *unit;
+  const char *default_unit = NULL, *unit;
   int size;
   int max = 0;
   int first = 1;
