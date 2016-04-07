@@ -22,6 +22,9 @@
 #  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 #  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+# Exit on error
+set -e
+
 # Shall we clean  the targets initially?
 PRE_CLEAN=true
 
