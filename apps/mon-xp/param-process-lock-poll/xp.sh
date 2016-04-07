@@ -83,7 +83,7 @@ clean() {
   bin="$2"
 
   rm -rfv "$firmware_path"/obj_"$TARGET"
-  rm -v "$firmware_path"/"$bin"
+  rm -vf "$firmware_path"/"$bin"
 }
 
 rebuild() {
