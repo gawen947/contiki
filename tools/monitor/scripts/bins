@@ -28,18 +28,28 @@ import numpy
 
 import lib.utils
 
-if len(sys.argv) != 3:
-    print "usage: %s #BINS COLUMN" % (sys.argv[0],)
+if len(sys.argv) not in (2, 3):
+    print "usage: %s [#BINS] COLUMN" % (sys.argv[0],)
     print
     print "Construct a histogram from the specified column that fit into"
     print "the number of bins specified on the command line. The file is"
     print "taken from stdin. Note that this script also computes the sum,"
     print "average and standard deviation. Values are expected to be integer."
+    print
+    print "If there is only one argument, it is considered as the column"
+    print "number, only stats are computed and displayed in a format that"
+    print "is easier to parse."
 
     sys.exit(1)
 
-n_bins = lib.utils.try_int(sys.argv[1])
-column = lib.utils.try_int(sys.argv[2])
+if len(sys.argv) == 3:
+    n_bins = lib.utils.try_int(sys.argv[1])
+    column = lib.utils.try_int(sys.argv[2])
+    stats_only = False
+else:
+    n_bins = 1 # We compute the bins but don't display them.
+    column = lib.utils.try_int(sys.argv[1])
+    stats_only = True
 
 values = []
 for line in sys.stdin:
@@ -62,6 +72,17 @@ v_sum    = sum(values)
 v_min    = min(values)
 v_max    = max(values)
 delta        = v_max - v_min
+
+if stats_only:
+    print "average:%f" % (average,)
+    print "stddev:%f" % (stddev,)
+    print "5th:%d" % (ptile_5,)
+    print "95th:%d" % (ptile_95,)
+    print "sum:%d" % (v_sum,)
+    print "min:%d" % (v_min,)
+    print "max:%d" % (v_max,)
+    print "delta:%d" % (delta,)
+    sys.exit(0)
 
 print "# ( %f +/- %f ) " % (average, stddev)
 print "# 5th ptiles : %d" % (ptile_5,)
