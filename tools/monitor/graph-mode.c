@@ -89,7 +89,7 @@ static struct mon_ctx * create_context(const void *null, struct ev_mon_state *ev
 
   ctx->context    = event->context;
   ctx->last_state = -1;
-  context_ht     = ht_create(STATE_HT_SIZE, hash_mon_id, compare_mon_id, (void *)destroy_state);
+  ctx->state_ht   = ht_create(STATE_HT_SIZE, hash_mon_id, compare_mon_id, (void *)destroy_state);
 
   return ctx;
 }
