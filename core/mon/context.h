@@ -57,7 +57,10 @@ enum {
   MON_CT_CPU,
 
   /** Tranceiver. */
-  MON_CT_RADIO
+  MON_CT_RADIO,
+
+  /** RDC Power cycle. */
+  MON_CT_POWERCYCLE
 };
 
 #endif /* CONTEXT_H_ */

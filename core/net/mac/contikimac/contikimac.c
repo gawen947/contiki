@@ -51,7 +51,9 @@
 #include "sys/compower.h"
 #include "sys/pt.h"
 #include "sys/rtimer.h"
-
+#include "mon/monitor.h"
+#include "mon/context.h"
+#include "mon/context/mon-ct-powercycle.h"
 
 #include <string.h>
 
@@ -314,7 +316,7 @@ powercycle_turn_radio_off(void)
 #if CONTIKIMAC_CONF_COMPOWER
   uint8_t was_on = radio_is_on;
 #endif /* CONTIKIMAC_CONF_COMPOWER */
-  
+
   if(we_are_sending == 0 && we_are_receiving_burst == 0) {
     off();
 #if CONTIKIMAC_CONF_COMPOWER
@@ -333,6 +335,7 @@ powercycle_turn_radio_on(void)
   }
 }
 /*---------------------------------------------------------------------------*/
+#define mon_powercycle(event) monitor_record(MON_CT_POWERCYCLE, MON_ENT_CONTIKIMAC, MON_ST_POWERCYCLE_ ## event)
 static char
 powercycle(struct rtimer *t, void *ptr)
 {
@@ -342,6 +345,7 @@ powercycle(struct rtimer *t, void *ptr)
 #endif
 
   PT_BEGIN(&pt);
+  monitor_record(MON_CT_POWERCYCLE, MON_ENT_CONTIKIMAC, MON_ST_CREATE);
 
 #if SYNC_CYCLE_STARTS
   sync_cycle_start = RTIMER_NOW();
@@ -376,18 +380,24 @@ powercycle(struct rtimer *t, void *ptr)
     for(count = 0; count < CCA_COUNT_MAX; ++count) {
       if(we_are_sending == 0 && we_are_receiving_burst == 0) {
         powercycle_turn_radio_on();
+        mon_powercycle(RADIO_ON);
+
         /* Check if a packet is seen in the air. If so, we keep the
              radio on for a while (LISTEN_TIME_AFTER_PACKET_DETECTED) to
              be able to receive the packet. We also continuously check
              the radio medium to make sure that we wasn't woken up by a
              false positive: a spurious radio interference that was not
              caused by an incoming packet. */
+        mon_powercycle(RADIO_CCA);
         if(NETSTACK_RADIO.channel_clear() == 0) {
+          mon_powercycle(PACKET_SEEN);
           packet_seen = 1;
           break;
         }
+        mon_powercycle(RADIO_OFF);
         powercycle_turn_radio_off();
       }
+      mon_powercycle(NEXT_CCA);
       schedule_powercycle_fixed(t, RTIMER_NOW() + CCA_SLEEP_TIME);
       PT_YIELD(&pt);
     }
@@ -411,41 +421,56 @@ powercycle(struct rtimer *t, void *ptr)
 #if !RDC_CONF_HARDWARE_CSMA
        /* A cca cycle will disrupt rx on some radios, e.g. mc1322x, rf230 */
        /*TODO: Modify those drivers to just return the internal RSSI when already in rx mode */
+        mon_powercycle(RADIO_CCA);
         if(NETSTACK_RADIO.channel_clear()) {
+          mon_powercycle(SILENCE);
           ++silence_periods;
         } else {
+          mon_powercycle(ACTIVITY);
           silence_periods = 0;
         }
 #endif
 
         ++periods;
 
+        mon_powercycle(RADIO_RECV);
         if(NETSTACK_RADIO.receiving_packet()) {
+          mon_powercycle(RECEIVING);
           silence_periods = 0;
         }
         if(silence_periods > MAX_SILENCE_PERIODS) {
+          mon_powercycle(MAX_SILENCE);
+          mon_powercycle(RADIO_OFF);
           powercycle_turn_radio_off();
           break;
         }
+        mon_powercycle(CAN_FASTSLEEP);
         if(WITH_FAST_SLEEP &&
             periods > MAX_NONACTIVITY_PERIODS &&
             !(NETSTACK_RADIO.receiving_packet() ||
               NETSTACK_RADIO.pending_packet())) {
+          mon_powercycle(FASTSLEEP);
+          mon_powercycle(RADIO_OFF);
           powercycle_turn_radio_off();
           break;
         }
+        mon_powercycle(RADIO_PENDING);
         if(NETSTACK_RADIO.pending_packet()) {
+          mon_powercycle(PENDING);
           break;
         }
 
+        mon_powercycle(NEXT_CCA_CHECK);
         schedule_powercycle(t, CCA_CHECK_TIME + CCA_SLEEP_TIME);
         PT_YIELD(&pt);
       }
       if(radio_is_on) {
+        mon_powercycle(LISTEN_TIME_AFTER_PACKET_DETECTED);
         if(!(NETSTACK_RADIO.receiving_packet() ||
              NETSTACK_RADIO.pending_packet()) ||
              !RTIMER_CLOCK_LT(RTIMER_NOW(),
                  (start + LISTEN_TIME_AFTER_PACKET_DETECTED))) {
+          mon_powercycle(RADIO_OFF);
           powercycle_turn_radio_off();
         }
       }
@@ -459,19 +484,23 @@ powercycle(struct rtimer *t, void *ptr)
 #if RDC_CONF_MCU_SLEEP
       static uint8_t sleepcycle;
       if((sleepcycle++ < 16) && !we_are_sending && !radio_is_on) {
+        mon_powercycle(ARCH_SLEEP);
         rtimer_arch_sleep(CYCLE_TIME - (RTIMER_NOW() - cycle_start));
       } else {
         sleepcycle = 0;
+        mon_powercycle(NEXT_POWERCYCLE);
         schedule_powercycle_fixed(t, CYCLE_TIME + cycle_start);
         PT_YIELD(&pt);
       }
 #else
+      mon_powercycle(NEXT_POWERCYCLE);
       schedule_powercycle_fixed(t, CYCLE_TIME + cycle_start);
       PT_YIELD(&pt);
 #endif
     }
   }
 
+  monitor_record(MON_CT_POWERCYCLE, MON_ENT_CONTIKIMAC, MON_ST_DESTROY);
   PT_END(&pt);
 }
 /*---------------------------------------------------------------------------*/
@@ -515,13 +544,13 @@ send_packet(mac_callback_t mac_callback, void *mac_callback_ptr,
   int ret;
   uint8_t contikimac_was_on;
   uint8_t seqno;
-  
+
   /* Exit if RDC and radio were explicitly turned off */
    if(!contikimac_is_on && !contikimac_keep_radio_on) {
     PRINTF("contikimac: radio is turned off\n");
     return MAC_TX_ERR_FATAL;
   }
- 
+
   if(packetbuf_totlen() == 0) {
     PRINTF("contikimac: send_packet data len 0\n");
     return MAC_TX_ERR_FATAL;
@@ -563,10 +592,10 @@ send_packet(mac_callback_t mac_callback, void *mac_callback_ptr,
       return MAC_TX_ERR_FATAL;
     }
   }
-  
+
   transmit_len = packetbuf_totlen();
   NETSTACK_RADIO.prepare(packetbuf_hdrptr(), transmit_len);
-  
+
   if(!is_broadcast && !is_receiver_awake) {
 #if WITH_PHASE_OPTIMIZATION
     ret = phase_wait(packetbuf_addr(PACKETBUF_ADDR_RECEIVER),
@@ -578,9 +607,9 @@ send_packet(mac_callback_t mac_callback, void *mac_callback_ptr,
     if(ret != PHASE_UNKNOWN) {
       is_known_receiver = 1;
     }
-#endif /* WITH_PHASE_OPTIMIZATION */ 
+#endif /* WITH_PHASE_OPTIMIZATION */
   }
-  
+
 
 
   /* By setting we_are_sending to one, we ensure that the rtimer
@@ -598,7 +627,7 @@ send_packet(mac_callback_t mac_callback, void *mac_callback_ptr,
            NETSTACK_RADIO.receiving_packet(), NETSTACK_RADIO.pending_packet());
     return MAC_TX_COLLISION;
   }
-  
+
   /* Switch off the radio to ensure that we didn't start sending while
      the radio was doing a channel check. */
   off();
@@ -801,7 +830,7 @@ qsend_list(mac_callback_t sent, void *ptr, struct rdc_buf_list *buf_list)
   struct rdc_buf_list *next;
   int ret;
   int is_receiver_awake;
-  
+
   if(buf_list == NULL) {
     return;
   }
@@ -813,7 +842,7 @@ qsend_list(mac_callback_t sent, void *ptr, struct rdc_buf_list *buf_list)
     mac_call_sent_callback(sent, ptr, MAC_TX_COLLISION, 1);
     return;
   }
-  
+
   /* Create and secure frames in advance */
   curr = buf_list;
   do {
@@ -830,13 +859,13 @@ qsend_list(mac_callback_t sent, void *ptr, struct rdc_buf_list *buf_list)
         mac_call_sent_callback(sent, ptr, MAC_TX_ERR_FATAL, 1);
         return;
       }
-      
+
       packetbuf_set_attr(PACKETBUF_ATTR_IS_CREATED_AND_SECURED, 1);
       queuebuf_update_from_packetbuf(curr->buf);
     }
     curr = next;
   } while(next != NULL);
-  
+
   /* The receiver needs to be awoken before we send */
   is_receiver_awake = 0;
   curr = buf_list;
@@ -845,7 +874,7 @@ qsend_list(mac_callback_t sent, void *ptr, struct rdc_buf_list *buf_list)
 
     /* Prepare the packetbuf */
     queuebuf_to_packetbuf(curr->buf);
-    
+
     /* Send the current packet */
     ret = send_packet(sent, ptr, curr, is_receiver_awake);
     if(ret != MAC_TX_DEFERRED) {
