@@ -121,8 +121,10 @@ static void register_transition(const struct mon_ctx *ctx, unsigned short st_a, 
   /* Most states should only have a few transitions.
      This is why we use a list instead of another HT
      for the adjacencies. */
-  if(!st->adjacency)
+  if(!st->adjacency) {
     st->adjacency = new_st(st_b);
+    return;
+  }
 
   for(s = st->adjacency ; s->next ; s = s->next) {
     if(s->state == st_b)
