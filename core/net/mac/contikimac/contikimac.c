@@ -433,7 +433,6 @@ powercycle(struct rtimer *t, void *ptr)
 
         ++periods;
 
-        mon_powercycle(RADIO_RECV);
         if(NETSTACK_RADIO.receiving_packet()) {
           mon_powercycle(RECEIVING);
           silence_periods = 0;
@@ -444,7 +443,6 @@ powercycle(struct rtimer *t, void *ptr)
           powercycle_turn_radio_off();
           break;
         }
-        mon_powercycle(CAN_FASTSLEEP);
         if(WITH_FAST_SLEEP &&
             periods > MAX_NONACTIVITY_PERIODS &&
             !(NETSTACK_RADIO.receiving_packet() ||
@@ -454,7 +452,6 @@ powercycle(struct rtimer *t, void *ptr)
           powercycle_turn_radio_off();
           break;
         }
-        mon_powercycle(RADIO_PENDING);
         if(NETSTACK_RADIO.pending_packet()) {
           mon_powercycle(PENDING);
           break;
