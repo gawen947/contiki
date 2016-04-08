@@ -24,6 +24,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <err.h>
 #include <assert.h>
 
@@ -135,7 +136,10 @@ static void register_transition(const struct mon_ctx *ctx, unsigned short st_a, 
 static void display_state_transitions(const struct mon_st *st)
 {
   struct st_list *s;
-  const char *orig_state_name = get_state_name_or_id(st->context, st->state);
+
+  /* We have to duplicate the string because get_*_name() use static buffers
+     that would be overwritten if called twice in the same printf(). */
+  char *orig_state_name = strdup(get_state_name_or_id(st->context, st->state));
 
   /* Always display the node itself
      in case it has no transitions. */
@@ -144,6 +148,8 @@ static void display_state_transitions(const struct mon_st *st)
   for(s = st->adjacency ; s ; s = s->next)
     printf("%s -> %s;\n", orig_state_name,
                           get_state_name_or_id(st->context, s->state));
+
+  free(orig_state_name);
 }
 
 static void display_context_graph(const struct mon_ctx *ctx)
