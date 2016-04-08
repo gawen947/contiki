@@ -131,6 +131,9 @@ static void register_transition(const struct mon_ctx *ctx, unsigned short st_a, 
       return; /* Don't register the same transition twice. */
   }
 
+  if(s->state == st_b)
+    return; /* Don't register the same transition twice. */
+
   /* tail */
   s->next = new_st(st_b);
 }
