@@ -145,11 +145,11 @@ static void display_state_transitions(const struct mon_st *st)
 
   /* Always display the node itself
      in case it has no transitions. */
-  printf("%s;\n", orig_state_name);
+  printf("\"%s\";\n", orig_state_name);
 
   for(s = st->adjacency ; s ; s = s->next)
-    printf("%s -> %s;\n", orig_state_name,
-                          get_state_name_or_id(st->context, s->state));
+    printf("\"%s\" -> \"%s\";\n", orig_state_name,
+                                  get_state_name_or_id(st->context, s->state));
 
   free(orig_state_name);
 }
