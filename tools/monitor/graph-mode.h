@@ -22,20 +22,11 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _MODE_LIST_H_
-#define _MODE_LIST_H_
+#ifndef _GRAPH_MODE_H_
+#define _GRAPH_MODE_H_
 
 #include "mode.h"
 
-#include "print-mode.h"
-#include "stat-mode.h"
-#include "graph-mode.h"
+struct output_mode graph_mode;
 
-static const struct output_mode * avail_modes[] = {
-  &print_mode,
-  &stat_mode,
-  &graph_mode,
-  NULL
-};
-
-#endif /* _MODE_LIST_H_ */
+#endif /* _GRAPH_MODE_H_ */

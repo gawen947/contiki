@@ -22,20 +22,32 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _MODE_LIST_H_
-#define _MODE_LIST_H_
+#include <stdint.h>
+#include <stdbool.h>
 
-#include "mode.h"
+bool compare_mon_id(const void *key_a, const void *key_b)
+{
+  /* We use the same comparison function
+     for all htable types (context, entity
+     and states). Actually the key is always
+     a monitor ID, that is a short integer. */
+  return (unsigned long)key_a == (unsigned long)key_b;
+}
 
-#include "print-mode.h"
-#include "stat-mode.h"
-#include "graph-mode.h"
+uint32_t hash_mon_id(const void *key)
+{
+  unsigned short a = (unsigned short)key;
 
-static const struct output_mode * avail_modes[] = {
-  &print_mode,
-  &stat_mode,
-  &graph_mode,
-  NULL
-};
+  /* Robert Jenkin's integer hash.
+     Probably not the best suited
+     for our 16 bits ID. */
+  a = (a+0x7ed55d16) + (a<<12);
+  a = (a^0xc761c23c) ^ (a>>19);
+  a = (a+0x165667b1) + (a<<5);
+  a = (a+0xd3a2646c) ^ (a<<9);
+  a = (a+0xfd7046c5) + (a<<3);
+  a = (a^0xb55a4f09) ^ (a>>16);
 
-#endif /* _MODE_LIST_H_ */
+  return a;
+}
+

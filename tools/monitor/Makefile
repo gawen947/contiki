@@ -10,7 +10,7 @@ DEP = $(SRC:.c=.d)
 
 TARGETS = trace
 
-TRACE_OBJ = mon-ids.o mon-names.o htable.o utils.o sys-endian.o dump.o help.o iobuf.o mode.o parser.o print-mode.o stat-mode.o trace.o typed.o version.o
+TRACE_OBJ = mon-ids.o mon-names.o htable.o hash.o utils.o sys-endian.o dump.o help.o iobuf.o mode.o parser.o print-mode.o stat-mode.o graph-mode.o trace.o typed.o version.o
 
 PREFIX ?= /usr/local
 BIN    ?= /bin

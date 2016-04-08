@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <err.h>
 
+#include "hash.h"
 #include "htable.h"
 #include "mon-names.h"
 
@@ -36,8 +37,6 @@
 #define STATE_HT_SIZE   32 /* one for each context */
 #define ENTITY_HT_SIZE  32 /* one for each context */
 #define COMMON_HT_SIZE  8
-
-#define TO_KEY(id) (const void *)(unsigned long)(id)
 
 struct context_entry {
   unsigned short context;
@@ -63,32 +62,6 @@ static htable_t common_entity_ht;
    All functions always return NULL. */
 static int enabled = 1;
 
-static uint32_t hash(const void *key)
-{
-  unsigned short a = (unsigned short)key;
-
-  /* Robert Jenkin's integer hash.
-     Probably not the best suited
-     for our 16 bits ID. */
-  a = (a+0x7ed55d16) + (a<<12);
-  a = (a^0xc761c23c) ^ (a>>19);
-  a = (a+0x165667b1) + (a<<5);
-  a = (a+0xd3a2646c) ^ (a<<9);
-  a = (a+0xfd7046c5) + (a<<3);
-  a = (a^0xb55a4f09) ^ (a>>16);
-
-  return a;
-}
-
-static bool compare(const void *key_a, const void *key_b)
-{
-  /* We use the same comparison function
-     for all htable types (context, entity
-     and states). Actually the key is always
-     a monitor ID, that is a short integer. */
-  return (unsigned long)key_a == (unsigned long)key_b;
-}
-
 static void destroy_context_entry(void *entry)
 {
   struct context_entry *context_entry = (struct context_entry *)entry;
@@ -112,9 +85,9 @@ static void destroy_stent_entry(void *entry)
 
 void mon_names_init(void)
 {
-  context_ht       = ht_create(CONTEXT_HT_SIZE, hash, compare, destroy_context_entry);
-  common_state_ht  = ht_create(COMMON_HT_SIZE, hash,compare, destroy_stent_entry);
-  common_entity_ht = ht_create(COMMON_HT_SIZE, hash,compare, destroy_stent_entry);
+  context_ht       = ht_create(CONTEXT_HT_SIZE, hash_mon_id, compare_mon_id, destroy_context_entry);
+  common_state_ht  = ht_create(COMMON_HT_SIZE, hash_mon_id, compare_mon_id, destroy_stent_entry);
+  common_entity_ht = ht_create(COMMON_HT_SIZE, hash_mon_id, compare_mon_id, destroy_stent_entry);
 }
 
 void mon_names_destroy(void)
@@ -138,8 +111,8 @@ void reg_context_name(unsigned short context, const char *name)
   *context_entry = (struct context_entry){
     .context   = context,
     .name      = name,
-    .state_ht  = ht_create(STATE_HT_SIZE, hash, compare, destroy_stent_entry),
-    .entity_ht = ht_create(ENTITY_HT_SIZE, hash, compare, destroy_stent_entry)
+    .state_ht  = ht_create(STATE_HT_SIZE, hash_mon_id, compare_mon_id, destroy_stent_entry),
+    .entity_ht = ht_create(ENTITY_HT_SIZE, hash_mon_id, compare_mon_id, destroy_stent_entry)
   };
 
   if(!ht_search(context_ht, TO_KEY(context), context_entry))

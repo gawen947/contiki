@@ -22,20 +22,17 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _MODE_LIST_H_
-#define _MODE_LIST_H_
+#ifndef _HASH_H_
+#define _HASH_H_
 
-#include "mode.h"
+#include <stdint.h>
+#include <stdbool.h>
 
-#include "print-mode.h"
-#include "stat-mode.h"
-#include "graph-mode.h"
+#define TO_KEY(id) (const void *)(unsigned long)(id)
 
-static const struct output_mode * avail_modes[] = {
-  &print_mode,
-  &stat_mode,
-  &graph_mode,
-  NULL
-};
 
-#endif /* _MODE_LIST_H_ */
+/* We use this hash for 16 bits monitor IDs. */
+uint32_t hash_mon_id(const void *key);
+bool compare_mon_id(const void *key_a, const void *key_b);
+
+#endif /* _HASH_H_ */
