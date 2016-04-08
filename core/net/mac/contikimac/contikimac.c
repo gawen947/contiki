@@ -379,8 +379,8 @@ powercycle(struct rtimer *t, void *ptr)
 
     for(count = 0; count < CCA_COUNT_MAX; ++count) {
       if(we_are_sending == 0 && we_are_receiving_burst == 0) {
+        mon_powercycle(RADIO_ON_1)
         powercycle_turn_radio_on();
-        mon_powercycle(RADIO_ON);
 
         /* Check if a packet is seen in the air. If so, we keep the
              radio on for a while (LISTEN_TIME_AFTER_PACKET_DETECTED) to
@@ -388,13 +388,13 @@ powercycle(struct rtimer *t, void *ptr)
              the radio medium to make sure that we wasn't woken up by a
              false positive: a spurious radio interference that was not
              caused by an incoming packet. */
-        mon_powercycle(RADIO_CCA);
+        mon_powercycle(RADIO_CCA_1);
         if(NETSTACK_RADIO.channel_clear() == 0) {
           mon_powercycle(PACKET_SEEN);
           packet_seen = 1;
           break;
         }
-        mon_powercycle(RADIO_OFF);
+        mon_powercycle(RADIO_OFF_1);
         powercycle_turn_radio_off();
       }
       mon_powercycle(NEXT_CCA);
@@ -421,7 +421,7 @@ powercycle(struct rtimer *t, void *ptr)
 #if !RDC_CONF_HARDWARE_CSMA
        /* A cca cycle will disrupt rx on some radios, e.g. mc1322x, rf230 */
        /*TODO: Modify those drivers to just return the internal RSSI when already in rx mode */
-        mon_powercycle(RADIO_CCA);
+        mon_powercycle(RADIO_CCA_2);
         if(NETSTACK_RADIO.channel_clear()) {
           mon_powercycle(SILENCE);
           ++silence_periods;
@@ -440,7 +440,7 @@ powercycle(struct rtimer *t, void *ptr)
         }
         if(silence_periods > MAX_SILENCE_PERIODS) {
           mon_powercycle(MAX_SILENCE);
-          mon_powercycle(RADIO_OFF);
+          mon_powercycle(RADIO_OFF_2);
           powercycle_turn_radio_off();
           break;
         }
@@ -450,7 +450,7 @@ powercycle(struct rtimer *t, void *ptr)
             !(NETSTACK_RADIO.receiving_packet() ||
               NETSTACK_RADIO.pending_packet())) {
           mon_powercycle(FASTSLEEP);
-          mon_powercycle(RADIO_OFF);
+          mon_powercycle(RADIO_OFF_3);
           powercycle_turn_radio_off();
           break;
         }
@@ -470,7 +470,7 @@ powercycle(struct rtimer *t, void *ptr)
              NETSTACK_RADIO.pending_packet()) ||
              !RTIMER_CLOCK_LT(RTIMER_NOW(),
                  (start + LISTEN_TIME_AFTER_PACKET_DETECTED))) {
-          mon_powercycle(RADIO_OFF);
+          mon_powercycle(RADIO_OFF_4);
           powercycle_turn_radio_off();
         }
       }
