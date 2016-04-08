@@ -379,7 +379,7 @@ powercycle(struct rtimer *t, void *ptr)
 
     for(count = 0; count < CCA_COUNT_MAX; ++count) {
       if(we_are_sending == 0 && we_are_receiving_burst == 0) {
-        mon_powercycle(RADIO_ON_1)
+        mon_powercycle(RADIO_ON_1);
         powercycle_turn_radio_on();
 
         /* Check if a packet is seen in the air. If so, we keep the
