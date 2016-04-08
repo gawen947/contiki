@@ -30,7 +30,6 @@
 #include "hash.h"
 #include "htable.h"
 #include "mode.h"
-#include "typed.h"
 #include "mon-names.h"
 #include "graph-mode.h"
 
@@ -136,7 +135,7 @@ static void register_transition(const struct mon_ctx *ctx, unsigned short st_a, 
 static void display_state_transitions(const struct mon_st *st)
 {
   struct st_list *s;
-  const char *orig_state_name = get_state_name(st->context, st->state);
+  const char *orig_state_name = get_state_name_or_id(st->context, st->state);
 
   /* Always display the node itself
      in case it has no transitions. */
@@ -144,12 +143,12 @@ static void display_state_transitions(const struct mon_st *st)
 
   for(s = st->adjacency ; s ; s = s->next)
     printf("%s -> %s;\n", orig_state_name,
-                          get_state_name(st->context, s->state));
+                          get_state_name_or_id(st->context, s->state));
 }
 
 static void display_context_graph(const struct mon_ctx *ctx)
 {
-  printf("digraph \"%s\" {\n", get_context_name(ctx->context));
+  printf("digraph \"%s\" {\n", get_context_name_or_id(ctx->context));
 
   ht_walk(ctx->state_ht, (void *)display_state_transitions);
 

@@ -150,31 +150,21 @@ static void display_mon_ids(const struct typed *t)
 
   switch(t->type) {
   case T_MON_CONTEXT:
-    name = get_context_name(t->value.mon_context);
-    if(!name)
-      printf("%04x", t->value.mon_context);
-    else
-      fputs(name, stdout);
+    name = get_context_name_or_id(t->value.mon_context);
     break;
   case T_MON_ENTITY:
-    name = get_entity_name(t->value.mon_entity.context,
-                           t->value.mon_entity.entity);
-    if(!name)
-      printf("%04x", t->value.mon_entity.entity);
-    else
-      fputs(name, stdout);
+    name = get_entity_name_or_id(t->value.mon_entity.context,
+                                 t->value.mon_entity.entity);
     break;
   case T_MON_STATE:
-    name = get_state_name(t->value.mon_state.context,
-                           t->value.mon_state.state);
-    if(!name)
-      printf("%04x", t->value.mon_state.state);
-    else
-      fputs(name, stdout);
+    name = get_state_name_or_id(t->value.mon_state.context,
+                                t->value.mon_state.state);
     break;
   default:
     assert(0);
   }
+
+  fputs(name, stdout);
 }
 
 void display_typed_normal(const struct typed *t)

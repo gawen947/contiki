@@ -52,4 +52,10 @@ const char * get_context_name(unsigned short context);
 const char * get_state_name(unsigned short context, unsigned short state);
 const char * get_entity_name(unsigned short context, unsigned short entity);
 
+/* Same as the previous function but returns a hexadecimal number if the ID was
+   not registered. */
+const char * get_context_name_or_id(unsigned short context);
+const char * get_state_name_or_id(unsigned short context, unsigned short state);
+const char * get_entity_name_or_id(unsigned short context, unsigned short state);
+
 #endif /* _MON_NAMES_H_ */

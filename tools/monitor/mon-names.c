@@ -22,6 +22,7 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <err.h>
 
@@ -232,4 +233,40 @@ const char * get_entity_name(unsigned short context, unsigned short entity)
     return NULL;
 
   return get_stent_name(context_entry->entity_ht, entity);
+}
+
+const char * get_context_name_or_id(unsigned short context)
+{
+  static char id_buf[5];
+  const char *name = get_context_name(context);
+
+  if(name)
+    return name;
+
+  snprintf(id_buf, sizeof(id_buf), "%04x", context);
+  return id_buf;
+}
+
+const char * get_state_name_or_id(unsigned short context, unsigned short state)
+{
+  static char id_buf[5];
+  const char *name = get_state_name(context, state);
+
+  if(name)
+    return name;
+
+  snprintf(id_buf, sizeof(id_buf), "%04x", state);
+  return id_buf;
+}
+
+const char * get_entity_name_or_id(unsigned short context, unsigned short entity)
+{
+  static char id_buf[5];
+  const char *name = get_entity_name(context, entity);
+
+  if(name)
+    return name;
+
+  snprintf(id_buf, sizeof(id_buf), "%04x", entity);
+  return id_buf;
 }
