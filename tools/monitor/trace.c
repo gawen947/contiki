@@ -31,6 +31,7 @@
 #include "mon-ids.h"
 #include "mon-names.h"
 #include "print-mode.h"
+#include "graph-mode.h"
 #include "help.h"
 #include "version.h"
 #include "mode.h"
@@ -93,6 +94,13 @@ static void display_mode(const struct output_mode *mode, void *data)
   printf("%s\t%s\n", mode->name, mode->description);
 }
 
+/* FIXME: Display_(metric|mode) are basically the same.
+          We should use only one function. */
+static void display_metric(const struct graph_metric *metric, void *data)
+{
+  printf("%s\t%s\n", metric->name, metric->description);
+}
+
 int main(int argc, char *argv[])
 {
   const char *name;
@@ -117,6 +125,7 @@ int main(int argc, char *argv[])
     { 'H', "human", "Display trace or statistics in an human readable format" },
     { 'i', "no-ids", "Disable resolution of monitor IDs names"},
     { 'o', "output", "Select the output mode (use ? or list to display available modes)" },
+    { 'G', "graph-metric", "Metric to use for the graph (use ? or list to display available metrics)" },
     { 0, NULL, NULL }
   };
 
@@ -129,6 +138,7 @@ int main(int argc, char *argv[])
     { "human", no_argument, NULL, 'H' },
     { "no-ids", no_argument, NULL, 'i' },
     { "output", required_argument, NULL, 'o' },
+    { "graph-metric", required_argument, NULL, 'G' },
     { NULL, 0, NULL, 0 }
   };
 
@@ -136,7 +146,7 @@ int main(int argc, char *argv[])
   init();
 
   while(1) {
-    int c = getopt_long(argc, argv, "hVHio:", long_opts, NULL);
+    int c = getopt_long(argc, argv, "hVHio:G:", long_opts, NULL);
 
     if(c == -1)
       break;
@@ -160,7 +170,23 @@ int main(int argc, char *argv[])
       if(!mode) {
         /* mode not found */
         fprintf(stderr, "error: Output mode not found.\n"
-                        "       Use list or ? to display availble modes\n");
+                        "       Use list or ? to display available modes\n");
+        goto EXIT;
+      }
+      break;
+    case 'G':
+      if(!strcmp(optarg, "list") || !strcmp(optarg, "?")) {
+        walk_graph_metrics(display_metric, NULL);
+
+        exit_status = EXIT_SUCCESS;
+        goto EXIT;
+      }
+
+      ctx.graph_metric = select_graph_metric_by_name(optarg);
+      if(!ctx.graph_metric) {
+        /* graph metric not found */
+        fprintf(stderr, "error: Graph metric not found.\n"
+                        "       use list or ? to display available metrics\n");
         goto EXIT;
       }
       break;

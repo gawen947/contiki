@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2014, David Hauweele <david@hauweele.net>
+/* Copyright (c) 2011-2016, David Hauweele <david@hauweele.net>
    All rights reserved.
 
    Redistribution and use in source and binary forms, with or without
@@ -67,8 +67,9 @@ void * ht_lookup(htable_t htable, const void *key,
                  void *optarg);
 
 /* Walk through the hash table and apply the action function
-   on each entry, passing data to this function. */
-void ht_walk(htable_t htable, void (*action)(void *));
+   on each entry, passing the extra data as second argument
+   to this function. */
+void ht_walk(htable_t htable, void (*action)(void *, void *), void *data);
 
 /* Delete the entry specified by key from the hash table.
    The destroy function used at creation is used to destroy

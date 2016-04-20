@@ -27,6 +27,38 @@
 
 #include "mode.h"
 
+/* Statistics used to construct a label. */
+struct label_stats {
+  uint64_t sum_delta_cycles;
+  uint64_t min_delta_cycles;
+  uint64_t max_delta_cycles;
+
+  double sum_delta_node_ms;
+  double min_delta_node_ms;
+  double max_delta_node_ms;
+
+  double sum_delta_sim_us;
+  double min_delta_sim_us;
+  double max_delta_sim_us;
+
+  unsigned int count; /* Number of time this transition has been taken. */
+};
+
+struct graph_metric {
+  const char *name;
+  const char *description;
+
+  /* Labelize a transition from one state to another. */
+  const char * (*label_transition)(const struct label_stats *stats);
+};
+
 struct output_mode graph_mode;
+
+/* Select a graph metric by its name. */
+const struct graph_metric * select_graph_metric_by_name(const char *name);
+
+/* List all graph metrics. This is useful for example to display a list of
+   all available metrics along with their description. */
+void walk_graph_metrics(void (*visit)(const struct graph_metric *metric, void *data), void *data);
 
 #endif /* _GRAPH_MODE_H_ */

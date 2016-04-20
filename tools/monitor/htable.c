@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2014, David Hauweele <david@hauweele.net>
+/* Copyright (c) 2011-2016, David Hauweele <david@hauweele.net>
    All rights reserved.
 
    Redistribution and use in source and binary forms, with or without
@@ -122,7 +122,7 @@ void * ht_lookup(htable_t ht, const void *key,
   return entry->data;
 }
 
-void ht_walk(htable_t ht, void (*action)(void *))
+void ht_walk(htable_t ht, void (*action)(void *, void *), void *data)
 {
   unsigned int i;
 
@@ -130,7 +130,7 @@ void ht_walk(htable_t ht, void (*action)(void *))
     struct entry *entry;
 
     for(entry = ht->buckets[i] ; entry ; entry = entry->next)
-      action(entry->data);
+      action(entry->data, data);
   }
 }
 

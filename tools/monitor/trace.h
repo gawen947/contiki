@@ -29,7 +29,8 @@
    shared across all modules. Mainly it contains options
    selected by the command line. */
 struct context {
-  int human;
+  int human;                /* Display values in an human readable format. */
+  const void *graph_metric; /* Metric to use for transitions in graph mode. */
 };
 
 #endif /* _TRACE_H_ */

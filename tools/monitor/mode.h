@@ -43,7 +43,7 @@ struct output_mode {
 /* Select a mode by its name. Returns null if mode is not found. */
 const struct output_mode * select_mode_by_name(const char *name);
 
-/* List all mode. This is useful for example to display a list of
+/* List all modes. This is useful for example to display a list of
    all available modes along with their description. */
 void walk_modes(void (*visit)(const struct output_mode *mode, void *data), void *data);
 
