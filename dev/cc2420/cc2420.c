@@ -872,6 +872,11 @@ cc2420_interrupt(void)
   monitor_record(MON_CT_RADIO, MON_ENT_CC2420, MON_ST_RADIO_ISR);
 
   CC2420_CLEAR_FIFOP_INT();
+
+#ifdef RADIO_ISR_OFF
+  NETSTACK_RDC.isr_off();
+#endif
+
   monitor_record(MON_CT_RADIO, MON_ENT_CC2420, MON_ST_RADIO_POLL); /* perhaps we can remove this one */
   process_poll(&cc2420_process);
 

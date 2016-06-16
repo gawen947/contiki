@@ -902,6 +902,14 @@ recv_burst_off(void *ptr)
 }
 /*---------------------------------------------------------------------------*/
 static void
+isr_off(void)
+{
+  if(!we_are_receiving_burst) {
+    off();
+  }
+}
+/*---------------------------------------------------------------------------*/
+static void
 input_packet(void)
 {
   static struct ctimer ct;
@@ -915,9 +923,7 @@ input_packet(void)
   original_dataptr = packetbuf_dataptr();
 #endif
 
-  if(!we_are_receiving_burst) {
-    off();
-  }
+  isr_off();
 
   if(packetbuf_datalen() == ACK_LEN) {
     /* Ignore ack packets */
@@ -1067,6 +1073,9 @@ const struct rdc_driver contikimac_driver = {
   turn_on,
   turn_off,
   duty_cycle,
+#ifdef RADIO_ISR_OFF
+  isr_off,
+#endif /* RADIO_ISR_OFF */
 };
 /*---------------------------------------------------------------------------*/
 uint16_t
@@ -1075,3 +1084,4 @@ contikimac_debug_print(void)
   return 0;
 }
 /*---------------------------------------------------------------------------*/
+

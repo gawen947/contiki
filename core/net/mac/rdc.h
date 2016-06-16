@@ -87,6 +87,11 @@ struct rdc_driver {
 
   /** Returns the channel check interval, expressed in clock_time_t ticks. */
   unsigned short (* channel_check_interval)(void);
+
+#ifdef RADIO_ISR_OFF
+  /** Turn the radio off from the ISR when possible. */
+  void ( *isr_off)(void);
+#endif /* RADIO_ISR_OFF */
 };
 
 #endif /* RDC_H_ */
