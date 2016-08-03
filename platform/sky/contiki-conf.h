@@ -142,7 +142,9 @@
 #define UIP_CONF_LL_802154              1
 #define UIP_CONF_LLH_LEN                0
 
+#ifndef UIP_CONF_ROUTER
 #define UIP_CONF_ROUTER                 1
+#endif /* UIP_CONF_ROUTER */
 
 /* configure number of neighbors and routes */
 #ifndef NBR_TABLE_CONF_MAX_NEIGHBORS
@@ -152,8 +154,12 @@
 #define UIP_CONF_MAX_ROUTES   20
 #endif /* UIP_CONF_MAX_ROUTES */
 
+#ifndef UIP_CONF_ND6_SEND_RA
 #define UIP_CONF_ND6_SEND_RA		0
+#endif /* UIP_CONF_ND6_SEND_RA */
+#ifndef UIP_CONF_ND6_SEND_NA
 #define UIP_CONF_ND6_SEND_NA		0
+#endif /* UIP_CONF_ND6_SEND_NA */
 #define UIP_CONF_ND6_REACHABLE_TIME     600000
 #define UIP_CONF_ND6_RETRANS_TIMER      10000
 
