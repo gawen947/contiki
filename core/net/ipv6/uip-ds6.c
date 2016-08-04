@@ -310,7 +310,7 @@ uip_ds6_is_addr_onlink(uip_ipaddr_t *ipaddr)
       locprefix < uip_ds6_prefix_list + UIP_DS6_PREFIX_NB; locprefix++) {
     if(locprefix->isused &&
        uip_ipaddr_prefixcmp(&locprefix->ipaddr, ipaddr, locprefix->length)) {
-      return 1;
+      return locprefix->length; /* FIXME: can we use a prefix of length 0 ? */
     }
   }
   return 0;
