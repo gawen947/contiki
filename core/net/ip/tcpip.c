@@ -231,7 +231,7 @@ struct uip_conn *
 tcp_connect(const uip_ipaddr_t *ripaddr, uint16_t port, void *appstate)
 {
   struct uip_conn *c;
-  
+
   c = uip_connect(ripaddr, port);
   if(c == NULL) {
     return NULL;
@@ -239,9 +239,9 @@ tcp_connect(const uip_ipaddr_t *ripaddr, uint16_t port, void *appstate)
 
   c->appstate.p = PROCESS_CURRENT();
   c->appstate.state = appstate;
-  
+
   tcpip_poll_tcp(c);
-  
+
   return c;
 }
 #endif /* UIP_ACTIVE_OPEN */
@@ -312,7 +312,7 @@ udp_new(const uip_ipaddr_t *ripaddr, uint16_t port, void *appstate)
 {
   struct uip_udp_conn *c;
   uip_udp_appstate_t *s;
-  
+
   c = uip_udp_new(ripaddr, port);
   if(c == NULL) {
     return NULL;
@@ -394,10 +394,10 @@ eventhandler(process_event_t ev, process_data_t data)
         }
         ++l;
       }
-	 
+
       {
         struct uip_conn *cptr;
-	    
+
         for(cptr = &uip_conns[0]; cptr < &uip_conns[UIP_CONNS]; ++cptr) {
           if(cptr->appstate.p == p) {
             cptr->appstate.p = PROCESS_NONE;
@@ -450,7 +450,7 @@ eventhandler(process_event_t ev, process_data_t data)
           uip_fw_periodic();
 #endif /* UIP_CONF_IP_FORWARD */
         }
-        
+
 #if NETSTACK_CONF_WITH_IPV6
 #if UIP_CONF_IPV6_REASSEMBLY
         /*
@@ -486,7 +486,7 @@ eventhandler(process_event_t ev, process_data_t data)
 #endif /* NETSTACK_CONF_WITH_IPV6 */
       }
       break;
-	 
+
 #if UIP_TCP
     case TCP_POLL:
       if(data != NULL) {
@@ -565,37 +565,19 @@ tcpip_ipv6_output(void)
     /* We first check if the destination address is on our immediate
        link. If so, we simply use the destination address as our
        nexthop address. */
-    if(uip_ds6_is_addr_onlink(&UIP_IP_BUF->destipaddr)){
-      nexthop = &UIP_IP_BUF->destipaddr;
-    } else {
-      uip_ds6_route_t *route;
-      /* Check if we have a route to the destination address. */
-      route = uip_ds6_route_lookup(&UIP_IP_BUF->destipaddr);
+    uint8_t prefix_len;
+    uip_ds6_route_t *route;
 
-      /* No route was found - we send to the default route instead. */
-      if(route == NULL) {
-        PRINTF("tcpip_ipv6_output: no route found, using default route\n");
-        nexthop = uip_ds6_defrt_choose();
-        if(nexthop == NULL) {
-#ifdef UIP_FALLBACK_INTERFACE
-	  PRINTF("FALLBACK: removing ext hdrs & setting proto %d %d\n", 
-		 uip_ext_len, *((uint8_t *)UIP_IP_BUF + 40));
-	  if(uip_ext_len > 0) {
-	    extern void remove_ext_hdr(void);
-	    uint8_t proto = *((uint8_t *)UIP_IP_BUF + 40);
-	    remove_ext_hdr();
-	    /* This should be copied from the ext header... */
-	    UIP_IP_BUF->proto = proto;
-	  }
-	  UIP_FALLBACK_INTERFACE.output();
-#else
-          PRINTF("tcpip_ipv6_output: Destination off-link but no route\n");
-#endif /* !UIP_FALLBACK_INTERFACE */
-          uip_len = 0;
-          return;
-        }
+    /* Check if we have a route to the destination address. */
+    route = uip_ds6_route_lookup(&UIP_IP_BUF->destipaddr);
 
-      } else {
+    /* Check if there is a onlink route via this interface. */
+    prefix_len = uip_ds6_is_addr_onlink(&UIP_IP_BUF->destipaddr);
+
+    if(route) { /* If we have a specific route, compare it with the prefix length */
+      if(prefix_len >= route->length)
+        nexthop = &UIP_IP_BUF->destipaddr;
+      else {
         /* A route was found, so we look up the nexthop neighbor for
            the route. */
         nexthop = uip_ds6_route_nexthop(route);
@@ -624,20 +606,49 @@ tcpip_ipv6_output(void)
           return;
         }
       }
-#if TCPIP_CONF_ANNOTATE_TRANSMISSIONS
-      if(nexthop != NULL) {
-        static uint8_t annotate_last;
-        static uint8_t annotate_has_last = 0;
-
-        if(annotate_has_last) {
-          printf("#L %u 0; red\n", annotate_last);
-        }
-        printf("#L %u 1; red\n", nexthop->u8[sizeof(uip_ipaddr_t) - 1]);
-        annotate_last = nexthop->u8[sizeof(uip_ipaddr_t) - 1];
-        annotate_has_last = 1;
-      }
-#endif /* TCPIP_CONF_ANNOTATE_TRANSMISSIONS */
     }
+    else {
+      /* No specific route
+         - we use the onlink prefix or default route */
+      if(prefix_len)
+        nexthop = &UIP_IP_BUF->destipaddr;
+      else {
+        PRINTF("tcpip_ipv6_output: no route found, using default route\n");
+        nexthop = uip_ds6_defrt_choose();
+        if(nexthop == NULL) {
+#ifdef UIP_FALLBACK_INTERFACE
+          PRINTF("FALLBACK: removing ext hdrs & setting proto %d %d\n",
+                 uip_ext_len, *((uint8_t *)UIP_IP_BUF + 40));
+          if(uip_ext_len > 0) {
+            extern void remove_ext_hdr(void);
+            uint8_t proto = *((uint8_t *)UIP_IP_BUF + 40);
+            remove_ext_hdr();
+            /* This should be copied from the ext header... */
+            UIP_IP_BUF->proto = proto;
+          }
+          UIP_FALLBACK_INTERFACE.output();
+#else
+          PRINTF("tcpip_ipv6_output: Destination off-link but no route\n");
+#endif /* !UIP_FALLBACK_INTERFACE */
+          uip_len = 0;
+          return;
+        }
+      }
+    }
+
+#if TCPIP_CONF_ANNOTATE_TRANSMISSIONS
+    if(nexthop != NULL) {
+      static uint8_t annotate_last;
+      static uint8_t annotate_has_last = 0;
+
+      if(annotate_has_last) {
+        printf("#L %u 0; red\n", annotate_last);
+      }
+      printf("#L %u 1; red\n", nexthop->u8[sizeof(uip_ipaddr_t) - 1]);
+      annotate_last = nexthop->u8[sizeof(uip_ipaddr_t) - 1];
+      annotate_has_last = 1;
+    }
+#endif /* TCPIP_CONF_ANNOTATE_TRANSMISSIONS */
 
     /* End of next hop determination */
 
@@ -751,7 +762,7 @@ void
 tcpip_uipcall(void)
 {
   uip_udp_appstate_t *ts;
-  
+
 #if UIP_UDP
   if(uip_conn != NULL) {
     ts = &uip_conn->appstate;
@@ -766,7 +777,7 @@ tcpip_uipcall(void)
  {
    static unsigned char i;
    struct listenport *l;
-   
+
    /* If this is a connection request for a listening port, we must
       mark the connection with the right process ID. */
    if(uip_connected()) {
@@ -780,13 +791,13 @@ tcpip_uipcall(void)
        }
        ++l;
      }
-     
+
      /* Start the periodic polling, if it isn't already active. */
      start_periodic_tcp_timer();
    }
  }
 #endif /* UIP_TCP */
-  
+
   if(ts->p != NULL) {
     process_post_synch(ts->p, tcpip_event, ts->state);
   }
@@ -795,11 +806,11 @@ tcpip_uipcall(void)
 PROCESS_THREAD(tcpip_process, ev, data)
 {
   PROCESS_BEGIN();
-  
+
 #if UIP_TCP
  {
    static unsigned char i;
-   
+
    for(i = 0; i < UIP_LISTENPORTS; ++i) {
      s.listenports[i].port = 0;
    }
@@ -826,7 +837,7 @@ PROCESS_THREAD(tcpip_process, ev, data)
     PROCESS_YIELD();
     eventhandler(ev, data);
   }
-  
+
   PROCESS_END();
 }
 /*---------------------------------------------------------------------------*/
