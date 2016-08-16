@@ -54,6 +54,7 @@ static void register_mon_ids_radio(void)
   REG_RADIO_ST(READ);
   REG_RADIO_ST(PREPARE);
   REG_RADIO_ST(TRANSMIT);
+  REG_RADIO_ST(DEVOFF);
 
   /* Register radio entities names. */
   REG_ENT(MON_CT_RADIO, CC2420);
