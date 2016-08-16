@@ -28,29 +28,37 @@ import lib.parse
 import lib.utils
 
 if len(sys.argv) != 3:
-    print "usage: %s EVENT_1 EVENT_2" % (sys.argv[0],)
+    print "usage: %s EVENT_1 EVENT_2 EVENT_3 ..." % (sys.argv[0],)
     print
-    print "Read a trace from stdin and display the time"
-    print "of the transition from one event to another."
-    print "This is only from event 1 to event 2. The"
-    print "time reported is for event 1."
+    print "Consider all given events as a path we have to go through"
+    print "to do a specific action in the stack (such as 'shut radio off',"
+    print "'send a packet', 'powercycle cycle'). This is known as an event"
+    print "chain or path."
     print
+    print "What this program do is for each chain (even incomplete), it list"
+    print "the time passing through each event, and the increment in time"
+    print "since the first event. This way we can see part of the chain that"
+    print "takes more time."
+
     print "Event are specified should be MON_STATE events."
     print "They are specified in the form CTX/ENT/STATE."
 
     sys.exit(1)
 
-try:
-    event_1 = lib.parse.MonState(sys.argv[1])
-    event_2 = lib.parse.MonState(sys.argv[2])
-except ValueError:
-    lib.utils.err(1, "invalid event description")
+# parse chain
+chain=[]
+for arg in sys.argv[1:]:
+    try:
+        event = lib.parse.MonState(arg)
+    except ValueError:
+        lib.utils.err(1, "invalid event description '%s'" % (arg,))
+    chain.append(arg)
 
-print "# event_1_ID event_2_ID event1_cyc event1_ms cyc_2_event2 ms_2_event2"
-
-event_1_time_ms  = None
-event_1_time_cyc = None
-event_1_id       = None
+idx      = 0 # current element in the chain
+orig_cyc = 0 # first chain element ttime
+orig_ms  = 0
+last_cyc = 0 # last time
+last_ms  = 0
 for line in sys.stdin:
     event = lib.parse.Event(line)
 
@@ -65,30 +73,27 @@ for line in sys.stdin:
     try:
         node_ms      = lib.utils.try_float(event.scope["NODE_TIME_MS"])
         node_cyc     = lib.utils.try_int(event.scope["NODE_CYCLES"])
-        mon_state_ev = lib.parse.MonState(ctx   = event.event["CTX"],
-                                          ent   = event.event["ENT"],
-                                          state = event.event["STATE"])
+        mon_state_ev = MonState(ctx   = event.event["CTX"],
+                                ent   = event.event["ENT"],
+                                state = event.event["STATE"])
     except KeyError:
         lib.utils.err(1, "invalid event")
 
-    if mon_state_ev == event_1:
-        event_1_time_ms  = lib.utils.try_float(node_ms)
-        event_1_time_cyc = lib.utils.try_int(node_cyc)
-        event_1_id       = event.id
-    elif mon_state_ev == event_2:
-        if event_1_id != None:
-            event_2_time_ms  = lib.utils.try_float(node_ms)
-            event_2_time_cyc = lib.utils.try_int(node_cyc)
+    if mon_state_ev == chain[0]:
+        # start new chain
+        orig_cyc = lib.utils.try_int(node_cyc)
+        orig_ms  = lib.utils.try_float(node_ms)
+        last_cyc = orig_cyc
+        last_ms  = orig_ms
+        idx = 0
+    event_time_ms  = lib.utils.try_float(node_ms)
+    event_time_cyc = lib.utils.try_int(node_cyc)
+    event_id       = event.id
 
-            delta_time_ms  = event_2_time_ms  - event_1_time_ms
-            delta_time_cyc = event_2_time_cyc - event_1_time_cyc
+    delta = event_time_cyc - orig_cyc
+    incre = event_time_cyc - last_cyc
 
-            print "%d %d %d %f %d %f" % (event_1_id,
-                                         event.id,
-                                         event_1_time_cyc,
-                                         event_1_time_ms,
-                                         delta_time_cyc,
-                                         delta_time_ms)
+    print "%s %s (+%d / @%d )cyc." % (event_id, str(mon_state_ev), incre, delta)
 
-            # We don't parse until we have meet event_1 again.
-            event_1_id = None
+    last_cyc = event_time_cyc
+    last_ms  = event_time_ms

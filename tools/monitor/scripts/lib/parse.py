@@ -62,3 +62,28 @@ class Event(object):
             dic[name] = value
 
         return dic
+
+# Parse a state event in its condensed notation, that is: CTX/ENT/STATE.
+# The resulting object is left as string-typed.
+class MonState(object):
+    def __init__(self, line = None, ctx = None, ent = None, state = None):
+        if line:
+            mon_ids = line.split('/')
+            if len(mon_ids) != 3:
+                raise ValueError("invalid event description (should be CTX/ENT/STATE)")
+
+            self.context, self.entity, self.state = (mon_ids[0], mon_ids[1], mon_ids[2])
+        else:
+            self.context, self.entity, self.state = (ctx, ent, state)
+
+        self.context = self.context.strip('\n')
+        self.entity  = self.entity.strip('\n')
+        self.state   = self.state.strip('\n')
+
+    def __eq__(self, o):
+        return (o.context == self.context) and \
+               (o.entity  == self.entity)  and \
+               (o.state   == self.state)
+
+    def __str__(self):
+        return "%s/%s/%s" % (self.context, self.entity, self.state)
