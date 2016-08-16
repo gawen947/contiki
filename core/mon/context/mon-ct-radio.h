@@ -26,15 +26,16 @@
 #define MON_CT_RADIO_H_
 
 enum {
-  MON_ST_RADIO_ON,
-  MON_ST_RADIO_OFF,
-  MON_ST_RADIO_CCA,
-  MON_ST_RADIO_ISR,
+  MON_ST_RADIO_ON,        /* driver was requested to turn on the radio */
+  MON_ST_RADIO_OFF,       /* driver was requested to shut down the radio */
+  MON_ST_RADIO_CCA,       /* CCA requested */
+  MON_ST_RADIO_ISR,       /* ISR started in radio driver */
   MON_ST_RADIO_POLL,      /* radio process polled from ISR */
   MON_ST_RADIO_RDC,       /* NETSTACK_RDC.input() */
   MON_ST_RADIO_READ,      /* read (ACK) from the RDC layer */
   MON_ST_RADIO_PREPARE,   /* prepare packet in transceiver memory */
   MON_ST_RADIO_TRANSMIT,  /* transmit the packet */
+  MON_ST_RADIO_DEVOFF,    /* radio driver effectively shuts down the radio */
 };
 
 enum {
