@@ -271,6 +271,7 @@ off(void)
 }
 /*---------------------------------------------------------------------------*/
 static volatile rtimer_clock_t cycle_start;
+#ifndef CONTIKIMAC_FSM_POWERCYCLE
 static char powercycle(struct rtimer *t, void *ptr);
 static void
 schedule_powercycle(struct rtimer *t, rtimer_clock_t time)
@@ -309,6 +310,7 @@ schedule_powercycle_fixed(struct rtimer *t, rtimer_clock_t fixed_time)
     }
   }
 }
+#endif /* CONTIKIMAC_FSM_POWERCYCLE */
 /*---------------------------------------------------------------------------*/
 static void
 powercycle_turn_radio_off(void)
@@ -335,6 +337,7 @@ powercycle_turn_radio_on(void)
   }
 }
 /*---------------------------------------------------------------------------*/
+#ifndef CONTIKIMAC_FSM_POWERCYCLE
 #define mon_powercycle(event) monitor_record(MON_CT_POWERCYCLE, MON_ENT_CONTIKIMAC, MON_ST_POWERCYCLE_ ## event)
 static char
 powercycle(struct rtimer *t, void *ptr)
@@ -475,9 +478,9 @@ powercycle(struct rtimer *t, void *ptr)
 
     if(RTIMER_CLOCK_LT(RTIMER_NOW() - cycle_start, CYCLE_TIME - CHECK_TIME * 4)) {
       /* Schedule the next powercycle interrupt, or sleep the mcu
-	 until then.  Sleeping will not exit from this interrupt, so
-	 ensure an occasional wake cycle or foreground processing will
-	 be blocked until a packet is detected */
+   until then.  Sleeping will not exit from this interrupt, so
+   ensure an occasional wake cycle or foreground processing will
+   be blocked until a packet is detected */
 #if RDC_CONF_MCU_SLEEP
       static uint8_t sleepcycle;
       if((sleepcycle++ < 16) && !we_are_sending && !radio_is_on) {
@@ -500,6 +503,7 @@ powercycle(struct rtimer *t, void *ptr)
   monitor_record(MON_CT_POWERCYCLE, MON_ENT_CONTIKIMAC, MON_ST_DESTROY);
   PT_END(&pt);
 }
+#endif /* CONTIKIMAC_FSM_POWERCYCLE */
 
 #ifdef CONTIKIMAC_FSM_POWERCYCLE
 enum { PWC_ST_START,
@@ -515,9 +519,19 @@ enum { PWC_ST_START,
 #define fsm_powercycle_timeout(rt, start, limit) \
   RTIMER_CLOCK_LT(RTIMER_NOW(), start + limit)
 
+static rtimer_clock_t fsm_cyclestart(void);
+static void fsm_powercycle_delay(struct rtimer *rt, rtimer_clock_t delay);
+static void fsm_powercycle_fixed(struct rtimer *rt, rtimer_clock_t fixed_time);
+static void fsm_powercycle(struct rtimer *rt, void *ptr);
+
 static void fsm_powercycle_delay(struct rtimer *rt, rtimer_clock_t delay)
 {
-  int r = rtimer_set(rt, RTIMER_NOW() + delay, 1,
+  int r;
+
+  if(!contikimac_is_on)
+    return;
+
+  r = rtimer_set(rt, RTIMER_NOW() + delay, 1,
                      (rtimer_callback_t)fsm_powercycle, NULL);
   if(r != RTIMER_OK)
     PRINTF("fsm_powercycle: could not delay\n");
@@ -527,10 +541,13 @@ static void fsm_powercycle_fixed(struct rtimer *rt, rtimer_clock_t fixed_time)
 {
   int r;
 
+  if(!contikimac_is_on)
+    return;
+
   if(RTIMER_CLOCK_LT(fixed_time, RTIMER_NOW() + 1))
     fixed_time = RTIMER_NOW() + 1;
 
-  r = rtimer_set(t, fixed_time, 1,
+  r = rtimer_set(rt, fixed_time, 1,
                  (rtimer_callback_t)fsm_powercycle, NULL);
   if(r != RTIMER_OK)
     PRINTF("fsm_powercycle: could not delay\n");
@@ -650,7 +667,7 @@ static void fsm_powercycle(struct rtimer *rt, void *ptr)
 
     case PWC_ST_END:
       state = PWC_ST_START;
-      if(RTIMER_CLOK_LT(RTIMER_NOW() - cycle_start, CYCLE_TIME - CHECK_TIME * 4)) {
+      if(RTIMER_CLOCK_LT(RTIMER_NOW() - cycle_start, CYCLE_TIME - CHECK_TIME * 4)) {
         fsm_powercycle_fixed(rt, cycle_start + CYCLE_TIME);
         return;
       }
@@ -687,7 +704,7 @@ broadcast_rate_drop(void)
 /*---------------------------------------------------------------------------*/
 static int
 send_packet(mac_callback_t mac_callback, void *mac_callback_ptr,
-	    struct rdc_buf_list *buf_list,
+      struct rdc_buf_list *buf_list,
             int is_receiver_awake)
 {
   rtimer_clock_t t0;
@@ -876,7 +893,7 @@ send_packet(mac_callback_t mac_callback, void *mac_callback_ptr,
 
 #if RDC_CONF_HARDWARE_ACK
      /* For radios that block in the transmit routine and detect the
-	ACK in hardware */
+  ACK in hardware */
       if(ret == RADIO_TX_OK) {
         if(!is_broadcast) {
           got_strobe_ack = 1;
@@ -959,14 +976,14 @@ send_packet(mac_callback_t mac_callback, void *mac_callback_ptr,
 #if WITH_PHASE_OPTIMIZATION
   if(is_known_receiver && got_strobe_ack) {
     PRINTF("no miss %d wake-ups %d\n",
-	   packetbuf_addr(PACKETBUF_ADDR_RECEIVER)->u8[0],
+     packetbuf_addr(PACKETBUF_ADDR_RECEIVER)->u8[0],
            strobes);
   }
 
   if(!is_broadcast) {
     if(collisions == 0 && is_receiver_awake == 0) {
       phase_update(packetbuf_addr(PACKETBUF_ADDR_RECEIVER),
-		   encounter_time, ret);
+       encounter_time, ret);
     }
   }
 #endif /* WITH_PHASE_OPTIMIZATION */
@@ -1112,7 +1129,7 @@ input_packet(void)
       if(we_are_receiving_burst) {
         on();
         /* Set a timer to turn the radio off in case we do not receive
-	   a next packet */
+     a next packet */
         ctimer_set(&ct, INTER_PACKET_DEADLINE, recv_burst_off, NULL);
       } else {
         off();
@@ -1186,10 +1203,10 @@ init(void)
 
 #ifdef CONTIKIMAC_FSM_POWERCYCLE
   rtimer_set(&rt, RTIMER_NOW() + CYCLE_TIME, 1,
-             (void (*)(struct rtimer *, void *))powercycle, NULL);
+             (rtimer_callback_t)fsm_powercycle, NULL);
 #else
   rtimer_set(&rt, RTIMER_NOW() + CYCLE_TIME, 1,
-             (rtimer_callback_t)fsm_powercycle, NULL);
+             (void (*)(struct rtimer *, void *))powercycle, NULL);
 #endif /* CONTIKIMAC_FSM_POWERCYCLE */
 
   contikimac_is_on = 1;
@@ -1206,8 +1223,13 @@ turn_on(void)
   if(contikimac_is_on == 0) {
     contikimac_is_on = 1;
     contikimac_keep_radio_on = 0;
+#ifdef CONTIKIMAC_FSM_POWERCYCLE
+    rtimer_set(&rt, RTIMER_NOW() + CYCLE_TIME, 1,
+             (rtimer_callback_t)fsm_powercycle, NULL);
+#else
     rtimer_set(&rt, RTIMER_NOW() + CYCLE_TIME, 1,
                (void (*)(struct rtimer *, void *))powercycle, NULL);
+#endif /* CONTIKIMAC_FSM_POWERCYCLE */
   }
   return 1;
 }
