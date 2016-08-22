@@ -310,7 +310,6 @@ schedule_powercycle_fixed(struct rtimer *t, rtimer_clock_t fixed_time)
     }
   }
 }
-#endif /* CONTIKIMAC_FSM_POWERCYCLE */
 /*---------------------------------------------------------------------------*/
 static void
 powercycle_turn_radio_off(void)
@@ -337,7 +336,6 @@ powercycle_turn_radio_on(void)
   }
 }
 /*---------------------------------------------------------------------------*/
-#ifndef CONTIKIMAC_FSM_POWERCYCLE
 #define mon_powercycle(event) monitor_record(MON_CT_POWERCYCLE, MON_ENT_CONTIKIMAC, MON_ST_POWERCYCLE_ ## event)
 static char
 powercycle(struct rtimer *t, void *ptr)
