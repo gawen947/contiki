@@ -27,7 +27,7 @@ import sys
 import lib.parse
 import lib.utils
 
-if len(sys.argv) != 3:
+if len(sys.argv) < 3:
     print "usage: %s EVENT_1 EVENT_2 EVENT_3 ..." % (sys.argv[0],)
     print
     print "Consider all given events as a path we have to go through"
@@ -52,7 +52,7 @@ for arg in sys.argv[1:]:
         event = lib.parse.MonState(arg)
     except ValueError:
         lib.utils.err(1, "invalid event description '%s'" % (arg,))
-    chain.append(arg)
+    chain.append(event)
 
 idx      = 0 # current element in the chain
 orig_cyc = 0 # first chain element ttime
@@ -73,9 +73,9 @@ for line in sys.stdin:
     try:
         node_ms      = lib.utils.try_float(event.scope["NODE_TIME_MS"])
         node_cyc     = lib.utils.try_int(event.scope["NODE_CYCLES"])
-        mon_state_ev = MonState(ctx   = event.event["CTX"],
-                                ent   = event.event["ENT"],
-                                state = event.event["STATE"])
+        mon_state_ev = lib.parse.MonState(ctx   = event.event["CTX"],
+                                          ent   = event.event["ENT"],
+                                          state = event.event["STATE"])
     except KeyError:
         lib.utils.err(1, "invalid event")
 
@@ -86,14 +86,17 @@ for line in sys.stdin:
         last_cyc = orig_cyc
         last_ms  = orig_ms
         idx = 0
-    event_time_ms  = lib.utils.try_float(node_ms)
-    event_time_cyc = lib.utils.try_int(node_cyc)
-    event_id       = event.id
 
-    delta = event_time_cyc - orig_cyc
-    incre = event_time_cyc - last_cyc
+    if mon_state_ev == chain[idx]:
+        event_time_ms  = lib.utils.try_float(node_ms)
+        event_time_cyc = lib.utils.try_int(node_cyc)
+        event_id       = event.id
 
-    print "%s %s (+%d / @%d )cyc." % (event_id, str(mon_state_ev), incre, delta)
+        delta = event_time_cyc - orig_cyc
+        incre = event_time_cyc - last_cyc
 
-    last_cyc = event_time_cyc
-    last_ms  = event_time_ms
+        print "%s idx=%d %s (+%d / @%d )cyc." % (event_id, idx, str(mon_state_ev), incre, delta)
+
+        last_cyc = event_time_cyc
+        last_ms  = event_time_ms
+        idx = (idx + 1) % len(chain)
