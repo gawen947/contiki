@@ -500,6 +500,169 @@ powercycle(struct rtimer *t, void *ptr)
   monitor_record(MON_CT_POWERCYCLE, MON_ENT_CONTIKIMAC, MON_ST_DESTROY);
   PT_END(&pt);
 }
+
+#ifdef CONTIKIMAC_FSM_POWERCYCLE
+enum { PWC_ST_START,
+       PWC_ST_PROBES,
+       PWC_ST_PROBE,
+       PWC_ST_SEEN,
+       PWC_ST_ACTIVITY_CHECK,
+       PWC_ST_MAX_PERIODS_CHECK,
+       PWC_ST_PENDING,
+       PWC_ST_SLEEP_END,
+       PWC_ST_END };
+
+#define fsm_powercycle_timeout(rt, start, limit) \
+  RTIMER_CLOCK_LT(RTIMER_NOW(), start + limit)
+
+static void fsm_powercycle_delay(struct rtimer *rt, rtimer_clock_t delay)
+{
+  int r = rtimer_set(rt, RTIMER_NOW() + delay, 1,
+                     (rtimer_callback_t)fsm_powercycle, NULL);
+  if(r != RTIMER_OK)
+    PRINTF("fsm_powercycle: could not delay\n");
+}
+
+static void fsm_powercycle_fixed(struct rtimer *rt, rtimer_clock_t fixed_time)
+{
+  int r;
+
+  if(RTIMER_CLOCK_LT(fixed_time, RTIMER_NOW() + 1))
+    fixed_time = RTIMER_NOW() + 1;
+
+  r = rtimer_set(t, fixed_time, 1,
+                 (rtimer_callback_t)fsm_powercycle, NULL);
+  if(r != RTIMER_OK)
+    PRINTF("fsm_powercycle: could not delay\n");
+}
+
+static rtimer_clock_t fsm_cyclestart(void)
+{
+#if SYNC_CYCLE_STARTS
+  static volatile rtimer_clock_t sync_cycle_start;
+  static volatile uint8_t sync_cycle_phase;
+#endif
+
+#if SYNC_CYCLE_STARTS
+  if(sync_cycle_phase++ == NETSTACK_RDC_CHANNEL_CHECK_RATE) {
+    sync_cycle_phase = 0;
+    sync_cycle_start += RTIMER_ARCH_SECOND;
+    return sync_cycle_start;
+  } else {
+# if (RTIMER_ARCH_SECOND * NETSTACK_RDC_CHANNEL_CHECK_RATE) > 65535
+    return sync_cycle_start + ((unsigned long)(sync_cycle_phase*RTIMER_ARCH_SECOND))/NETSTACK_RDC_CHANNEL_CHECK_RATE;
+# else
+    return sync_cycle_start + (sync_cycle_phase*RTIMER_ARCH_SECOND)/NETSTACK_RDC_CHANNEL_CHECK_RATE;
+# endif
+  }
+#else
+  return cycle_start + CYCLE_TIME;
+#endif /* SYNC_CYCLE_STARTS */
+}
+
+static void fsm_powercycle(struct rtimer *rt, void *ptr)
+{
+  static uint8_t state;
+  static uint8_t count;
+  static uint8_t silence_periods;
+  static uint8_t periods;
+
+  static rtimer_clock_t start;
+
+  while(1) {
+    switch(state) {
+      /* entry action */
+      /* transition */
+      /* else: do action */
+      /* exit action (only when changing state) */
+    case PWC_ST_START:
+      state = PWC_ST_PROBES;
+      count = silence_periods = periods = 0;
+      cycle_start = fsm_cyclestart();
+      break;
+
+    case PWC_ST_PROBES:
+      count++;
+      if(count > CCA_COUNT_MAX)
+        state = PWC_ST_SLEEP_END;
+      else if(!we_are_sending && !we_are_receiving_burst)
+        state = PWC_ST_PROBE;
+      break;
+
+    case PWC_ST_PROBE:
+      on();
+      if(NETSTACK_RADIO.channel_clear() == 0) {
+        state = PWC_ST_SEEN;
+        start = RTIMER_NOW();
+      }
+      else {
+        state = PWC_ST_PROBES;
+        off();
+        fsm_powercycle_delay(rt, CCA_SLEEP_TIME);
+        return;
+      }
+      break;
+
+    case PWC_ST_SEEN:
+      if(!we_are_sending && radio_is_on && \
+         fsm_powercycle_timeout(rt, start, LISTEN_TIME_AFTER_PACKET_DETECTED))
+        state = PWC_ST_ACTIVITY_CHECK;
+      else
+        state = PWC_ST_SLEEP_END;
+      break;
+
+    case PWC_ST_ACTIVITY_CHECK:
+      periods++;
+      if(NETSTACK_RADIO.pending_packet()) {
+        state = PWC_ST_PENDING;
+        break;
+      }
+      else if(NETSTACK_RADIO.receiving_packet() || \
+         !NETSTACK_RADIO.channel_clear())
+        silence_periods = 0;
+      else
+        silence_periods++;
+      state = PWC_ST_MAX_PERIODS_CHECK;
+      break;
+
+    case PWC_ST_MAX_PERIODS_CHECK:
+      if(silence_periods > MAX_SILENCE_PERIODS || \
+         (periods > MAX_NONACTIVITY_PERIODS &&    \
+          !(NETSTACK_RADIO.receiving_packet() ||  \
+            NETSTACK_RADIO.pending_packet())))
+        state = PWC_ST_SLEEP_END;
+      else {
+        state = PWC_ST_ACTIVITY_CHECK;
+        fsm_powercycle_delay(rt, CCA_CHECK_TIME + CCA_SLEEP_TIME);
+        return;
+      }
+      break;
+
+    case PWC_ST_PENDING:
+      state = PWC_ST_END;
+      break;
+
+    case PWC_ST_SLEEP_END:
+      if(!we_are_sending && !we_are_receiving_burst)
+        off();
+      state = PWC_ST_END;
+      break;
+
+    case PWC_ST_END:
+      state = PWC_ST_START;
+      if(RTIMER_CLOK_LT(RTIMER_NOW() - cycle_start, CYCLE_TIME - CHECK_TIME * 4)) {
+        fsm_powercycle_fixed(rt, cycle_start + CYCLE_TIME);
+        return;
+      }
+      break;
+
+    default:
+      PRINTF("fsm_powercycle: unknown state");
+      return;
+    }
+  }
+}
+#endif /* CONTIKIMAC_FSM_POWERCYCLE */
 /*---------------------------------------------------------------------------*/
 static int
 broadcast_rate_drop(void)
@@ -1021,8 +1184,13 @@ init(void)
   radio_is_on = 0;
   PT_INIT(&pt);
 
+#ifdef CONTIKIMAC_FSM_POWERCYCLE
   rtimer_set(&rt, RTIMER_NOW() + CYCLE_TIME, 1,
              (void (*)(struct rtimer *, void *))powercycle, NULL);
+#else
+  rtimer_set(&rt, RTIMER_NOW() + CYCLE_TIME, 1,
+             (rtimer_callback_t)fsm_powercycle, NULL);
+#endif /* CONTIKIMAC_FSM_POWERCYCLE */
 
   contikimac_is_on = 1;
 
