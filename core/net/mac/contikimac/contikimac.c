@@ -270,6 +270,7 @@ off(void)
   }
 }
 /*---------------------------------------------------------------------------*/
+#define mon_powercycle(event) monitor_record(MON_CT_POWERCYCLE, MON_ENT_CONTIKIMAC, MON_ST_POWERCYCLE_ ## event)
 static volatile rtimer_clock_t cycle_start;
 #ifndef CONTIKIMAC_FSM_POWERCYCLE
 static char powercycle(struct rtimer *t, void *ptr);
@@ -336,7 +337,6 @@ powercycle_turn_radio_on(void)
   }
 }
 /*---------------------------------------------------------------------------*/
-#define mon_powercycle(event) monitor_record(MON_CT_POWERCYCLE, MON_ENT_CONTIKIMAC, MON_ST_POWERCYCLE_ ## event)
 static char
 powercycle(struct rtimer *t, void *ptr)
 {
@@ -584,6 +584,8 @@ static void fsm_powercycle(struct rtimer *rt, void *ptr)
 
   static rtimer_clock_t start;
 
+  monitor_record(MON_CT_POWERCYCLE, MON_ENT_CONTIKIMAC, MON_ST_CREATE);
+
   while(1) {
     switch(state) {
       /* entry action */
@@ -591,12 +593,14 @@ static void fsm_powercycle(struct rtimer *rt, void *ptr)
       /* else: do action */
       /* exit action (only when changing state) */
     case PWC_ST_START:
+      mon_powercycle(FSM_START);
       state = PWC_ST_PROBES;
       count = silence_periods = periods = 0;
       cycle_start = fsm_cyclestart();
       break;
 
     case PWC_ST_PROBES:
+      mon_powercycle(FSM_PROBES);
       count++;
       if(count > CCA_COUNT_MAX)
         state = PWC_ST_SLEEP_END;
@@ -605,6 +609,7 @@ static void fsm_powercycle(struct rtimer *rt, void *ptr)
       break;
 
     case PWC_ST_PROBE:
+      mon_powercycle(FSM_PROBE);
       on();
       if(NETSTACK_RADIO.channel_clear() == 0) {
         state = PWC_ST_SEEN;
@@ -619,6 +624,7 @@ static void fsm_powercycle(struct rtimer *rt, void *ptr)
       break;
 
     case PWC_ST_SEEN:
+      mon_powercycle(FSM_SEEN);
       if(!we_are_sending && radio_is_on && \
          fsm_powercycle_timeout(rt, start, LISTEN_TIME_AFTER_PACKET_DETECTED))
         state = PWC_ST_ACTIVITY_CHECK;
@@ -627,6 +633,7 @@ static void fsm_powercycle(struct rtimer *rt, void *ptr)
       break;
 
     case PWC_ST_ACTIVITY_CHECK:
+      mon_powercycle(FSM_ACTIVITY_CHECK);
       periods++;
       if(NETSTACK_RADIO.pending_packet()) {
         state = PWC_ST_PENDING;
@@ -641,6 +648,7 @@ static void fsm_powercycle(struct rtimer *rt, void *ptr)
       break;
 
     case PWC_ST_MAX_PERIODS_CHECK:
+      mon_powercycle(FSM_PERIODS_CHECK);
       if(silence_periods > MAX_SILENCE_PERIODS || \
          (periods > MAX_NONACTIVITY_PERIODS &&    \
           !(NETSTACK_RADIO.receiving_packet() ||  \
@@ -654,16 +662,19 @@ static void fsm_powercycle(struct rtimer *rt, void *ptr)
       break;
 
     case PWC_ST_PENDING:
+      mon_powercycle(FSM_PENDING);
       state = PWC_ST_END;
       break;
 
     case PWC_ST_SLEEP_END:
+      mon_powercycle(FSM_SLEEP_END);
       if(!we_are_sending && !we_are_receiving_burst)
         off();
       state = PWC_ST_END;
       break;
 
     case PWC_ST_END:
+      mon_powercycle(FSM_END);
       state = PWC_ST_START;
       if(RTIMER_CLOCK_LT(RTIMER_NOW() - cycle_start, CYCLE_TIME - CHECK_TIME * 4)) {
         fsm_powercycle_fixed(rt, cycle_start + CYCLE_TIME);
