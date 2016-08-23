@@ -476,9 +476,9 @@ powercycle(struct rtimer *t, void *ptr)
 
     if(RTIMER_CLOCK_LT(RTIMER_NOW() - cycle_start, CYCLE_TIME - CHECK_TIME * 4)) {
       /* Schedule the next powercycle interrupt, or sleep the mcu
-   until then.  Sleeping will not exit from this interrupt, so
-   ensure an occasional wake cycle or foreground processing will
-   be blocked until a packet is detected */
+         until then.  Sleeping will not exit from this interrupt, so
+         ensure an occasional wake cycle or foreground processing will
+         be blocked until a packet is detected */
 #if RDC_CONF_MCU_SLEEP
       static uint8_t sleepcycle;
       if((sleepcycle++ < 16) && !we_are_sending && !radio_is_on) {
@@ -575,6 +575,26 @@ static rtimer_clock_t fsm_cyclestart(void)
 #endif /* SYNC_CYCLE_STARTS */
 }
 
+static void fsm_schedule_next_powercycle(struct rtimer *rt)
+{
+  /* Schedule the next powercycle interrupt, or sleep the mcu
+     until then.  Sleeping will not exit from this interrupt, so
+     ensure an occasional wake cycle or foreground processing will
+     be blocked until a packet is detected */
+#if RDC_CONF_MCU_SLEEP
+  static uint8_t sleepcycle;
+  if((sleepcycle++ < 16) && !we_are_sending && !radio_is_on)
+    rtimer_arch_sleep(CYCLE_TIME - (RTIMER_NOW() - cycle_start));
+  else {
+    sleepcycle = 0;
+    fsm_powercycle_fixed(rt, CYCLE_TIME + cycle_start);
+    return;
+  }
+#else
+  fsm_powercycle_fixed(rt, CYCLE_TIME + cycle_start);
+#endif
+}
+
 static void fsm_powercycle(struct rtimer *rt, void *ptr)
 {
   static uint8_t state;
@@ -640,7 +660,7 @@ static void fsm_powercycle(struct rtimer *rt, void *ptr)
         break;
       }
       else if(NETSTACK_RADIO.receiving_packet() || \
-         !NETSTACK_RADIO.channel_clear())
+              !NETSTACK_RADIO.channel_clear())
         silence_periods = 0;
       else
         silence_periods++;
@@ -655,7 +675,7 @@ static void fsm_powercycle(struct rtimer *rt, void *ptr)
             NETSTACK_RADIO.pending_packet())))
         state = PWC_ST_SLEEP_END;
       else {
-        state = PWC_ST_ACTIVITY_CHECK;
+        state = PWC_ST_SEEN;
         fsm_powercycle_delay(rt, CCA_CHECK_TIME + CCA_SLEEP_TIME);
         return;
       }
@@ -677,7 +697,7 @@ static void fsm_powercycle(struct rtimer *rt, void *ptr)
       mon_powercycle(FSM_END);
       state = PWC_ST_START;
       if(RTIMER_CLOCK_LT(RTIMER_NOW() - cycle_start, CYCLE_TIME - CHECK_TIME * 4)) {
-        fsm_powercycle_fixed(rt, cycle_start + CYCLE_TIME);
+        fsm_schedule_next_powercycle(rt);
         return;
       }
       break;
