@@ -24,6 +24,10 @@
 
 package be.ac.umons.cooja.monitor;
 
+import java.io.File;
+
+import javax.swing.JFileChooser;
+
 import org.apache.log4j.Logger;
 
 import org.contikios.cooja.ClassDescription;
@@ -31,6 +35,18 @@ import org.contikios.cooja.Cooja;
 import org.contikios.cooja.PluginType;
 import org.contikios.cooja.Simulation;
 import org.contikios.cooja.VisPlugin;
+import org.contikios.cooja.mspmote.MspMote;
+
+import be.ac.umons.cooja.monitor.mon.backend.ErrorSkipMon;
+import be.ac.umons.cooja.monitor.mon.backend.SwitchableMon;
+import be.ac.umons.cooja.monitor.mon.switchable.TraceMonBackend;
+import be.ac.umons.cooja.monitor.regmon.RegMon;
+
+/* TODO: 
+ *  - Use simulation.getSimulationTime() in simulation scope (instead of 0).
+ *  - Check for MSPMote when starting the plugin.
+ *  - Add GUI to enable/disable monitor AND select a new backend.
+ */
 
 @ClassDescription("Monitor")
 @PluginType(PluginType.SIM_PLUGIN)
@@ -38,13 +54,60 @@ public class Monitor extends VisPlugin {
   private static final long serialVersionUID = 5359332460231108667L;
 
   private static Logger logger = Logger.getLogger(Monitor.class);
-    
-  Simulation simulation;
   
+  private SwitchableMon backend;
+  private Simulation    simulation;
+  private RegMon[]       monDevices;
+    
   public Monitor(Simulation simulation, final Cooja gui) {
     super("Monitor", gui, false);
     
     this.simulation = simulation;
+    
+    /* Ensure that we always have a backend for the output trace.
+     * If an event is generated and no real backend is configured,
+     * ErrorSkipMon will generate an exception. */
+    backend = new ErrorSkipMon(); 
   }
-
+  
+  public void startPlugin() {
+    super.startPlugin();
+    
+    /* Select the backend first (or at least the default file). */
+    selectBackend();
+    
+    /* Add the RegMon device to all compatible motes. */
+    monDevices = new RegMon[simulation.getMotesCount()];
+    for(int i = 0 ; i < simulation.getMotesCount() ; i++) {
+      /* FIXME: Isn't it dangerous ? We don't know if all nodes are MSP ones. */
+      MspMote mspMote = (MspMote)simulation.getMote(i);
+      monDevices[i] = new RegMon(mspMote, backend);
+    }
+  }
+  
+  public void closePlugin() {
+    backend.close(); /* flush backend buffers */
+  }
+  
+  private void selectBackend() {
+    File backendFile = selectTraceFile();
+    backend.selectBackend(new TraceMonBackend.Creator(backendFile));
+  }
+  
+  private File selectTraceFile() {
+    JFileChooser fileChooser = new JFileChooser();
+    File suggest = new File(Cooja.getExternalToolsSetting("MONITOR_LAST", "monitor.trace"));
+    fileChooser.setSelectedFile(suggest);
+    fileChooser.setDialogTitle("Select monitor output trace file");
+    
+    int reply = fileChooser.showOpenDialog(Cooja.getTopParentContainer());
+    if(reply == JFileChooser.APPROVE_OPTION) {
+      File selectedFile = fileChooser.getSelectedFile();
+      Cooja.setExternalToolsSetting("MONITOR_LAST", selectedFile.getAbsolutePath());
+      
+      return selectedFile;
+    }
+    else
+      throw new RuntimeException("No monitor output trace file");
+  }
 }
