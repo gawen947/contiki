@@ -29,7 +29,7 @@ import java.io.OutputStream;
 import java.nio.ByteOrder;
 
 import be.ac.umons.cooja.monitor.mon.MonTimestamp;
-import se.sics.mspsim.util.Utils;
+import be.ac.umons.cooja.monitor.Utils;
 
 /**
  * Initialization of the monitor within a node with offset and byte order.

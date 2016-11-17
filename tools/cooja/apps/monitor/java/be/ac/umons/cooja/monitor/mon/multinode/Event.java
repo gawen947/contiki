@@ -28,7 +28,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 
-import se.sics.mspsim.util.Utils;
+import be.ac.umons.cooja.monitor.Utils;
 
 /**
  * All events are created through this class.

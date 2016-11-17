@@ -28,7 +28,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import be.ac.umons.cooja.monitor.mon.MonTimestamp;
-import se.sics.mspsim.util.Utils;
+import be.ac.umons.cooja.monitor.Utils;
 
 /**
  * This scope is for events that happen within a node.

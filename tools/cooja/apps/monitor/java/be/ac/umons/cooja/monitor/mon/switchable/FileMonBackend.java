@@ -33,7 +33,7 @@ import java.nio.ByteOrder;
 import be.ac.umons.cooja.monitor.mon.MonException;
 import be.ac.umons.cooja.monitor.mon.MonTimestamp;
 import be.ac.umons.cooja.monitor.mon.backend.FileMon;
-import se.sics.mspsim.util.Utils;
+import be.ac.umons.cooja.monitor.Utils;
 
 /**
  * Record events from into a file (dedicated to a single mote).

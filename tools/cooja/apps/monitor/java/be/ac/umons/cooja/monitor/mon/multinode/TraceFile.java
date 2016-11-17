@@ -30,7 +30,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteOrder;
 
-import se.sics.mspsim.util.Utils;
+import be.ac.umons.cooja.monitor.Utils;
 
 /**
  * A trace records all events within a simulation consisting of multiple nodes.

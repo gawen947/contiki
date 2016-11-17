@@ -27,7 +27,7 @@ package be.ac.umons.cooja.monitor.mon.multinode;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import se.sics.mspsim.util.Utils;
+import be.ac.umons.cooja.monitor.Utils;
 
 /**
  * Change the position of a node within the simulation.
