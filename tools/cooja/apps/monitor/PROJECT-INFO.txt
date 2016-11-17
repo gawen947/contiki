@@ -1,0 +1,11 @@
+Name: COOJA: Monitor
+Contact: David Hauweele <david@hauweele.net
+License: BSD
+Contiki: 3.0
+Intended platforms: TMote Sky
+Tested platforms:
+URL:
+Screenshot:
+Description:
+The Monitor plugin for COOJA allows capturing a trace of state changes in the
+Contiki firmware with timing information and a minimal overhead.
