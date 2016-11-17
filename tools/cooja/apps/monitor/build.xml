@@ -1,50 +1,55 @@
 <?xml version="1.0"?>
 
 <project name="COOJA: Monitor" default="jar" basedir=".">
-  <property name="src" location="java"/>
+  <property name="src" location="src"/>
   <property name="build" location="build"/>
   <property name="lib" location="lib"/>
-  <property name="cooja_jar" value="../../../contiki-2.x/tools/cooja/dist/cooja.jar"/>
+  <property name="javadoc" location="javadoc"/>
+	<property name="cooja" location="../.."/>
 
-  <condition property="cooja_jar_exists">
-    <available file="${cooja_jar}"/>
-  </condition>
+	<property name="cooja_jar" value="${cooja}/dist/cooja.jar"/>
+  <property name="monitor_jar" value="${lib}/monitor.jar"/>
 
-  <target name="check_jar" unless="cooja_jar_exists">
-    <echo message="Contiki's cooja.jar not found! Edit build.xml, and update the cooja_jar property"/>
-    <fail/>
+  <target name="init">
+    <tstamp/>
+    <mkdir dir="${build}"/>
+    <mkdir dir="${lib}"/>
   </target>
 
-  <target name="init" depends="check_jar">
-    <tstamp/>
+  <target name="clean">
+    <delete dir="${build}"/>
+    <delete file="${monitor_jar}"/>
   </target>
 
   <target name="compile" depends="init">
-    <mkdir dir="${build}"/>
-    <javac srcdir="${src}" destdir="${build}" debug="on">
+    <javac srcdir="${src}" destdir="${build}" debug="on"
+           includeantruntime="false">
       <classpath>
-        <pathelement path="."/>
+        <pathelement location="${monitor_jar}"/>
         <pathelement location="${cooja_jar}"/>
+        <pathelement location="${cooja}/apps/mspsim/build"/>
       </classpath>
     </javac>
   </target>
 
-  <target name="clean" depends="init">
-    <delete dir="${build}"/>
-    <delete dir="${lib}"/>
+  <target name="javadoc" depends="compile">
+    <delete dir="${javadoc}" quiet="true"/>
+    <mkdir dir="${javadoc}/"/>
+    <javadoc destdir="${javadoc}">
+      <fileset dir="${src}/" includes="**/*.java"/>
+      <classpath>
+        <pathelement location="${monitor_jar}"/>
+        <pathelement location="${cooja_jar}"/>
+      </classpath>
+    </javadoc>
   </target>
 
-  <target name="jar" depends="init, compile, copy">
-    <mkdir dir="${lib}"/>
-    <jar destfile="${lib}/monitor.jar" basedir="${build}">
+  <target name="jar" depends="init, compile">
+    <jar destfile="${monitor_jar}" basedir="${build}">
       <manifest>
         <attribute name="Class-Path" value="."/>
       </manifest>
     </jar>
-  </target>
-
-  <target name="copy" depends="init">
-    <mkdir dir="${build}"/>
   </target>
 
 </project>
