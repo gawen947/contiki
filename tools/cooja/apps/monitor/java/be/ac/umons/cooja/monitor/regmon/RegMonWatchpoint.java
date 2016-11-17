@@ -2,7 +2,7 @@ package be.ac.umons.cooja.monitor.regmon;
 
 import be.ac.umons.cooja.monitor.mon.MonTimestamp;
 import be.ac.umons.cooja.monitor.mon.backend.MonBackend;
-import se.sics.mspsim.core.MSP430Core;
+import se.sics.mspsim.core.MSP430;
 import se.sics.mspsim.core.Memory.AccessMode;
 import se.sics.mspsim.core.Memory.AccessType;
 import se.sics.mspsim.core.MemoryMonitor;
@@ -25,9 +25,9 @@ public class RegMonWatchpoint implements MemoryMonitor {
   private int len;
 
   private MonBackend backend;
-  private MSP430Core  cpu;
+  private MSP430     cpu;
   
-  public RegMonWatchpoint(MSP430Core cpu, MonBackend backend) {
+  public RegMonWatchpoint(MSP430 cpu, MonBackend backend) {
     this.backend = backend;
     this.cpu     = cpu;
   }
