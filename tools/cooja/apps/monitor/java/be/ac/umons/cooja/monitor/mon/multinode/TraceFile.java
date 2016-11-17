@@ -25,6 +25,7 @@
 package be.ac.umons.cooja.monitor.mon.multinode;
 
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -60,8 +61,8 @@ public class TraceFile {
   
   private final OutputStream out;
   
-  public TraceFile(String filePath) throws IOException {
-    out = new BufferedOutputStream(new FileOutputStream(filePath));
+  public TraceFile(File file) throws IOException {
+    out = new BufferedOutputStream(new FileOutputStream(file));
 
     writeMagik();
     writeVersion();

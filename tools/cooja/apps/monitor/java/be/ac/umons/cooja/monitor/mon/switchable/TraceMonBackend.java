@@ -24,6 +24,7 @@
 
 package be.ac.umons.cooja.monitor.mon.switchable;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.ByteOrder;
 
@@ -47,15 +48,15 @@ public class TraceMonBackend extends SwitchableMonBackend {
   
   /* Use an instance of this class to tell SwitchableMon how to create this backend. */
   static public class Creator implements SwitchableMonBackendCreator {
-    private final String filePath;
+    private final File file;
     
-    public Creator(String filePath) {
-      this.filePath = filePath;
+    public Creator(File file) {
+      this.file = file;
     }
     
     @Override   
     public SwitchableMonBackend create(MonTimestamp recordOffset, MonTimestamp infoOffset, MonTimestamp byteOffset, ByteOrder byteOrder) throws MonException {
-      return new TraceMonBackend(recordOffset, infoOffset, byteOffset, byteOrder, filePath);
+      return new TraceMonBackend(recordOffset, infoOffset, byteOffset, byteOrder, file);
     }
   }
   
@@ -63,15 +64,15 @@ public class TraceMonBackend extends SwitchableMonBackend {
   
   public TraceMonBackend(MonTimestamp recordOffset, MonTimestamp infoOffset,
                             MonTimestamp byteOffset, ByteOrder byteOrder, 
-                            String filePath) throws MonException {
+                            File file) throws MonException {
     super(recordOffset, infoOffset, byteOffset, byteOrder);
     
     try {
-      trace = new TraceFile(filePath);
+      trace = new TraceFile(file);
       
       writeEvent(new MonTimestamp(0, 0.), new MonCreateEvent(recordOffset, infoOffset, byteOffset, byteOrder));
     } catch (IOException e) {
-      throw new MonException("cannot open/create '" + filePath + "'");
+      throw new MonException("cannot open/create '" + file.getAbsolutePath() + "'");
     }
     
     System.out.println("(mon) trace backend created!");
