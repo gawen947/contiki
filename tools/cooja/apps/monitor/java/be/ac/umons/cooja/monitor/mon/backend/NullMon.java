@@ -24,7 +24,7 @@
 
 package be.ac.umons.cooja.monitor.mon.backend;
 
-import se.sics.mspsim.mon.MonTimestamp;
+import be.ac.umons.cooja.monitor.mon.MonTimestamp;
 
 /**
  * Discard events, no output at all.

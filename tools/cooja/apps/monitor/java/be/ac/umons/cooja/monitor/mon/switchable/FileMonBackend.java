@@ -30,9 +30,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteOrder;
 
-import se.sics.mspsim.mon.MonException;
-import se.sics.mspsim.mon.MonTimestamp;
-import se.sics.mspsim.mon.backend.FileMon;
+import be.ac.umons.cooja.monitor.mon.MonException;
+import be.ac.umons.cooja.monitor.mon.MonTimestamp;
+import be.ac.umons.cooja.monitor.mon.backend.FileMon;
 import se.sics.mspsim.util.Utils;
 
 /**

@@ -26,9 +26,9 @@ package be.ac.umons.cooja.monitor.mon.backend;
 
 import java.nio.ByteOrder;
 
-import se.sics.mspsim.mon.MonError;
-import se.sics.mspsim.mon.MonTimestamp;
-import se.sics.mspsim.util.Utils;
+import be.ac.umons.cooja.monitor.Utils;
+import be.ac.umons.cooja.monitor.mon.MonError;
+import be.ac.umons.cooja.monitor.mon.MonTimestamp;
 
 /**
  * Specify where and how the events should be recorded.

@@ -26,11 +26,11 @@ package be.ac.umons.cooja.monitor.mon.backend;
 
 import java.util.ArrayList;
 
-import se.sics.mspsim.mon.MonError;
-import se.sics.mspsim.mon.MonEvent;
-import se.sics.mspsim.mon.MonException;
-import se.sics.mspsim.mon.MonTimestamp;
-import se.sics.mspsim.mon.switchable.SwitchableMonBackend;
+import be.ac.umons.cooja.monitor.mon.MonError;
+import be.ac.umons.cooja.monitor.mon.MonEvent;
+import be.ac.umons.cooja.monitor.mon.MonException;
+import be.ac.umons.cooja.monitor.mon.MonTimestamp;
+import be.ac.umons.cooja.monitor.mon.switchable.SwitchableMonBackend;
 
 /**
  * Bufferize event when no backend has been configured.

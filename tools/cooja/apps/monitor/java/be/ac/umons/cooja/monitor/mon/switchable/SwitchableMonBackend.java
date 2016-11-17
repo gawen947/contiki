@@ -26,8 +26,8 @@ package be.ac.umons.cooja.monitor.mon.switchable;
 
 import java.nio.ByteOrder;
 
-import se.sics.mspsim.mon.MonException;
-import se.sics.mspsim.mon.MonTimestamp;
+import be.ac.umons.cooja.monitor.mon.MonException;
+import be.ac.umons.cooja.monitor.mon.MonTimestamp;
 
 /**
  * Switchable monitor backends must implement this interface.

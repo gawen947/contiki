@@ -24,8 +24,8 @@
 
 package be.ac.umons.cooja.monitor.mon.backend;
 
-import se.sics.mspsim.mon.MonTimestamp;
-import se.sics.mspsim.mon.switchable.SwitchableMonBackend;
+import be.ac.umons.cooja.monitor.mon.MonTimestamp;
+import be.ac.umons.cooja.monitor.mon.switchable.SwitchableMonBackend;
 
 /**
  * Counts event that have been skipped.

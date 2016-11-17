@@ -26,8 +26,8 @@ package be.ac.umons.cooja.monitor.mon.backend;
 
 import java.nio.ByteOrder;
 
-import se.sics.mspsim.mon.MonTimestamp;
-import se.sics.mspsim.util.Utils;
+import be.ac.umons.cooja.monitor.mon.MonTimestamp;
+import be.ac.umons.cooja.monitor.Utils;
 
 /**
  * Display events on stdout.

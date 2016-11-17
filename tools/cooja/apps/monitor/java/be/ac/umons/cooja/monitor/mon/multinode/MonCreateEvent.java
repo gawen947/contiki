@@ -28,7 +28,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteOrder;
 
-import se.sics.mspsim.mon.MonTimestamp;
+import be.ac.umons.cooja.monitor.mon.MonTimestamp;
 import se.sics.mspsim.util.Utils;
 
 /**

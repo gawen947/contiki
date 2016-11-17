@@ -27,17 +27,17 @@ package be.ac.umons.cooja.monitor.mon.switchable;
 import java.io.IOException;
 import java.nio.ByteOrder;
 
-import se.sics.mspsim.mon.MonException;
-import se.sics.mspsim.mon.MonTimestamp;
-import se.sics.mspsim.mon.multinode.Event;
-import se.sics.mspsim.mon.multinode.EventElement;
-import se.sics.mspsim.mon.multinode.MonCreateEvent;
-import se.sics.mspsim.mon.multinode.MonDataEvent;
-import se.sics.mspsim.mon.multinode.MonStateEvent;
-import se.sics.mspsim.mon.multinode.NodeScope;
-import se.sics.mspsim.mon.multinode.ScopeElement;
-import se.sics.mspsim.mon.multinode.SimulationScope;
-import se.sics.mspsim.mon.multinode.TraceFile;
+import be.ac.umons.cooja.monitor.mon.MonException;
+import be.ac.umons.cooja.monitor.mon.MonTimestamp;
+import be.ac.umons.cooja.monitor.mon.multinode.Event;
+import be.ac.umons.cooja.monitor.mon.multinode.EventElement;
+import be.ac.umons.cooja.monitor.mon.multinode.MonCreateEvent;
+import be.ac.umons.cooja.monitor.mon.multinode.MonDataEvent;
+import be.ac.umons.cooja.monitor.mon.multinode.MonStateEvent;
+import be.ac.umons.cooja.monitor.mon.multinode.NodeScope;
+import be.ac.umons.cooja.monitor.mon.multinode.ScopeElement;
+import be.ac.umons.cooja.monitor.mon.multinode.SimulationScope;
+import be.ac.umons.cooja.monitor.mon.multinode.TraceFile;
 
 /**
  * Records events into a trace file (see TraceFile).

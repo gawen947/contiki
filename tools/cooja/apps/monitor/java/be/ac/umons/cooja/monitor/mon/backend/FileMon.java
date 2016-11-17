@@ -29,11 +29,10 @@ import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-import se.sics.mspsim.mon.MonTimestamp;
-import se.sics.mspsim.util.Utils;
+import be.ac.umons.cooja.monitor.mon.MonTimestamp;
+import be.ac.umons.cooja.monitor.Utils;
 
 /**
  * Store events in a file.

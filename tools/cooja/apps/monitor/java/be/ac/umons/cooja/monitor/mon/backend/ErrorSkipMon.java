@@ -24,10 +24,10 @@
 
 package be.ac.umons.cooja.monitor.mon.backend;
 
-import se.sics.mspsim.mon.MonError;
-import se.sics.mspsim.mon.MonException;
-import se.sics.mspsim.mon.MonTimestamp;
-import se.sics.mspsim.mon.switchable.SwitchableMonBackend;
+import be.ac.umons.cooja.monitor.mon.MonError;
+import be.ac.umons.cooja.monitor.mon.MonException;
+import be.ac.umons.cooja.monitor.mon.MonTimestamp;
+import be.ac.umons.cooja.monitor.mon.switchable.SwitchableMonBackend;
 
 /**
  * There shall be no skipped event.
