@@ -1,5 +1,7 @@
 package be.ac.umons.cooja.monitor.regmon;
 
+import org.contikios.cooja.mspmote.MspMote;
+
 import be.ac.umons.cooja.monitor.mon.MonTimestamp;
 import be.ac.umons.cooja.monitor.mon.backend.MonBackend;
 import se.sics.mspsim.core.MSP430;
@@ -7,7 +9,7 @@ import se.sics.mspsim.core.Memory.AccessMode;
 import se.sics.mspsim.core.Memory.AccessType;
 import se.sics.mspsim.core.MemoryMonitor;
 
-public class RegMonWatchpoint implements MemoryMonitor {
+public class RegMon implements MemoryMonitor {
   public static final int MONCTX = 0x1C0; /* context */
   public static final int MONENT = 0x1C2; /* entity */
   public static final int MONSTI = 0x1C4; /* state/info */
@@ -27,9 +29,14 @@ public class RegMonWatchpoint implements MemoryMonitor {
   private MonBackend backend;
   private MSP430     cpu;
   
-  public RegMonWatchpoint(MSP430 cpu, MonBackend backend) {
+  public RegMon(MspMote mspMote, MonBackend backend) {
     this.backend = backend;
-    this.cpu     = cpu;
+
+    cpu = mspMote.getCPU();
+    cpu.addWatchPoint(MONCTX, this);
+    cpu.addWatchPoint(MONENT, this);
+    cpu.addWatchPoint(MONSTI, this);
+    cpu.addWatchPoint(MONCTL, this);
   }
   
   @Override
