@@ -36,8 +36,6 @@ import be.ac.umons.cooja.monitor.mon.multinode.MonCreateEvent;
 import be.ac.umons.cooja.monitor.mon.multinode.MonDataEvent;
 import be.ac.umons.cooja.monitor.mon.multinode.MonStateEvent;
 import be.ac.umons.cooja.monitor.mon.multinode.NodeScope;
-import be.ac.umons.cooja.monitor.mon.multinode.ScopeElement;
-import be.ac.umons.cooja.monitor.mon.multinode.SimulationScope;
 import be.ac.umons.cooja.monitor.mon.multinode.TraceFile;
 
 /**
