@@ -43,9 +43,11 @@ import be.ac.umons.cooja.monitor.mon.switchable.TraceMonBackend;
 import be.ac.umons.cooja.monitor.memmon.MemMon;
 
 /* TODO:
+ *  - Catch each mote added to the simulation (don't use startPlugin()).
  *  - Use simulation.getSimulationTime() in simulation scope (instead of 0).
  *  - Check for MSPMote when starting the plugin.
  *  - Add GUI to enable/disable monitor AND select a new backend.
+ *  - Change warning/info messages from to Logger in monitor core classes.
  */
 
 @ClassDescription("Monitor")
