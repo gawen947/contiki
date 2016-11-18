@@ -42,7 +42,7 @@ import be.ac.umons.cooja.monitor.mon.backend.SwitchableMon;
 import be.ac.umons.cooja.monitor.mon.switchable.TraceMonBackend;
 import be.ac.umons.cooja.monitor.memmon.MemMon;
 
-/* TODO: 
+/* TODO:
  *  - Use simulation.getSimulationTime() in simulation scope (instead of 0).
  *  - Check for MSPMote when starting the plugin.
  *  - Add GUI to enable/disable monitor AND select a new backend.
@@ -54,32 +54,32 @@ public class Monitor extends VisPlugin {
   private static final long serialVersionUID = 5359332460231108667L;
 
   private static Logger logger = Logger.getLogger(Monitor.class);
-  
+
   private SwitchableMon backend;
   private Simulation    simulation;
   private MemMon[]       monDevices;
-    
+
   public Monitor(Simulation simulation, final Cooja gui) {
     super("Monitor", gui, false);
-    
+
     logger.info("Loading monitor plugin...");
-    
+
     this.simulation = simulation;
-    
+
     /* Ensure that we always have a backend for the output trace.
      * If an event is generated and no real backend is configured,
      * ErrorSkipMon will generate an exception. */
-    backend = new ErrorSkipMon(); 
+    backend = new ErrorSkipMon();
   }
-  
+
   public void startPlugin() {
     super.startPlugin();
-    
+
     logger.info("Starting monitor plugin...");
-    
+
     /* Select the backend first (or at least the default file). */
     selectBackend();
-    
+
     /* Add the MemMon device to all compatible motes. */
     monDevices = new MemMon[simulation.getMotesCount()];
     for(int i = 0 ; i < simulation.getMotesCount() ; i++) {
@@ -88,28 +88,28 @@ public class Monitor extends VisPlugin {
       monDevices[i] = new MemMon(mspMote, backend);
     }
   }
-  
+
   public void closePlugin() {
     backend.close(); /* flush backend buffers */
   }
-  
+
   private void selectBackend() {
     File backendFile = selectTraceFile();
     backend.selectBackend(new TraceMonBackend.Creator(backendFile));
     logger.info("Monitor backend selected '" + backendFile.getAbsolutePath() + "'");
   }
-  
+
   private File selectTraceFile() {
     JFileChooser fileChooser = new JFileChooser();
     File suggest = new File(Cooja.getExternalToolsSetting("MONITOR_LAST", "monitor.trace"));
     fileChooser.setSelectedFile(suggest);
     fileChooser.setDialogTitle("Select monitor output trace file");
-    
+
     int reply = fileChooser.showOpenDialog(Cooja.getTopParentContainer());
     if(reply == JFileChooser.APPROVE_OPTION) {
       File selectedFile = fileChooser.getSelectedFile();
       Cooja.setExternalToolsSetting("MONITOR_LAST", selectedFile.getAbsolutePath());
-      
+
       return selectedFile;
     }
     else
