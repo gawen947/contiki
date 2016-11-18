@@ -57,7 +57,7 @@ static void record(int context, int entity, int state)
   memmon_reg_sti = state;
 
   /* trigger */
-  memmon_reg_ctl |= 0x100;
+  memmon_reg_ctl = 0x100;
 }
 
 static void info(int context, int entity, const void *info, int len)
@@ -67,7 +67,7 @@ static void info(int context, int entity, const void *info, int len)
   memmon_reg_sti = (unsigned int)info;
 
   /* set len and trigger */
-  memmon_reg_ctl |= len | 0x300;
+  memmon_reg_ctl = len | 0x300;
 }
 
 static void init(void) {}
