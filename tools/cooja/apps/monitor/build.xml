@@ -9,6 +9,7 @@
 
 	<property name="cooja_jar" value="${cooja}/dist/cooja.jar"/>
   <property name="monitor_jar" value="${lib}/monitor.jar"/>
+  <property name="mspsim_jar" value="../mspsim/lib/mspsim.jar"/>
 
   <target name="init">
     <tstamp/>
@@ -26,6 +27,7 @@
            includeantruntime="false">
       <classpath>
         <pathelement location="${monitor_jar}"/>
+        <pathelement location="${mspsim_jar}"/>
         <pathelement location="${cooja_jar}"/>
         <pathelement location="${cooja}/apps/mspsim/build"/>
       </classpath>
@@ -39,6 +41,7 @@
       <fileset dir="${src}/" includes="**/*.java"/>
       <classpath>
         <pathelement location="${monitor_jar}"/>
+        <pathelement location="${mspsim_jar}"/>
         <pathelement location="${cooja_jar}"/>
       </classpath>
     </javadoc>
