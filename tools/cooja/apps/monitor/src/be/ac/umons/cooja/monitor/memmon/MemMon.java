@@ -24,14 +24,22 @@
 
 package be.ac.umons.cooja.monitor.memmon;
 
+import java.io.IOException;
+
 import org.apache.log4j.Logger;
 import org.contikios.cooja.mspmote.MspMote;
+import org.contikios.cooja.mspmote.MspMoteType;
 
+import be.ac.umons.cooja.monitor.mon.MonTimestamp;
 import be.ac.umons.cooja.monitor.mon.backend.MonBackend;
-import be.ac.umons.cooja.monitor.Monitor;
+import se.sics.mspsim.core.MSP430;
+import se.sics.mspsim.core.Memory.AccessMode;
+import se.sics.mspsim.core.Memory.AccessType;
+import se.sics.mspsim.core.MemoryMonitor;
+import se.sics.mspsim.util.MapTable;
 
-public class MemMon {
-  private static Logger logger = Logger.getLogger(Monitor.class);
+public class MemMon implements MemoryMonitor {
+  private static Logger logger = Logger.getLogger(MemMon.class);
 
   public final int monctx; /* context */
   public final int monent; /* entity */
@@ -44,6 +52,11 @@ public class MemMon {
      7-0: info len
    */
 
+  private int ctx;
+  private int ent;
+  private int sti;
+  private int len;
+
   private final MonBackend backend;
   private final MSP430     cpu;
 
@@ -52,7 +65,22 @@ public class MemMon {
 
     logger.info("Starting MemMon device");
 
-    MapTable symTbl = ((MspMoteType)getType()).getELF().getMap();
+    MapTable symTbl;
+
+    try {
+      symTbl = ((MspMoteType)mspMote.getType()).getELF().getMap();
+    } catch ( IOException e ) {
+      logger.error("Cannot read ELF");
+
+      cpu    = null;
+      monctx = -1;
+      monent = -1;
+      monsti = -1;
+      monctl = -1;
+
+      return;
+    }
+
     cpu = mspMote.getCPU();
 
     /* Find monitor symbols */
@@ -77,17 +105,13 @@ public class MemMon {
 
   @Override
   public void notifyWriteAfter(int addr, int data, AccessMode mode) {
-    switch(addr) {
-    case monctx:
+    if(addr == monctx)
       ctx = data;
-      break;
-    case monent:
+    else if(addr == monent)
       ent = data;
-      break;
-    case monsti:
+    else if(addr == monsti)
       sti = data;
-      break;
-    case monctl:
+    else if(addr == monctl) {
       len = data & 0xff;
 
       if((data & 0x100) != 0) {

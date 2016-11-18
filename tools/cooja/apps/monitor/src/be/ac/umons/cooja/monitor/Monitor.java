@@ -40,7 +40,7 @@ import org.contikios.cooja.mspmote.MspMote;
 import be.ac.umons.cooja.monitor.mon.backend.ErrorSkipMon;
 import be.ac.umons.cooja.monitor.mon.backend.SwitchableMon;
 import be.ac.umons.cooja.monitor.mon.switchable.TraceMonBackend;
-import be.ac.umons.cooja.monitor.regmon.RegMon;
+import be.ac.umons.cooja.monitor.memmon.MemMon;
 
 /* TODO: 
  *  - Use simulation.getSimulationTime() in simulation scope (instead of 0).
@@ -57,7 +57,7 @@ public class Monitor extends VisPlugin {
   
   private SwitchableMon backend;
   private Simulation    simulation;
-  private RegMon[]       monDevices;
+  private MemMon[]       monDevices;
     
   public Monitor(Simulation simulation, final Cooja gui) {
     super("Monitor", gui, false);
@@ -80,8 +80,8 @@ public class Monitor extends VisPlugin {
     /* Select the backend first (or at least the default file). */
     selectBackend();
     
-    /* Add the RegMon device to all compatible motes. */
-    monDevices = new RegMon[simulation.getMotesCount()];
+    /* Add the MemMon device to all compatible motes. */
+    monDevices = new MemMon[simulation.getMotesCount()];
     for(int i = 0 ; i < simulation.getMotesCount() ; i++) {
       /* FIXME: Isn't it dangerous ? We don't know if all nodes are MSP ones. */
       MspMote mspMote = (MspMote)simulation.getMote(i);
