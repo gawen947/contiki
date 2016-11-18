@@ -45,11 +45,6 @@
 #include "mon/monitor.h"
 #include "contiki-conf.h"
 
-extern volatile unsigned int memmon_reg_ctx;
-extern volatile unsigned int memmon_reg_ent;
-extern volatile unsigned int memmon_reg_sti;
-extern volatile unsigned int memmon_reg_ctl;
-
 extern const struct monitor_driver memmon_driver;
 
 #endif /* MEMMON_H_ */

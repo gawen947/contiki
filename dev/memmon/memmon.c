@@ -45,6 +45,11 @@
 #include "dev/memmon/memmon.h"
 #include "net/ip/uip.h"
 
+volatile unsigned int memmon_reg_ctx;
+volatile unsigned int memmon_reg_ent;
+volatile unsigned int memmon_reg_sti;
+volatile unsigned int memmon_reg_ctl;
+
 static void record(int context, int entity, int state)
 {
   memmon_reg_ctx = context;
