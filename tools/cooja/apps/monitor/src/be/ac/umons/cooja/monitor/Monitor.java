@@ -62,6 +62,8 @@ public class Monitor extends VisPlugin {
   public Monitor(Simulation simulation, final Cooja gui) {
     super("Monitor", gui, false);
     
+    logger.info("Loading monitor plugin...");
+    
     this.simulation = simulation;
     
     /* Ensure that we always have a backend for the output trace.
@@ -73,6 +75,8 @@ public class Monitor extends VisPlugin {
   public void startPlugin() {
     super.startPlugin();
     
+    logger.info("Starting monitor plugin...");
+    
     /* Select the backend first (or at least the default file). */
     selectBackend();
     
@@ -81,7 +85,7 @@ public class Monitor extends VisPlugin {
     for(int i = 0 ; i < simulation.getMotesCount() ; i++) {
       /* FIXME: Isn't it dangerous ? We don't know if all nodes are MSP ones. */
       MspMote mspMote = (MspMote)simulation.getMote(i);
-      monDevices[i] = new RegMon(mspMote, backend);
+      monDevices[i] = new MemMon(mspMote, backend);
     }
   }
   
@@ -92,6 +96,7 @@ public class Monitor extends VisPlugin {
   private void selectBackend() {
     File backendFile = selectTraceFile();
     backend.selectBackend(new TraceMonBackend.Creator(backendFile));
+    logger.info("Monitor backend selected '" + backendFile.getAbsolutePath() + "'");
   }
   
   private File selectTraceFile() {
