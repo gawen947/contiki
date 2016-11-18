@@ -44,6 +44,7 @@ import be.ac.umons.cooja.monitor.memmon.MemMon;
 
 /* TODO:
  *  - Catch each mote added to the simulation (don't use startPlugin()).
+ *  - Transmit the node ID for node scope (instead of 0).
  *  - Use simulation.getSimulationTime() in simulation scope (instead of 0).
  *  - Check for MSPMote when starting the plugin.
  *  - Add GUI to enable/disable monitor AND select a new backend.
