@@ -67,7 +67,7 @@ static void info(int context, int entity, const void *info, int len)
 
 static void init(void) {}
 
-const struct monitor_driver regmon_driver = {
+const struct monitor_driver memmon_driver = {
   "memmon",
   record,
   info,
