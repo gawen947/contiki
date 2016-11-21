@@ -97,13 +97,13 @@ public abstract class MonBackend {
       throw new MonError("protocol not initiated");
     return byteOrder;
   }
-  
+
   /** Return true if the monitor has been initiated. */
   protected boolean isInitiated() {
     return initState == MonInitState.INITIATED;
   }
 
-  public void state(int context, int entity, int state, MonTimestamp timestamp) {
+  public void state(int context, int entity, int state, MonTimestamp timestamp, double simTime) {
     switch(initState) {
     case ENDIAN:
       /* If the source was already in network order,
@@ -138,7 +138,7 @@ public abstract class MonBackend {
       /* The protocol has been initiated so we
          just transmit the message to the backend
          implementation. */
-      recordState(context, entity, state, timestamp);
+      recordState(context, entity, state, timestamp, simTime);
       break;
     case DISABLED:
       /* an error occured */
@@ -146,7 +146,7 @@ public abstract class MonBackend {
     }
   }
 
-  public void info(int context, int entity, byte[] info, MonTimestamp timestamp) {
+  public void info(int context, int entity, byte[] info, MonTimestamp timestamp, double simTime) {
     switch(initState) {
     case ENDIAN:
     case RECORD_OFFSET:
@@ -187,21 +187,21 @@ public abstract class MonBackend {
       /* The protocol has been initiated so we
          just transmit the message to the backend
          implementation. */
-      recordInfo(context, entity, info, timestamp);
+      recordInfo(context, entity, info, timestamp, simTime);
       break;
     case DISABLED:
       /* an error occured */
       return;
     }
   }
-  
+
   /** Record an event into the backend. */
   protected abstract void recordState(int context, int entity, int state,
-                                      MonTimestamp timestamp);
+                                      MonTimestamp timestamp, double simTime);
 
   /** Record information about an entity into the backend. */
   protected abstract void recordInfo(int context, int entity, byte[] info,
-                                     MonTimestamp timestamp);
+                                     MonTimestamp timestamp, double simTime);
 
   /** Signal that the monitor protocol has been intiated.
       Offsets and endianness should be accessible. */
@@ -210,6 +210,6 @@ public abstract class MonBackend {
   private void error(String message) {
     System.out.printf("(mon) error: %s\n", message);
   }
-  
+
   public abstract void close();
 }

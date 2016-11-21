@@ -29,6 +29,7 @@ import java.io.IOException;
 import org.apache.log4j.Logger;
 import org.contikios.cooja.mspmote.MspMote;
 import org.contikios.cooja.mspmote.MspMoteType;
+import org.contikios.cooja.Simulation;
 
 import be.ac.umons.cooja.monitor.mon.MonTimestamp;
 import be.ac.umons.cooja.monitor.mon.backend.MonBackend;
@@ -59,9 +60,11 @@ public class MemMon implements MemoryMonitor {
 
   private final MonBackend backend;
   private final MSP430     cpu;
+  private final Simulation simulation;
 
-  public MemMon(MspMote mspMote, MonBackend backend) {
-    this.backend = backend;
+  public MemMon(MspMote mspMote, MonBackend backend, Simulation simulation) {
+    this.backend    = backend;
+    this.simulation = simulation;
 
     logger.info("Starting MemMon device");
 
@@ -126,7 +129,7 @@ public class MemMon implements MemoryMonitor {
   private void recordState() {
     /* sti is state */
     backend.state(ctx, ent, sti,
-                  new MonTimestamp(cpu.cycles, cpu.getTimeMillis()));
+                  new MonTimestamp(cpu.cycles, cpu.getTimeMillis()), simulation.getSimulationTime());
   }
 
   private void recordInfo() {
@@ -139,7 +142,7 @@ public class MemMon implements MemoryMonitor {
       info[i] = (byte)cpu.memory[sti + i];
 
     backend.info(ctx, ent, info,
-                 new MonTimestamp(cpu.cycles, cpu.getTimeMillis()));
+                 new MonTimestamp(cpu.cycles, cpu.getTimeMillis()), simulation.getSimulationTime());
   }
 
   @Override

@@ -33,26 +33,26 @@ import be.ac.umons.cooja.monitor.mon.switchable.SwitchableMonBackend;
 public class CountSkipMon extends SwitchableMon {
   private int stateSkipped = 0;
   private int infoSkipped  = 0;
-  
+
   int getStateSkipped() {
     return stateSkipped;
   }
-  
+
   int getInfoSkipped() {
     return infoSkipped;
   }
-  
+
   int getSkipped() {
     return getStateSkipped() + getInfoSkipped();
   }
-  
+
   @Override
-  protected void skipState(int context, int entity, int state, MonTimestamp timestamp) {
+  protected void skipState(int context, int entity, int state, MonTimestamp timestamp, double simTime) {
     stateSkipped++;
   }
-  
+
   @Override
-  protected void skipInfo(int context, int entity, byte[] info, MonTimestamp timestamp) {
+  protected void skipInfo(int context, int entity, byte[] info, MonTimestamp timestamp, double simTime) {
     infoSkipped++;
   }
 

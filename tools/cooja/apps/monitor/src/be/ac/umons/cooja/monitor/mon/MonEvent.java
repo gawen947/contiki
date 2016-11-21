@@ -32,56 +32,63 @@ public class MonEvent {
     STATE,
     INFO
   }
-  
+
   private final int context;
   private final int entity;
   private final int state;
   private final byte[] info;
-  
+
   private final MonTimestamp timestamp;
-  
-  public MonEvent(int context, int entity, int state, MonTimestamp timestamp) {
+  private final double       simTime;
+
+  public MonEvent(int context, int entity, int state, MonTimestamp timestamp, double simTime) {
     this.context = context;
     this.entity  = entity;
     this.state   = state;
+    this.simTime = simTime;
     this.info    = null;
-    
+
     this.timestamp = timestamp;
   }
-  
-  public MonEvent(int context, int entity, byte[] info, MonTimestamp timestamp) {
+
+  public MonEvent(int context, int entity, byte[] info, MonTimestamp timestamp, double simTime) {
     this.context = context;
     this.entity  = entity;
     this.state   = 0xffff;
+    this.simTime = simTime;
     this.info    = info;
-    
+
     this.timestamp = timestamp;
   }
-  
+
   public MonEvent.Type type() {
     if(info == null)
       return MonEvent.Type.STATE;
     else
       return MonEvent.Type.INFO;
   }
-  
+
   public int getContext() {
     return context;
   }
-  
+
   public int getEntity() {
     return entity;
   }
-  
+
   public int getState() {
     return state;
   }
-  
+
   public byte[] getInfo() {
     return info;
   }
-  
+
   public MonTimestamp getTimestamp() {
     return timestamp;
+  }
+
+  public double getSimulationTime() {
+    return simTime;
   }
 }

@@ -44,12 +44,12 @@ public class NullMonBackend extends SwitchableMonBackend {
   public NullMonBackend(MonTimestamp recordOffset, MonTimestamp infoOffset, MonTimestamp byteOffset, ByteOrder byteOrder) throws MonException {
     super(recordOffset, infoOffset, byteOffset, byteOrder);
   }
-  
-  @Override
-  public void recordState(int context, int entity, int state, MonTimestamp timestamp) {}
 
   @Override
-  public void recordInfo(int context, int entity, byte[] info, MonTimestamp timestamp) {}
+  public void recordState(int context, int entity, int state, MonTimestamp timestamp, double simTime) {}
+
+  @Override
+  public void recordInfo(int context, int entity, byte[] info, MonTimestamp timestamp, double simTime) {}
 
   @Override
   public void destroy() {}

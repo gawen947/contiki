@@ -36,13 +36,13 @@ import be.ac.umons.cooja.monitor.mon.switchable.SwitchableMonBackend;
 public class ErrorSkipMon extends SwitchableMon {
   @Override
   protected void skipState(int context, int entity, int state,
-      MonTimestamp timestamp) throws MonException {
+                           MonTimestamp timestamp, double simTime) throws MonException {
     new MonError("event skipped, no backend selected");
   }
 
   @Override
   protected void skipInfo(int context, int entity, byte[] info,
-      MonTimestamp timestamp) throws MonException {
+                          MonTimestamp timestamp, double simTime) throws MonException {
     new MonError("event skipped, no backend selected");
   }
 

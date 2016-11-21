@@ -38,19 +38,19 @@ public abstract class SwitchableMon extends MonBackend {
   private MonTimestamp recordOffset = null;
   private MonTimestamp infoOffset   = null;
   private MonTimestamp byteOffset   = null;
-  
+
   private SwitchableMonBackend backend = null;
-  
+
   /* If we select a backend before the monitor has been initialized. */
   private SwitchableMonBackendCreator delayedBackend = null;
-  
+
   protected void initiated() {
     recordOffset = getRecordOffset();
     infoOffset   = getInfoOffset();
     byteOffset   = getByteOffset();
-        
+
     /* If backend creation was delayed (because the monitor was
-     * not already initiated), we create it now. */ 
+     * not already initiated), we create it now. */
     if(delayedBackend != null)
       createBackend(delayedBackend);
     delayedBackend = null;
@@ -60,7 +60,7 @@ public abstract class SwitchableMon extends MonBackend {
     if(this.backend != null)
       /* replace a currently existing backend */
       close();
-        
+
     /* If the monitor has not been initiated already,
      * we delay the creation of the backend. */
     if(isInitiated())
@@ -68,14 +68,14 @@ public abstract class SwitchableMon extends MonBackend {
     else
       delayedBackend = backendCreator;
   }
-  
-  public void recordState(int context, int entity, int state, MonTimestamp timestamp) {
+
+  public void recordState(int context, int entity, int state, MonTimestamp timestamp, double simTime) {
     try {
       if(backend != null)
-        backend.recordState(context, entity, state, timestamp);
+        backend.recordState(context, entity, state, timestamp, simTime);
       else
         /* no backend selected, skip event and tell subclass */
-        skipState(context, entity, state, timestamp);
+        skipState(context, entity, state, timestamp, simTime);
     } catch(MonException e) {
       /* If something bad happened during the backend creation,
        * tell the user and acts like if no backend was selected. */
@@ -84,13 +84,13 @@ public abstract class SwitchableMon extends MonBackend {
     }
   }
 
-  public void recordInfo(int context, int entity, byte[] info, MonTimestamp timestamp) {
+  public void recordInfo(int context, int entity, byte[] info, MonTimestamp timestamp, double simTime) {
     try {
       if(backend != null)
-        backend.recordInfo(context, entity, info, timestamp);
+        backend.recordInfo(context, entity, info, timestamp, simTime);
       else
         /* no backend selected, skip event and tell subclass */
-        skipInfo(context, entity, info, timestamp);
+        skipInfo(context, entity, info, timestamp, simTime);
     } catch(MonException e) {
       /* If something bad happened during the backend creation,
        * tell the user and acts like if no backend was selected. */
@@ -98,7 +98,7 @@ public abstract class SwitchableMon extends MonBackend {
       return;
     }
   }
-  
+
   public void close() {
     if(this.backend != null) {
       /* tell the backend to finalize any pending operation */
@@ -109,15 +109,15 @@ public abstract class SwitchableMon extends MonBackend {
         backendError(e);
       }
 
-      unselect();      
+      unselect();
     }
   }
-  
+
   private void createBackend(SwitchableMonBackendCreator backendCreator) {
     /* create the backend instance now */
     try {
       this.backend = backendCreator.create(recordOffset, infoOffset, byteOffset, getEndian());
-      
+
       /* Tell subclasses about the newly created backend instance.
        * This subclass implement behaviors to react to events that
        * are triggered when no backend is currently selected. */
@@ -129,20 +129,20 @@ public abstract class SwitchableMon extends MonBackend {
       return;
     }
   }
-  
+
   private void unselect() {
     if(this.backend != null) {
       /* tell subclass that the currently selected backend was just destroyed */
       destroySkip(this.backend);
-      
+
       /* marks that no backend are currently selected */
       this.backend = null;
-      
+
       System.out.println("(mon) backend disabled!");
     }
   }
-  
-  private void backendError(MonException e) {   
+
+  private void backendError(MonException e) {
     unselect();
 
     /* This is ugly! I know...
@@ -150,20 +150,20 @@ public abstract class SwitchableMon extends MonBackend {
      * we want the complete simulation to stop.
      * Otherwise we would have to throw the exception
      * upwards (up to the user interface).
-     * 
+     *
      * But this is still research code. So it's OK for now.
      * We better abort an erroneous simulation than risking
      * to base our observations on invalid results.
-     * 
+     *
      * At least I put a fixme.
-     * 
+     *
      * FIXME: propagate exception up to the UI. */
     throw new MonError("monitor backend error");
   }
-  
+
   /* subclasses must override this to provide their own implementation for skipped events. */
-  protected abstract void skipState(int context, int entity, int state, MonTimestamp timestamp) throws MonException;
-  protected abstract void skipInfo(int context, int entity, byte[] info, MonTimestamp timestamp) throws MonException;
+  protected abstract void skipState(int context, int entity, int state, MonTimestamp timestamp, double simTime) throws MonException;
+  protected abstract void skipInfo(int context, int entity, byte[] info, MonTimestamp timestamp, double simTime) throws MonException;
   protected abstract void initSkip(SwitchableMonBackend backend);
   protected abstract void destroySkip(SwitchableMonBackend backend);
 }

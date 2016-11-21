@@ -36,62 +36,63 @@ import be.ac.umons.cooja.monitor.mon.multinode.MonCreateEvent;
 import be.ac.umons.cooja.monitor.mon.multinode.MonDataEvent;
 import be.ac.umons.cooja.monitor.mon.multinode.MonStateEvent;
 import be.ac.umons.cooja.monitor.mon.multinode.NodeScope;
+import be.ac.umons.cooja.monitor.mon.multinode.SimulationScope;
 import be.ac.umons.cooja.monitor.mon.multinode.TraceFile;
 
 /**
  * Records events into a trace file (see TraceFile).
  */
 public class TraceMonBackend extends SwitchableMonBackend {
-  private static short  DEFAULT_NODE_ID = 0;    /* Default node identifier used. */ 
-  
+  private static short  DEFAULT_NODE_ID = 0;    /* Default node identifier used. */
+
   /* Use an instance of this class to tell SwitchableMon how to create this backend. */
   static public class Creator implements SwitchableMonBackendCreator {
     private final File file;
-    
+
     public Creator(File file) {
       this.file = file;
     }
-    
-    @Override   
+
+    @Override
     public SwitchableMonBackend create(MonTimestamp recordOffset, MonTimestamp infoOffset, MonTimestamp byteOffset, ByteOrder byteOrder) throws MonException {
       return new TraceMonBackend(recordOffset, infoOffset, byteOffset, byteOrder, file);
     }
   }
-  
+
   private final TraceFile trace;
-  
+
   public TraceMonBackend(MonTimestamp recordOffset, MonTimestamp infoOffset,
-                            MonTimestamp byteOffset, ByteOrder byteOrder, 
-                            File file) throws MonException {
+                         MonTimestamp byteOffset, ByteOrder byteOrder,
+                         File file) throws MonException {
     super(recordOffset, infoOffset, byteOffset, byteOrder);
-    
+
     try {
       trace = new TraceFile(file);
-      
-      writeEvent(new MonTimestamp(0, 0.), new MonCreateEvent(recordOffset, infoOffset, byteOffset, byteOrder));
+
+      writeEvent(new MonTimestamp(0, 0.), 0., new MonCreateEvent(recordOffset, infoOffset, byteOffset, byteOrder));
     } catch (IOException e) {
       throw new MonException("cannot open/create '" + file.getAbsolutePath() + "'");
     }
-    
+
     System.out.println("(mon) trace backend created!");
   }
-  
+
   @Override
-  public void recordState(int context, int entity, int state, MonTimestamp timestamp) throws MonException {
+  public void recordState(int context, int entity, int state, MonTimestamp timestamp, double simTime) throws MonException {
     try {
-      writeEvent(timestamp, new MonStateEvent(context, entity, state));
+      writeEvent(timestamp, simTime, new MonStateEvent(context, entity, state));
     } catch (IOException e) {
       throw new MonException("cannot write state event");
     }
   }
 
   @Override
-  public void recordInfo(int context, int entity, byte[] info, MonTimestamp timestamp) throws MonException {
+  public void recordInfo(int context, int entity, byte[] info, MonTimestamp timestamp, double simTime) throws MonException {
     try {
-      writeEvent(timestamp, new MonDataEvent(context, entity, info));
+      writeEvent(timestamp, simTime, new MonDataEvent(context, entity, info));
     } catch (IOException e) {
       throw new MonException("cannot write data event");
-    }   
+    }
   }
 
   @Override
@@ -101,13 +102,14 @@ public class TraceMonBackend extends SwitchableMonBackend {
       System.out.println("(mon) file backend closes!");
     } catch (IOException e) {
       throw new MonException("close error");
-    } 
+    }
   }
-  
-  private void writeEvent(MonTimestamp timestamp, EventElement eventElement) throws IOException {
+
+  private void writeEvent(MonTimestamp timestamp, double simTime, EventElement eventElement) throws IOException {
     Event event = new Event(eventElement);
-    
+
     event.addScope(new NodeScope(timestamp, TraceMonBackend.DEFAULT_NODE_ID));
+    event.addScope(new SimulationScope(simTime));
 
     trace.write(event);
   }

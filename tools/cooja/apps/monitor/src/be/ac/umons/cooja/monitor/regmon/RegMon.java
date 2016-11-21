@@ -25,6 +25,7 @@
 package be.ac.umons.cooja.monitor.regmon;
 
 import org.contikios.cooja.mspmote.MspMote;
+import org.contikios.cooja.Simulation;
 
 import be.ac.umons.cooja.monitor.mon.MonTimestamp;
 import be.ac.umons.cooja.monitor.mon.backend.MonBackend;
@@ -52,9 +53,11 @@ public class RegMon implements MemoryMonitor {
 
   private final MonBackend backend;
   private final MSP430     cpu;
+  private final Simulation simulation;
 
-  public RegMon(MspMote mspMote, MonBackend backend) {
-    this.backend = backend;
+  public RegMon(MspMote mspMote, MonBackend backend, Simulation simulation) {
+    this.backend    = backend;
+    this.simulation = simulation;
 
     cpu = mspMote.getCPU();
     cpu.addWatchPoint(MONCTX, this);
@@ -90,7 +93,7 @@ public class RegMon implements MemoryMonitor {
   private void recordState() {
     /* sti is state */
     backend.state(ctx, ent, sti,
-                  new MonTimestamp(cpu.cycles, cpu.getTimeMillis()));
+                  new MonTimestamp(cpu.cycles, cpu.getTimeMillis()), simulation.getSimulationTime());
   }
 
   private void recordInfo() {
@@ -103,7 +106,7 @@ public class RegMon implements MemoryMonitor {
       info[i] = (byte)cpu.memory[sti + i];
 
     backend.info(ctx, ent, info,
-                 new MonTimestamp(cpu.cycles, cpu.getTimeMillis()));
+                 new MonTimestamp(cpu.cycles, cpu.getTimeMillis()), simulation.getSimulationTime());
   }
 
   @Override

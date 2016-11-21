@@ -32,12 +32,14 @@ import be.ac.umons.cooja.monitor.mon.switchable.SwitchableMonBackend;
  */
 public class WarnSkipMon extends SwitchableMon {
   @Override
-  protected void skipState(int context, int entity, int state, MonTimestamp timestamp) {
-    System.out.println(String.format("(mon) warning: state event skipped at %f ms (%l cycles)", timestamp.getMillis(), timestamp.getCycles()));
+  protected void skipState(int context, int entity, int state, MonTimestamp timestamp, double simTime) {
+    System.out.println(String.format("(mon) warning: state event skipped at (cpu: %f ms, %l cycles; sim: %f ms) ",
+                                     timestamp.getMillis(), timestamp.getCycles(), simTime / 1000.));
   }
   @Override
-  protected void skipInfo(int context, int entity, byte[] info, MonTimestamp timestamp) {
-    System.out.println(String.format("(mon) warning: info event skipped at %f ms (%l cycles)", timestamp.getMillis(), timestamp.getCycles()));
+  protected void skipInfo(int context, int entity, byte[] info, MonTimestamp timestamp, double simTime) {
+    System.out.println(String.format("(mon) warning: info event skipped at (cpu: %f ms, %l cycles; sim: %f ms)",
+                                     timestamp.getMillis(), timestamp.getCycles(), simTime / 1000.));
   }
   @Override
   protected void initSkip(SwitchableMonBackend backend) {}

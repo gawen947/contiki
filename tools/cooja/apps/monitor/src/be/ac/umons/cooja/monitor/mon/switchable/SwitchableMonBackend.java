@@ -37,16 +37,16 @@ abstract public class SwitchableMonBackend {
   protected final MonTimestamp infoOffset;
   protected final MonTimestamp byteOffset;
   protected final ByteOrder    byteOrder;
-  
+
   public SwitchableMonBackend(MonTimestamp recordOffset, MonTimestamp infoOffset, MonTimestamp byteOffset, ByteOrder byteOrder) throws MonException {
     this.recordOffset = recordOffset;
     this.infoOffset   = infoOffset;
     this.byteOffset   = byteOffset;
     this.byteOrder    = byteOrder;
   }
-  
-  abstract public void recordState(int context, int entity, int state, MonTimestamp timestamp) throws MonException;
-  abstract public void recordInfo(int context, int entity, byte[] info, MonTimestamp timestamp) throws MonException;
+
+  abstract public void recordState(int context, int entity, int state, MonTimestamp timestamp, double simTime) throws MonException;
+  abstract public void recordInfo(int context, int entity, byte[] info, MonTimestamp timestamp, double simTime) throws MonException;
 
   abstract public void destroy() throws MonException;
 }

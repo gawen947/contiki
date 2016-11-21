@@ -48,7 +48,7 @@ public class StdMon extends MonBackend {
   }
 
   public void recordState(int context, int entity, int state,
-                          MonTimestamp timestamp) {
+                          MonTimestamp timestamp, double simTime) {
     /* Since we display directly on stdout we must take care of endianness and offset. */
     context = xtohs(context);
     entity  = xtohs(entity);
@@ -56,21 +56,21 @@ public class StdMon extends MonBackend {
 
     timestamp = reduceRecordOffset(timestamp);
 
-    System.out.printf("(mon) @%d %fms RECORD %d %d %d\n",
-                      timestamp.getCycles(), timestamp.getMillis(),
+    System.out.printf("(mon) @(cpu: %d %fms, sim: %fms) RECORD %d %d %d\n",
+                      timestamp.getCycles(), timestamp.getMillis(), simTime / 1000.,
                       context, entity, state);
   }
 
   public void recordInfo(int context, int entity, byte[] info,
-                         MonTimestamp timestamp) {
+                         MonTimestamp timestamp, double simTime) {
     /* Since we display directly on stdout we must take care of endianness and offset. */
     context = xtohs(context);
     entity  = xtohs(entity);
 
     timestamp = reduceInfoOffset(timestamp, info.length);
 
-    System.out.printf("(mon) @%d %fms INFO %d %d [",
-                      timestamp.getCycles(), timestamp.getMillis(),
+    System.out.printf("(mon) @(cpu: %d %fms, sim: %fms) INFO %d %d [",
+                      timestamp.getCycles(), timestamp.getMillis(), simTime / 1000.,
                       context, entity);
 
     /* though the info buffer is not converted */
@@ -78,16 +78,16 @@ public class StdMon extends MonBackend {
       System.out.printf("%02x", b);
     System.out.printf("]\n");
   }
-  
+
   public void close() {
     System.out.println("(mon) close!");
   }
-  
+
 
   private int xtohs(int value) {
     return Utils.xtohs(value, getEndian());
   }
-  
+
   private MonTimestamp reduceRecordOffset(MonTimestamp timestamp) {
     return timestamp.reduce(getRecordOffset());
   }

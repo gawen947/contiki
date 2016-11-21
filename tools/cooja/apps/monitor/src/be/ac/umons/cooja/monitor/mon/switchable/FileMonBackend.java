@@ -42,69 +42,71 @@ public class FileMonBackend extends SwitchableMonBackend {
   /* Use an instance of this class to tell SwitchableMon how to create this backend. */
   static public class Creator implements SwitchableMonBackendCreator {
     private final String filePath;
-    
+
     public Creator(String filePath) {
       this.filePath = filePath;
     }
-    
-    @Override   
+
+    @Override
     public SwitchableMonBackend create(MonTimestamp recordOffset, MonTimestamp infoOffset, MonTimestamp byteOffset, ByteOrder byteOrder) throws MonException {
       return new FileMonBackend(recordOffset, infoOffset, byteOffset, byteOrder, filePath);
     }
   }
-  
+
   public static final int MAGIK = FileMon.MAGIK; /* 'ctkm' */
-  
+
   private final OutputStream out;
   private final ByteOrder     endianness;
 
   public FileMonBackend(MonTimestamp recordOffset, MonTimestamp infoOffset, MonTimestamp byteOffset, ByteOrder byteOrder,
-                          String filePath)  throws MonException {
+                        String filePath)  throws MonException {
     super(recordOffset, infoOffset, byteOffset, byteOrder);
-    
+
     this.endianness = byteOrder;
-    
+
     try {
       out = new BufferedOutputStream(new FileOutputStream(filePath));
     } catch(IOException e) {
       throw new MonException("cannot open '" + filePath + "' for writing");
     }
-    
+
     try {
       writeMagik();
       writeControl();
       writeTime(recordOffset);
       writeTime(infoOffset);
-      writeTime(byteOffset);      
+      writeTime(byteOffset);
     }
     catch (IOException e) {
       throw new MonException("write error");
     }
-    
+
     System.out.println("(mon) file backend '" + filePath + "' initiated!");
   }
-  
+
   @Override
-  public void recordState(int context, int entity, int state, MonTimestamp timestamp) throws MonException {
+  public void recordState(int context, int entity, int state, MonTimestamp timestamp, double simTime) throws MonException {
     try {
       out.write(timestamp.toBytes(endianness));
+      out.write(Utils.toBytes(simTime, endianness));
       out.write(Utils.toBytes((short)context, endianness));
       out.write(Utils.toBytes((short)entity, endianness));
       out.write(Utils.toBytes((short)state, endianness));
     } catch (IOException e) {
       throw new MonException("write error");
-    }  
+    }
   }
 
   @Override
   public void recordInfo(int context, int entity, byte[] info,
-      MonTimestamp timestamp) throws MonException {
+                         MonTimestamp timestamp, double simTime) throws MonException {
     try {
       out.write(timestamp.toBytes(endianness));
+      out.write(Utils.toBytes(simTime, endianness));
       out.write(Utils.toBytes((short)context, endianness));
       out.write(Utils.toBytes((short)entity, endianness));
       out.write(Utils.toBytes((short)0xffff, endianness)); /* special state to announce info */
-      
+
       out.write(info);
     } catch (IOException e) {
       throw new MonException("write error");
@@ -118,36 +120,36 @@ public class FileMonBackend extends SwitchableMonBackend {
       System.out.println("(mon) file backend closes!");
     } catch (IOException e) {
       throw new MonException("close error");
-    } 
+    }
   }
-  
+
 
   private void writeMagik() throws IOException {
     if(out == null)
       return;
-    
+
     out.write(Utils.toBytes(MAGIK, ByteOrder.BIG_ENDIAN));
   }
-  
+
   private void writeControl() throws IOException {
     if(out == null)
       return;
-    
+
     /* control format:
      *   <0> = LITTLE_ENDIAN (1) / BIG_ENDIAN (0)
      */
     int control = 0;
-    
+
     if(endianness == ByteOrder.LITTLE_ENDIAN)
       control |= 1;
-    
+
     out.write(Utils.toBytes(control, ByteOrder.BIG_ENDIAN));
   }
-  
+
   private void writeTime(MonTimestamp offset) throws IOException {
     if(out == null)
       return;
-    
+
     out.write(offset.toBytes(endianness));
   }
 }

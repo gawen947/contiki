@@ -34,10 +34,12 @@ import java.nio.ByteOrder;
 import be.ac.umons.cooja.monitor.mon.MonTimestamp;
 import be.ac.umons.cooja.monitor.Utils;
 
+import org.contikios.cooja.Simulation;
+
 /**
  * Store events in a file.
  */
-public class FileMon extends MonBackend { 
+public class FileMon extends MonBackend {
   public static final int MAGIK = 0x63746b6d; /* 'ctkm' */
 
   private OutputStream out = null;
@@ -48,10 +50,10 @@ public class FileMon extends MonBackend {
   }
 
   private void disable() {
-	out = null;
+    out = null;
     System.out.println("(mon) log backend disabled!");
   }
-  
+
   protected void initiated() {
     try {
       out = new BufferedOutputStream(new FileOutputStream(path));
@@ -59,18 +61,18 @@ public class FileMon extends MonBackend {
       System.out.println("(mon) cannot open '" + path + "' for writing.");
       disable();
     }
-    
+
     /* Register an output handler to flush the file
      * when the emulator exit. */
     Runtime.getRuntime().addShutdownHook(new ShutdownHandler(this));
-    
+
     try {
       writeMagik();
       writeControl();
       writeTime(getRecordOffset());
       writeTime(getInfoOffset());
       writeTime(getByteOffset());
-      
+
       System.out.println("(mon) initiated!");
     }
     catch (IOException e) {
@@ -78,40 +80,41 @@ public class FileMon extends MonBackend {
       disable();
     }
   }
-  
+
   private void writeMagik() throws IOException {
     if(out == null)
       return;
-    
+
     out.write(Utils.toBytes(MAGIK, ByteOrder.BIG_ENDIAN));
   }
-  
+
   private void writeControl() throws IOException {
     if(out == null)
       return;
-    
+
     /* control format:
      *   <0> = LITTLE_ENDIAN (1) / BIG_ENDIAN (0)
      */
     int control = 0;
-    
+
     if(getEndian() == ByteOrder.LITTLE_ENDIAN)
       control |= 1;
-    
+
     out.write(Utils.toBytes(control, ByteOrder.BIG_ENDIAN));
   }
-  
+
   private void writeTime(MonTimestamp offset) throws IOException {
     if(out == null)
       return;
-    
+
     out.write(offset.toBytes(getEndian()));
   }
 
   public void recordState(int context, int entity, int state,
-                             MonTimestamp timestamp) {
+                          MonTimestamp timestamp, double simTime) {
     try {
       out.write(timestamp.toBytes(getEndian()));
+      out.write(Utils.toBytes(simTime, getEndian()));
       out.write(Utils.toBytes((short)context, getEndian()));
       out.write(Utils.toBytes((short)entity, getEndian()));
       out.write(Utils.toBytes((short)state, getEndian()));
@@ -122,20 +125,21 @@ public class FileMon extends MonBackend {
   }
 
   public void recordInfo(int context, int entity, byte[] info,
-                            MonTimestamp timestamp) {
+                         MonTimestamp timestamp, double simTime) {
     try {
       out.write(timestamp.toBytes(getEndian()));
+      out.write(Utils.toBytes(simTime, getEndian()));
       out.write(Utils.toBytes((short)context, getEndian()));
       out.write(Utils.toBytes((short)entity, getEndian()));
       out.write(Utils.toBytes((short)0xffff, getEndian())); /* special state to announce info */
-      
+
       out.write(info);
     } catch (IOException e) {
       System.out.println("(mon) write error!");
       disable();
     }
   }
-  
+
   public void close() {
     try {
       out.close();
@@ -143,19 +147,19 @@ public class FileMon extends MonBackend {
     } catch (IOException e) {
       System.out.println("(mon) close error!");
     }
-    
+
     disable();
   }
-  
+
   private static class ShutdownHandler extends Thread {
     private final FileMon mon;
-    
+
     public ShutdownHandler(FileMon mon) {
       super("FileMon-Shutdown");
-      
+
       this.mon = mon;
     }
-    
+
     public void run() {
       mon.close();
     }

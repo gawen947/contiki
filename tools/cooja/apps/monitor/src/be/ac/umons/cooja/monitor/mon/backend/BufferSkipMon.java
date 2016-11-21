@@ -37,15 +37,15 @@ import be.ac.umons.cooja.monitor.mon.switchable.SwitchableMonBackend;
  */
 public class BufferSkipMon extends SwitchableMon {
   private final ArrayList<MonEvent> buffer = new ArrayList<MonEvent>();
-  
+
   @Override
-  protected void skipState(int context, int entity, int state, MonTimestamp timestamp) {
-    buffer.add(new MonEvent(context, entity, state, timestamp));
+  protected void skipState(int context, int entity, int state, MonTimestamp timestamp, double simTime) {
+    buffer.add(new MonEvent(context, entity, state, timestamp, simTime));
   }
-  
+
   @Override
-  protected void skipInfo(int context, int entity, byte[] info, MonTimestamp timestamp) {
-    buffer.add(new MonEvent(context, entity, info, timestamp));
+  protected void skipInfo(int context, int entity, byte[] info, MonTimestamp timestamp, double simTime) {
+    buffer.add(new MonEvent(context, entity, info, timestamp, simTime));
   }
 
   @Override
@@ -55,7 +55,8 @@ public class BufferSkipMon extends SwitchableMon {
       switch(event.type()) {
         case STATE:
           try {
-            backend.recordState(event.getContext(), event.getEntity(), event.getState(), event.getTimestamp());
+            backend.recordState(event.getContext(), event.getEntity(), event.getState(),
+                                event.getTimestamp(), event.getSimulationTime());
           } catch (MonException e) {
             /* FIXME: Push an exception up to the UI. */
             throw new MonError("monitor backend error");
@@ -63,7 +64,8 @@ public class BufferSkipMon extends SwitchableMon {
           break;
         case INFO:
           try {
-            backend.recordInfo(event.getContext(), event.getEntity(), event.getInfo(), event.getTimestamp());
+            backend.recordInfo(event.getContext(), event.getEntity(), event.getInfo(),
+                               event.getTimestamp(), event.getSimulationTime());
           } catch (MonException e) {
             /* FIXME: Push an exception up to the UI. */
             throw new MonError("monitor backend error");
@@ -71,7 +73,7 @@ public class BufferSkipMon extends SwitchableMon {
           break;
       }
     }
-    
+
     buffer.clear();
   }
 

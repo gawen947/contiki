@@ -35,13 +35,13 @@ public class Utils {
   /* Useful static for some monitor backends.
    * Note that we cannot use generic here.
    * Or at least I don't know how to do that "easily". */
-  
+
   /** Convert a integer to an array of byte using a specific endianness. */
   public static byte[] toBytes(int value, ByteOrder byteOrder) {
     ByteBuffer buf = ByteBuffer.allocate(Integer.SIZE >> 3);
     buf.order(byteOrder);
     buf.putInt(value);
-    
+
     return buf.array();
   }
 
@@ -50,7 +50,7 @@ public class Utils {
     ByteBuffer buf = ByteBuffer.allocate(Short.SIZE >> 3);
     buf.order(byteOrder);
     buf.putShort(value);
-    
+
     return buf.array();
   }
 
@@ -71,7 +71,7 @@ public class Utils {
     else
       return reverseU16(value);
   }
-  
+
   /** Convert a short from source to host byte order. */
   public static int xtohs(int value, ByteOrder valueByteOrder) {
     if(ByteOrder.nativeOrder() == valueByteOrder)
