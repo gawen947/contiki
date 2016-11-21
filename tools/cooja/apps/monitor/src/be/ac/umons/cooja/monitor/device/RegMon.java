@@ -54,10 +54,12 @@ public class RegMon implements MemoryMonitor {
   private final MonBackend backend;
   private final MSP430     cpu;
   private final Simulation simulation;
+  private final short      nodeID;
 
-  public RegMon(MspMote mspMote, MonBackend backend, Simulation simulation) {
+  public RegMon(MspMote mspMote, MonBackend backend, Simulation simulation, short nodeID) {
     this.backend    = backend;
     this.simulation = simulation;
+    this.nodeID     = nodeID;
 
     cpu = mspMote.getCPU();
     cpu.addWatchPoint(MONCTX, this);
@@ -93,7 +95,7 @@ public class RegMon implements MemoryMonitor {
   private void recordState() {
     /* sti is state */
     backend.state(ctx, ent, sti,
-                  new MonTimestamp(cpu.cycles, cpu.getTimeMillis()), simulation.getSimulationTime());
+                  new MonTimestamp(cpu.cycles, cpu.getTimeMillis()), simulation.getSimulationTime(), nodeID);
   }
 
   private void recordInfo() {
@@ -106,7 +108,7 @@ public class RegMon implements MemoryMonitor {
       info[i] = (byte)cpu.memory[sti + i];
 
     backend.info(ctx, ent, info,
-                 new MonTimestamp(cpu.cycles, cpu.getTimeMillis()), simulation.getSimulationTime());
+                 new MonTimestamp(cpu.cycles, cpu.getTimeMillis()), simulation.getSimulationTime(), nodeID);
   }
 
   @Override

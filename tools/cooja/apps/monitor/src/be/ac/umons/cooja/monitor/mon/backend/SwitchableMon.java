@@ -69,13 +69,13 @@ public abstract class SwitchableMon extends MonBackend {
       delayedBackend = backendCreator;
   }
 
-  public void recordState(int context, int entity, int state, MonTimestamp timestamp, double simTime) {
+  public void recordState(int context, int entity, int state, MonTimestamp timestamp, double simTime, short nodeID) {
     try {
       if(backend != null)
-        backend.recordState(context, entity, state, timestamp, simTime);
+        backend.recordState(context, entity, state, timestamp, simTime, nodeID);
       else
         /* no backend selected, skip event and tell subclass */
-        skipState(context, entity, state, timestamp, simTime);
+        skipState(context, entity, state, timestamp, simTime, nodeID);
     } catch(MonException e) {
       /* If something bad happened during the backend creation,
        * tell the user and acts like if no backend was selected. */
@@ -84,13 +84,13 @@ public abstract class SwitchableMon extends MonBackend {
     }
   }
 
-  public void recordInfo(int context, int entity, byte[] info, MonTimestamp timestamp, double simTime) {
+  public void recordInfo(int context, int entity, byte[] info, MonTimestamp timestamp, double simTime, short nodeID) {
     try {
       if(backend != null)
-        backend.recordInfo(context, entity, info, timestamp, simTime);
+        backend.recordInfo(context, entity, info, timestamp, simTime, nodeID);
       else
         /* no backend selected, skip event and tell subclass */
-        skipInfo(context, entity, info, timestamp, simTime);
+        skipInfo(context, entity, info, timestamp, simTime, nodeID);
     } catch(MonException e) {
       /* If something bad happened during the backend creation,
        * tell the user and acts like if no backend was selected. */
@@ -162,8 +162,8 @@ public abstract class SwitchableMon extends MonBackend {
   }
 
   /* subclasses must override this to provide their own implementation for skipped events. */
-  protected abstract void skipState(int context, int entity, int state, MonTimestamp timestamp, double simTime) throws MonException;
-  protected abstract void skipInfo(int context, int entity, byte[] info, MonTimestamp timestamp, double simTime) throws MonException;
+  protected abstract void skipState(int context, int entity, int state, MonTimestamp timestamp, double simTime, short nodeID) throws MonException;
+  protected abstract void skipInfo(int context, int entity, byte[] info, MonTimestamp timestamp, double simTime, short nodeID) throws MonException;
   protected abstract void initSkip(SwitchableMonBackend backend);
   protected abstract void destroySkip(SwitchableMonBackend backend);
 }

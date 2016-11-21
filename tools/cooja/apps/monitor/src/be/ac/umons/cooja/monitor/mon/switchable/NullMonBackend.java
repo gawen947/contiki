@@ -46,10 +46,10 @@ public class NullMonBackend extends SwitchableMonBackend {
   }
 
   @Override
-  public void recordState(int context, int entity, int state, MonTimestamp timestamp, double simTime) {}
+  public void recordState(int context, int entity, int state, MonTimestamp timestamp, double simTime, short nodeID) {}
 
   @Override
-  public void recordInfo(int context, int entity, byte[] info, MonTimestamp timestamp, double simTime) {}
+  public void recordInfo(int context, int entity, byte[] info, MonTimestamp timestamp, double simTime, short nodeID) {}
 
   @Override
   public void destroy() {}

@@ -86,9 +86,17 @@ public class Monitor extends VisPlugin {
     /* Add the MemMon device to all compatible motes. */
     monDevices = new MemMon[simulation.getMotesCount()];
     for(int i = 0 ; i < simulation.getMotesCount() ; i++) {
+
       /* FIXME: Isn't it dangerous ? We don't know if all nodes are MSP ones. */
       MspMote mspMote = (MspMote)simulation.getMote(i);
-      monDevices[i] = new MemMon(mspMote, backend, simulation);
+
+      int nodeID = mspMote.getID();
+      if(nodeID > Short.MAX_VALUE) {
+        logger.error("Node ID too large");
+        nodeID = -1;
+      }
+
+      monDevices[i] = new MemMon(mspMote, backend, simulation, (short)nodeID);
     }
   }
 

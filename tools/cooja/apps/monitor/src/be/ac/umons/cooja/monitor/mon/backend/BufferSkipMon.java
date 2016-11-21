@@ -39,13 +39,13 @@ public class BufferSkipMon extends SwitchableMon {
   private final ArrayList<MonEvent> buffer = new ArrayList<MonEvent>();
 
   @Override
-  protected void skipState(int context, int entity, int state, MonTimestamp timestamp, double simTime) {
-    buffer.add(new MonEvent(context, entity, state, timestamp, simTime));
+  protected void skipState(int context, int entity, int state, MonTimestamp timestamp, double simTime, short nodeID) {
+    buffer.add(new MonEvent(context, entity, state, timestamp, simTime, nodeID));
   }
 
   @Override
-  protected void skipInfo(int context, int entity, byte[] info, MonTimestamp timestamp, double simTime) {
-    buffer.add(new MonEvent(context, entity, info, timestamp, simTime));
+  protected void skipInfo(int context, int entity, byte[] info, MonTimestamp timestamp, double simTime, short nodeID) {
+    buffer.add(new MonEvent(context, entity, info, timestamp, simTime, nodeID));
   }
 
   @Override
@@ -56,7 +56,7 @@ public class BufferSkipMon extends SwitchableMon {
         case STATE:
           try {
             backend.recordState(event.getContext(), event.getEntity(), event.getState(),
-                                event.getTimestamp(), event.getSimulationTime());
+                                event.getTimestamp(), event.getSimulationTime(), event.getNodeID());
           } catch (MonException e) {
             /* FIXME: Push an exception up to the UI. */
             throw new MonError("monitor backend error");
@@ -65,7 +65,7 @@ public class BufferSkipMon extends SwitchableMon {
         case INFO:
           try {
             backend.recordInfo(event.getContext(), event.getEntity(), event.getInfo(),
-                               event.getTimestamp(), event.getSimulationTime());
+                               event.getTimestamp(), event.getSimulationTime(), event.getNodeID());
           } catch (MonException e) {
             /* FIXME: Push an exception up to the UI. */
             throw new MonError("monitor backend error");

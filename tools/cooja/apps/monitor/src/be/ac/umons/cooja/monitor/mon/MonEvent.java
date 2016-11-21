@@ -40,25 +40,26 @@ public class MonEvent {
 
   private final MonTimestamp timestamp;
   private final double       simTime;
+  private final short        nodeID;
 
-  public MonEvent(int context, int entity, int state, MonTimestamp timestamp, double simTime) {
-    this.context = context;
-    this.entity  = entity;
-    this.state   = state;
-    this.simTime = simTime;
-    this.info    = null;
-
+  public MonEvent(int context, int entity, int state, MonTimestamp timestamp, double simTime, short nodeID) {
+    this.context   = context;
+    this.entity    = entity;
+    this.state     = state;
+    this.info      = null;
     this.timestamp = timestamp;
+    this.simTime   = simTime;
+    this.nodeID    = nodeID;
   }
 
-  public MonEvent(int context, int entity, byte[] info, MonTimestamp timestamp, double simTime) {
-    this.context = context;
-    this.entity  = entity;
-    this.state   = 0xffff;
-    this.simTime = simTime;
-    this.info    = info;
-
+  public MonEvent(int context, int entity, byte[] info, MonTimestamp timestamp, double simTime, short nodeID) {
+    this.context   = context;
+    this.entity    = entity;
+    this.state     = 0xffff;
+    this.info      = info;
     this.timestamp = timestamp;
+    this.simTime   = simTime;
+    this.nodeID    = nodeID;
   }
 
   public MonEvent.Type type() {
@@ -90,5 +91,9 @@ public class MonEvent {
 
   public double getSimulationTime() {
     return simTime;
+  }
+
+  public short getNodeID() {
+    return nodeID;
   }
 }

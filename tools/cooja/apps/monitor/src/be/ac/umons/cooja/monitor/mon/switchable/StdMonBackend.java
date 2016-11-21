@@ -55,7 +55,7 @@ public class StdMonBackend extends SwitchableMonBackend {
   }
 
   @Override
-  public void recordState(int context, int entity, int state, MonTimestamp timestamp, double simTime) throws MonException {
+  public void recordState(int context, int entity, int state, MonTimestamp timestamp, double simTime, short nodeID) throws MonException {
     /* Since we display directly on stdout we must take care of endianness and offset. */
     context = xtohs(context);
     entity  = xtohs(entity);
@@ -63,21 +63,21 @@ public class StdMonBackend extends SwitchableMonBackend {
 
     timestamp = reduceRecordOffset(timestamp);
 
-    System.out.printf("(mon) @(cpu: %d %fms, sim: %fms) RECORD %d %d %d\n",
-                      timestamp.getCycles(), timestamp.getMillis(), simTime / 1000.,
+    System.out.printf("(mon) @(node: %d cpu: %d %fms, sim: %fms) RECORD %d %d %d\n",
+                      nodeID, timestamp.getCycles(), timestamp.getMillis(), simTime / 1000.,
                       context, entity, state);
   }
 
   @Override
-  public void recordInfo(int context, int entity, byte[] info, MonTimestamp timestamp, double simTime) throws MonException {
+  public void recordInfo(int context, int entity, byte[] info, MonTimestamp timestamp, double simTime, short nodeID) throws MonException {
     /* Since we display directly on stdout we must take care of endianness and offset. */
     context = xtohs(context);
     entity  = xtohs(entity);
 
     timestamp = reduceInfoOffset(timestamp, info.length);
 
-    System.out.printf("(mon) @(cpu: %d %fms, sim: %fms) INFO %d %d [",
-                      timestamp.getCycles(), timestamp.getMillis(), simTime / 1000.,
+    System.out.printf("(mon) @(node: %d cpu: %d %fms, sim: %fms) INFO %d %d [",
+                      nodeID, timestamp.getCycles(), timestamp.getMillis(), simTime / 1000.,
                       context, entity);
 
     /* though the info buffer is not converted */

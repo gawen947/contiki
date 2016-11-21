@@ -61,10 +61,12 @@ public class MemMon implements MemoryMonitor {
   private final MonBackend backend;
   private final MSP430     cpu;
   private final Simulation simulation;
+  private final short      nodeID;
 
-  public MemMon(MspMote mspMote, MonBackend backend, Simulation simulation) {
+  public MemMon(MspMote mspMote, MonBackend backend, Simulation simulation, short nodeID) {
     this.backend    = backend;
     this.simulation = simulation;
+    this.nodeID     = nodeID;
 
     logger.info("Starting MemMon device");
 
@@ -129,7 +131,7 @@ public class MemMon implements MemoryMonitor {
   private void recordState() {
     /* sti is state */
     backend.state(ctx, ent, sti,
-                  new MonTimestamp(cpu.cycles, cpu.getTimeMillis()), simulation.getSimulationTime());
+                  new MonTimestamp(cpu.cycles, cpu.getTimeMillis()), simulation.getSimulationTime(), nodeID);
   }
 
   private void recordInfo() {
@@ -142,7 +144,7 @@ public class MemMon implements MemoryMonitor {
       info[i] = (byte)cpu.memory[sti + i];
 
     backend.info(ctx, ent, info,
-                 new MonTimestamp(cpu.cycles, cpu.getTimeMillis()), simulation.getSimulationTime());
+                 new MonTimestamp(cpu.cycles, cpu.getTimeMillis()), simulation.getSimulationTime(), nodeID);
   }
 
   @Override

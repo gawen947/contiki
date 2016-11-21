@@ -33,9 +33,9 @@ import be.ac.umons.cooja.monitor.mon.switchable.SwitchableMonBackend;
 public class IgnoreSkipMon extends SwitchableMon {
   /* We just ignore events when no backend has been configured. */
   @Override
-  protected void skipState(int context, int entity, int state, MonTimestamp timestamp, double simTime) {}
+  protected void skipState(int context, int entity, int state, MonTimestamp timestamp, double simTime, short nodeID) {}
   @Override
-  protected void skipInfo(int context, int entity, byte[] info, MonTimestamp timestamp, double simTime) {}
+  protected void skipInfo(int context, int entity, byte[] info, MonTimestamp timestamp, double simTime, short nodeID) {}
   @Override
   protected void initSkip(SwitchableMonBackend backend) {}
   @Override
