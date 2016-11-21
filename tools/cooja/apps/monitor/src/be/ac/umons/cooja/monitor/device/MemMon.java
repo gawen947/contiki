@@ -22,7 +22,7 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-package be.ac.umons.cooja.monitor.memmon;
+package be.ac.umons.cooja.monitor.device;
 
 import java.io.IOException;
 

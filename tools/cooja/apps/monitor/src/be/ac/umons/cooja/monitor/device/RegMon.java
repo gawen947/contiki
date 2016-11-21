@@ -22,7 +22,7 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-package be.ac.umons.cooja.monitor.regmon;
+package be.ac.umons.cooja.monitor.device;
 
 import org.contikios.cooja.mspmote.MspMote;
 import org.contikios.cooja.Simulation;

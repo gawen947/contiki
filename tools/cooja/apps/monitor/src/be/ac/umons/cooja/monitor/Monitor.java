@@ -40,7 +40,7 @@ import org.contikios.cooja.mspmote.MspMote;
 import be.ac.umons.cooja.monitor.mon.backend.ErrorSkipMon;
 import be.ac.umons.cooja.monitor.mon.backend.SwitchableMon;
 import be.ac.umons.cooja.monitor.mon.switchable.TraceMonBackend;
-import be.ac.umons.cooja.monitor.memmon.MemMon;
+import be.ac.umons.cooja.monitor.device.MemMon;
 
 /* TODO:
  *  - Catch each mote added to the simulation (don't use startPlugin()).
