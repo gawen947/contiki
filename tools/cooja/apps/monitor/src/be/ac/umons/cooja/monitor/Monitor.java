@@ -26,7 +26,10 @@ package be.ac.umons.cooja.monitor;
 
 import java.io.File;
 
+import javax.swing.BoxLayout;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 import org.apache.log4j.Logger;
 
@@ -44,9 +47,9 @@ import be.ac.umons.cooja.monitor.device.MemMon;
 
 /* TODO:
  *  - Catch each mote added to the simulation (don't use startPlugin()).
- *  ! - Transmit the node ID for node scope (instead of 0).
  *  - Check for MSPMote when starting the plugin.
  *  ! - Add GUI to enable/disable monitor AND select a new backend.
+ *  ! - Add Interface to send info from backend to GUI.
  *  ! - Change warning/info messages from to Logger in monitor core classes.
  *  ! - getConfigXML();
  */
@@ -60,7 +63,19 @@ public class Monitor extends VisPlugin {
 
   private SwitchableMon backend;
   private Simulation    simulation;
-  private MemMon[]       monDevices;
+  private MemMon[]      monDevices;
+
+  /* GUI */
+  private static final String NBR_EVENTS_S  = "Total events: ";
+  private static final String NBR_STATES_S  = "States events: ";
+  private static final String NBR_INFOS_S   = "Infos events: ";
+  private static final String NBR_SKIPPED_S = "Skipped events: ";
+  private static final String NBR_NODES_S   = "Nodes: ";
+  private final JLabel numEvents  = new JLabel(NBR_EVENTS_S  + "0");
+  private final JLabel numStates  = new JLabel(NBR_STATES_S  + "0");
+  private final JLabel numInfos   = new JLabel(NBR_INFOS_S   + "0");
+  private final JLabel numSkipped = new JLabel(NBR_SKIPPED_S + "0");
+  private final JLabel numNodes   = new JLabel(NBR_NODES_S   + "0");
 
   public Monitor(Simulation simulation, final Cooja gui) {
     super("Monitor", gui, false);
@@ -73,6 +88,17 @@ public class Monitor extends VisPlugin {
      * If an event is generated and no real backend is configured,
      * ErrorSkipMon will generate an exception. */
     backend = new ErrorSkipMon();
+
+    /* Create GUI. */
+    JPanel mainPane = new JPanel();
+    mainPane.setLayout(new BoxLayout(mainPane, BoxLayout.Y_AXIS));
+    mainPane.add(numEvents);
+    mainPane.add(numStates);
+    mainPane.add(numInfos);
+    mainPane.add(numSkipped);
+    mainPane.add(numNodes);
+    add(mainPane);
+    pack();
   }
 
   public void startPlugin() {
