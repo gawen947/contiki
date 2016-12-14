@@ -25,6 +25,9 @@
 package be.ac.umons.cooja.monitor;
 
 import java.util.Hashtable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import java.io.File;
 
@@ -44,6 +47,7 @@ import javax.swing.JButton;
 import javax.swing.SwingConstants;
 
 import org.apache.log4j.Logger;
+import org.jdom.Element;
 
 import org.contikios.cooja.ClassDescription;
 import org.contikios.cooja.Cooja;
@@ -70,7 +74,7 @@ import be.ac.umons.cooja.monitor.device.MonDevice;
 @PluginType(PluginType.SIM_PLUGIN)
 public class Monitor extends VisPlugin {
   private static final long serialVersionUID = 5359332460231108667L;
-  private static final String VERSION = "v1.3";
+  private static final String VERSION = "v1.3.3";
 
   private static final int GUI_SPACING = 5;
 
@@ -91,6 +95,7 @@ public class Monitor extends VisPlugin {
   private final JLabel    numNodes      = new JLabel();
 
   private MoteCountListener moteCountListener;
+  private File              outputFile = new File("monitor.trace");
 
   public Monitor(Simulation simulation, final Cooja gui) {
     super("Monitor", gui, false);
@@ -134,7 +139,7 @@ public class Monitor extends VisPlugin {
       public void actionPerformed(ActionEvent e) {
         backend.setEnabled(enable.isSelected());
       }
-    });    
+    });
 
     /* automatically add/delete motes */
     simulation.getEventCentral().addMoteCountListener(moteCountListener = new MoteCountListener() {
@@ -186,23 +191,28 @@ public class Monitor extends VisPlugin {
 
     logger.info("Starting monitor plugin...");
 
-    /* Select the backend first (or at least the default file). */
-    selectBackend();
+    setBackend(outputFile);
   }
 
   public void closePlugin() {
     backend.close(); /* flush backend buffers */
   }
 
-  private void selectBackend() {
-    File backendFile = selectTraceFile();
-    backend.selectBackend(new TraceMonBackend.Creator(backendFile));
-    logger.info("Monitor backend selected '" + backendFile.getAbsolutePath() + "'");
+  /* Configure the new backend. */
+  private void setBackend(File file) {
+    backend.selectBackend(new TraceMonBackend.Creator(file));
+    logger.info("Monitor backend selected '" + outputFile.getAbsolutePath() + "'");
   }
 
-  private File selectTraceFile() {
+  /* Select backend using a file chooser. */
+  private void selectBackend() {
+    outputFile = chooseOutputFile();
+    setBackend(outputFile);
+  }
+
+  private File chooseOutputFile() {
     JFileChooser fileChooser = new JFileChooser();
-    File suggest = new File(Cooja.getExternalToolsSetting("MONITOR_LAST", "monitor.trace"));
+    File suggest = new File(Cooja.getExternalToolsSetting("MONITOR_LAST", outputFile != null ? outputFile.getAbsolutePath() : "monitor.trace"));
     fileChooser.setSelectedFile(suggest);
     fileChooser.setDialogTitle("Select monitor output trace file");
 
@@ -215,5 +225,34 @@ public class Monitor extends VisPlugin {
     }
     else
       return new File("monitor.trace");
+  }
+
+  @Override
+  public Collection<Element> getConfigXML() {
+    List<Element> config = new ArrayList<>();
+    Element element;
+
+    element = new Element("output");
+    element.setText(outputFile.getAbsolutePath());
+
+    config.add(element);
+
+    return config;
+  }
+
+  @Override
+  public boolean setConfigXML(Collection<Element> configXML, boolean visAvailable) {
+    for(Element element : configXML) {
+      switch(element.getName()) {
+      case "output":
+        logger.info("Select backend from config...");
+
+        outputFile = new File(element.getName());
+        setBackend(outputFile);
+        break;
+      }
+    }
+
+    return true;
   }
 }
