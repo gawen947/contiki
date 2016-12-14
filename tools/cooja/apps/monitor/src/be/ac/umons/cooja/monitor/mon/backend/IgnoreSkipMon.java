@@ -24,6 +24,7 @@
 
 package be.ac.umons.cooja.monitor.mon.backend;
 
+import be.ac.umons.cooja.monitor.mon.MonStats;
 import be.ac.umons.cooja.monitor.mon.MonTimestamp;
 import be.ac.umons.cooja.monitor.mon.switchable.SwitchableMonBackend;
 
@@ -31,6 +32,10 @@ import be.ac.umons.cooja.monitor.mon.switchable.SwitchableMonBackend;
  * Ignore events when no backend has been configured.
  */
 public class IgnoreSkipMon extends SwitchableMon {
+  public IgnoreSkipMon(MonStats stats) {
+    super(stats);
+  }
+  
   /* We just ignore events when no backend has been configured. */
   @Override
   protected void skipState(int context, int entity, int state, MonTimestamp timestamp, double simTime, short nodeID) {}

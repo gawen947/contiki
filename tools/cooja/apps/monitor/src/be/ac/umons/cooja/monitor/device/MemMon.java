@@ -39,7 +39,7 @@ import se.sics.mspsim.core.Memory.AccessType;
 import se.sics.mspsim.core.MemoryMonitor;
 import se.sics.mspsim.util.MapTable;
 
-public class MemMon implements MemoryMonitor {
+public class MemMon implements MemoryMonitor, MonDevice {
   private static Logger logger = Logger.getLogger(MemMon.class);
 
   public final int monctx; /* context */

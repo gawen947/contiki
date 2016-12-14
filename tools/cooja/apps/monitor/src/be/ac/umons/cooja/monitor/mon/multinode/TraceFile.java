@@ -63,7 +63,7 @@ public class TraceFile {
   
   public TraceFile(File file) throws IOException {
     out = new BufferedOutputStream(new FileOutputStream(file));
-
+    
     writeMagik();
     writeVersion();
   }

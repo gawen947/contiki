@@ -26,6 +26,7 @@ package be.ac.umons.cooja.monitor.mon.backend;
 
 import be.ac.umons.cooja.monitor.mon.MonError;
 import be.ac.umons.cooja.monitor.mon.MonException;
+import be.ac.umons.cooja.monitor.mon.MonStats;
 import be.ac.umons.cooja.monitor.mon.MonTimestamp;
 import be.ac.umons.cooja.monitor.mon.switchable.SwitchableMonBackend;
 
@@ -34,6 +35,10 @@ import be.ac.umons.cooja.monitor.mon.switchable.SwitchableMonBackend;
  * If there is one though, we abort execution.
  */
 public class ErrorSkipMon extends SwitchableMon {
+  public ErrorSkipMon(MonStats stats) {
+    super(stats);
+  }
+  
   @Override
   protected void skipState(int context, int entity, int state,
                            MonTimestamp timestamp, double simTime, short nodeID) throws MonException {

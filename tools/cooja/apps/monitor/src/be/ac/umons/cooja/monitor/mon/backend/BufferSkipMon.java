@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import be.ac.umons.cooja.monitor.mon.MonError;
 import be.ac.umons.cooja.monitor.mon.MonEvent;
 import be.ac.umons.cooja.monitor.mon.MonException;
+import be.ac.umons.cooja.monitor.mon.MonStats;
 import be.ac.umons.cooja.monitor.mon.MonTimestamp;
 import be.ac.umons.cooja.monitor.mon.switchable.SwitchableMonBackend;
 
@@ -38,6 +39,10 @@ import be.ac.umons.cooja.monitor.mon.switchable.SwitchableMonBackend;
 public class BufferSkipMon extends SwitchableMon {
   private final ArrayList<MonEvent> buffer = new ArrayList<MonEvent>();
 
+  public BufferSkipMon(MonStats stats) {
+    super(stats);
+  }
+  
   @Override
   protected void skipState(int context, int entity, int state, MonTimestamp timestamp, double simTime, short nodeID) {
     buffer.add(new MonEvent(context, entity, state, timestamp, simTime, nodeID));

@@ -65,7 +65,7 @@ public class TraceMonBackend extends SwitchableMonBackend {
                          MonTimestamp byteOffset, ByteOrder byteOrder,
                          File file) throws MonException {
     super(recordOffset, infoOffset, byteOffset, byteOrder);
-
+    
     try {
       trace = new TraceFile(file);
 

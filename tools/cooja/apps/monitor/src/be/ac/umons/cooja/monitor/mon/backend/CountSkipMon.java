@@ -24,6 +24,7 @@
 
 package be.ac.umons.cooja.monitor.mon.backend;
 
+import be.ac.umons.cooja.monitor.mon.MonStats;
 import be.ac.umons.cooja.monitor.mon.MonTimestamp;
 import be.ac.umons.cooja.monitor.mon.switchable.SwitchableMonBackend;
 
@@ -33,6 +34,10 @@ import be.ac.umons.cooja.monitor.mon.switchable.SwitchableMonBackend;
 public class CountSkipMon extends SwitchableMon {
   private int stateSkipped = 0;
   private int infoSkipped  = 0;
+  
+  public CountSkipMon(MonStats stats) {
+    super(stats);
+  }
 
   int getStateSkipped() {
     return stateSkipped;

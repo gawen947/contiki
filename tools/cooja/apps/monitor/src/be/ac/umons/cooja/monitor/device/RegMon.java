@@ -34,7 +34,7 @@ import se.sics.mspsim.core.Memory.AccessMode;
 import se.sics.mspsim.core.Memory.AccessType;
 import se.sics.mspsim.core.MemoryMonitor;
 
-public class RegMon implements MemoryMonitor {
+public class RegMon implements MemoryMonitor, MonDevice {
   public static final int MONCTX = 0x1C0; /* context */
   public static final int MONENT = 0x1C2; /* entity */
   public static final int MONSTI = 0x1C4; /* state/info */

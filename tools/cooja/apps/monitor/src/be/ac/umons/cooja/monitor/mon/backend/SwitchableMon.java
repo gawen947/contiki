@@ -27,6 +27,7 @@ package be.ac.umons.cooja.monitor.mon.backend;
 import be.ac.umons.cooja.monitor.mon.MonError;
 import be.ac.umons.cooja.monitor.mon.MonException;
 import be.ac.umons.cooja.monitor.mon.MonTimestamp;
+import be.ac.umons.cooja.monitor.mon.MonStats;
 import be.ac.umons.cooja.monitor.mon.switchable.SwitchableMonBackend;
 import be.ac.umons.cooja.monitor.mon.switchable.SwitchableMonBackendCreator;
 
@@ -38,11 +39,17 @@ public abstract class SwitchableMon extends MonBackend {
   private MonTimestamp recordOffset = null;
   private MonTimestamp infoOffset   = null;
   private MonTimestamp byteOffset   = null;
+  
+  private final MonStats stats;
 
   private SwitchableMonBackend backend = null;
 
   /* If we select a backend before the monitor has been initialized. */
   private SwitchableMonBackendCreator delayedBackend = null;
+
+  public SwitchableMon(MonStats stats) {
+    this.stats = stats;
+  }
 
   protected void initiated() {
     recordOffset = getRecordOffset();
@@ -71,11 +78,15 @@ public abstract class SwitchableMon extends MonBackend {
 
   public void recordState(int context, int entity, int state, MonTimestamp timestamp, double simTime, short nodeID) {
     try {
-      if(backend != null)
+      if(backend != null) {
         backend.recordState(context, entity, state, timestamp, simTime, nodeID);
-      else
+        stats.incStates(); /* only record non-skipped events */
+      }
+      else {
         /* no backend selected, skip event and tell subclass */
         skipState(context, entity, state, timestamp, simTime, nodeID);
+        stats.incSkipped();
+      }
     } catch(MonException e) {
       /* If something bad happened during the backend creation,
        * tell the user and acts like if no backend was selected. */
@@ -86,11 +97,15 @@ public abstract class SwitchableMon extends MonBackend {
 
   public void recordInfo(int context, int entity, byte[] info, MonTimestamp timestamp, double simTime, short nodeID) {
     try {
-      if(backend != null)
+      if(backend != null) {
         backend.recordInfo(context, entity, info, timestamp, simTime, nodeID);
-      else
+        stats.incInfos(); /* only record non-skipped events */ 
+      }
+      else {
         /* no backend selected, skip event and tell subclass */
         skipInfo(context, entity, info, timestamp, simTime, nodeID);
+        stats.incSkipped();
+      }
     } catch(MonException e) {
       /* If something bad happened during the backend creation,
        * tell the user and acts like if no backend was selected. */
