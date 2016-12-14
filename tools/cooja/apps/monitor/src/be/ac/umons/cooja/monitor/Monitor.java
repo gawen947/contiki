@@ -30,6 +30,8 @@ import java.io.File;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -124,6 +126,12 @@ public class Monitor extends VisPlugin {
 
     add(mainPane);
     pack();
+
+    selectBackend.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+          selectBackend();
+        }
+      });
 
     /* automatically add/delete motes */
     simulation.getEventCentral().addMoteCountListener(moteCountListener = new MoteCountListener() {
