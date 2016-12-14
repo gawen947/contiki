@@ -24,6 +24,8 @@
 
 package be.ac.umons.cooja.monitor.mon.backend;
 
+import org.apache.log4j.Logger;
+
 import be.ac.umons.cooja.monitor.mon.MonStats;
 import be.ac.umons.cooja.monitor.mon.MonTimestamp;
 import be.ac.umons.cooja.monitor.mon.switchable.SwitchableMonBackend;
@@ -32,18 +34,20 @@ import be.ac.umons.cooja.monitor.mon.switchable.SwitchableMonBackend;
  * Warns when an event is skipped because no backend has been configured.
  */
 public class WarnSkipMon extends SwitchableMon {
+  private static Logger logger = Logger.getLogger(WarnSkipMon.class);
+
   public WarnSkipMon(MonStats stats) {
     super(stats);
   }
   
   @Override
   protected void skipState(int context, int entity, int state, MonTimestamp timestamp, double simTime, short nodeID) {
-    System.out.println(String.format("(mon) warning: state event skipped at (node: %d cpu: %f ms, %l cycles; sim: %f ms) ",
+    logger.info(String.format("(mon) warning: state event skipped at (node: %d cpu: %f ms, %l cycles; sim: %f ms) ",
                                      timestamp.getMillis(), timestamp.getCycles(), simTime / 1000.));
   }
   @Override
   protected void skipInfo(int context, int entity, byte[] info, MonTimestamp timestamp, double simTime, short nodeID) {
-    System.out.println(String.format("(mon) warning: info event skipped at (node: %d cpu: %f ms, %l cycles; sim: %f ms)",
+    logger.info(String.format("(mon) warning: info event skipped at (node: %d cpu: %f ms, %l cycles; sim: %f ms)",
                                      timestamp.getMillis(), timestamp.getCycles(), simTime / 1000.));
   }
   @Override

@@ -26,6 +26,8 @@ package be.ac.umons.cooja.monitor.mon.switchable;
 
 import java.nio.ByteOrder;
 
+import org.apache.log4j.Logger;
+
 import be.ac.umons.cooja.monitor.mon.MonException;
 import be.ac.umons.cooja.monitor.mon.MonTimestamp;
 import be.ac.umons.cooja.monitor.Utils;
@@ -34,6 +36,8 @@ import be.ac.umons.cooja.monitor.Utils;
  * Write events on StdOut.
  */
 public class StdMonBackend extends SwitchableMonBackend {
+  private static Logger logger = Logger.getLogger(StdMonBackend.class);
+
   /* Use an instance of this class to tell SwitchableMon how to create this backend. */
   static public class Creator implements SwitchableMonBackendCreator {
     @Override
@@ -45,7 +49,7 @@ public class StdMonBackend extends SwitchableMonBackend {
   public StdMonBackend(MonTimestamp recordOffset, MonTimestamp infoOffset, MonTimestamp byteOffset, ByteOrder byteOrder) throws MonException {
     super(recordOffset, infoOffset, byteOffset, byteOrder);
 
-    System.out.println("(mon) initiated!");
+    logger.info("(mon) initiated!");
     System.out.printf("(mon) endianness: %s\n",
                         byteOrder == ByteOrder.LITTLE_ENDIAN ? "LE"
                                                                 : "BE");
@@ -88,7 +92,7 @@ public class StdMonBackend extends SwitchableMonBackend {
 
   @Override
   public void destroy() throws MonException {
-    System.out.println("(mon) close!");
+    logger.info("(mon) close!");
   }
 
 

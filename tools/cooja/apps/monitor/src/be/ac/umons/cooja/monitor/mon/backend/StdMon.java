@@ -26,6 +26,8 @@ package be.ac.umons.cooja.monitor.mon.backend;
 
 import java.nio.ByteOrder;
 
+import org.apache.log4j.Logger;
+
 import be.ac.umons.cooja.monitor.mon.MonTimestamp;
 import be.ac.umons.cooja.monitor.Utils;
 
@@ -33,15 +35,17 @@ import be.ac.umons.cooja.monitor.Utils;
  * Display events on stdout.
  */
 public class StdMon extends MonBackend {
+  private static Logger logger = Logger.getLogger(StdMon.class);
+
   public void initiated() {
     MonTimestamp recordOffset = getRecordOffset();
     MonTimestamp infoOffset   = getInfoOffset();
     MonTimestamp byteOffset   = getByteOffset();
 
-    System.out.println("(mon) initiated!");
+    logger.info("(mon) initiated!");
     System.out.printf("(mon) endianness: %s\n",
                       getEndian() == ByteOrder.LITTLE_ENDIAN ? "LE"
-                                                                : "BE");
+                                                             : "BE");
     System.out.printf("(mon) record offset: %d cycles, %.3fus\n", recordOffset.getCycles(), recordOffset.getMillis() * 1000.);
     System.out.printf("(mon) info offset  : %d cycles, %.3fus\n", infoOffset.getCycles(), infoOffset.getMillis() * 1000.);
     System.out.printf("(mon) byte offset  : %d cycles, %.3fus\n", byteOffset.getCycles(), byteOffset.getMillis() * 1000.);
@@ -80,7 +84,7 @@ public class StdMon extends MonBackend {
   }
 
   public void close() {
-    System.out.println("(mon) close!");
+    logger.info("(mon) close!");
   }
 
 

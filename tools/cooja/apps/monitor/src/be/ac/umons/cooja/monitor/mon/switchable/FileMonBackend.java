@@ -30,6 +30,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteOrder;
 
+import org.apache.log4j.Logger;
+
 import be.ac.umons.cooja.monitor.mon.MonException;
 import be.ac.umons.cooja.monitor.mon.MonTimestamp;
 import be.ac.umons.cooja.monitor.mon.backend.FileMon;
@@ -39,6 +41,8 @@ import be.ac.umons.cooja.monitor.Utils;
  * Record events from into a file (dedicated to a single mote).
  */
 public class FileMonBackend extends SwitchableMonBackend {
+  private static Logger logger = Logger.getLogger(FileMonBackend.class);
+
   /* Use an instance of this class to tell SwitchableMon how to create this backend. */
   static public class Creator implements SwitchableMonBackendCreator {
     private final String filePath;
@@ -81,7 +85,7 @@ public class FileMonBackend extends SwitchableMonBackend {
       throw new MonException("write error");
     }
 
-    System.out.println("(mon) file backend '" + filePath + "' initiated!");
+    logger.info("(mon) file backend '" + filePath + "' initiated!");
   }
 
   @Override
@@ -119,7 +123,7 @@ public class FileMonBackend extends SwitchableMonBackend {
   public void destroy() throws MonException {
     try {
       out.close();
-      System.out.println("(mon) file backend closes!");
+      logger.info("(mon) file backend closes!");
     } catch (IOException e) {
       throw new MonException("close error");
     }

@@ -24,6 +24,8 @@
 
 package be.ac.umons.cooja.monitor.mon.backend;
 
+import org.apache.log4j.Logger;
+
 import be.ac.umons.cooja.monitor.mon.MonError;
 import be.ac.umons.cooja.monitor.mon.MonException;
 import be.ac.umons.cooja.monitor.mon.MonTimestamp;
@@ -36,6 +38,8 @@ import be.ac.umons.cooja.monitor.mon.switchable.SwitchableMonBackendCreator;
  * Allow online switch from one backend to another.
  */
 public abstract class SwitchableMon extends MonBackend {
+  private static Logger logger = Logger.getLogger(SwitchableMon.class);
+
   private MonTimestamp recordOffset = null;
   private MonTimestamp infoOffset   = null;
   private MonTimestamp byteOffset   = null;
@@ -46,6 +50,10 @@ public abstract class SwitchableMon extends MonBackend {
 
   /* If we select a backend before the monitor has been initialized. */
   private SwitchableMonBackendCreator delayedBackend = null;
+  
+  /* We can enable/disable the backend.
+     Disable means we skip all new events. */
+  private boolean enabled = true;
 
   public SwitchableMon(MonStats stats) {
     this.stats = stats;
@@ -62,7 +70,7 @@ public abstract class SwitchableMon extends MonBackend {
       createBackend(delayedBackend);
     delayedBackend = null;
   }
-
+  
   public void selectBackend(SwitchableMonBackendCreator backendCreator) {
     if(this.backend != null)
       /* replace a currently existing backend */
@@ -78,7 +86,7 @@ public abstract class SwitchableMon extends MonBackend {
 
   public void recordState(int context, int entity, int state, MonTimestamp timestamp, double simTime, short nodeID) {
     try {
-      if(backend != null) {
+      if(backend != null && enabled) {
         backend.recordState(context, entity, state, timestamp, simTime, nodeID);
         stats.incStates(); /* only record non-skipped events */
       }
@@ -97,7 +105,7 @@ public abstract class SwitchableMon extends MonBackend {
 
   public void recordInfo(int context, int entity, byte[] info, MonTimestamp timestamp, double simTime, short nodeID) {
     try {
-      if(backend != null) {
+      if(backend != null && enabled) {
         backend.recordInfo(context, entity, info, timestamp, simTime, nodeID);
         stats.incInfos(); /* only record non-skipped events */ 
       }
@@ -114,6 +122,15 @@ public abstract class SwitchableMon extends MonBackend {
     }
   }
 
+  public boolean isEnabled() {
+    return enabled;
+  }
+  
+  public void setEnabled(boolean enabled) {
+    logger.info("(mon) backend " + (enabled ? "enabled" : "disabled"));
+    this.enabled = enabled;
+  }
+  
   public void close() {
     if(this.backend != null) {
       /* tell the backend to finalize any pending operation */
@@ -127,7 +144,7 @@ public abstract class SwitchableMon extends MonBackend {
       unselect();
     }
   }
-
+  
   private void createBackend(SwitchableMonBackendCreator backendCreator) {
     /* create the backend instance now */
     try {
@@ -153,7 +170,7 @@ public abstract class SwitchableMon extends MonBackend {
       /* marks that no backend are currently selected */
       this.backend = null;
 
-      System.out.println("(mon) backend disabled!");
+      logger.warn("(mon) backend unselected!");
     }
   }
 

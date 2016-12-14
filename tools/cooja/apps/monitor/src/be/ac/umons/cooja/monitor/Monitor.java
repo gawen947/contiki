@@ -54,7 +54,7 @@ import org.contikios.cooja.VisPlugin;
 import org.contikios.cooja.mspmote.MspMote;
 import org.contikios.cooja.SimEventCentral.MoteCountListener;
 
-import be.ac.umons.cooja.monitor.mon.backend.ErrorSkipMon;
+import be.ac.umons.cooja.monitor.mon.backend.IgnoreSkipMon;
 import be.ac.umons.cooja.monitor.mon.backend.SwitchableMon;
 import be.ac.umons.cooja.monitor.mon.MonStats;
 import be.ac.umons.cooja.monitor.mon.switchable.TraceMonBackend;
@@ -62,8 +62,6 @@ import be.ac.umons.cooja.monitor.device.MemMon;
 import be.ac.umons.cooja.monitor.device.MonDevice;
 
 /* TODO:
- *  ! - Add GUI to enable/disable monitor AND select a new backend.
- *  ! - Add Interface to send info from backend to GUI.
  *  ! - Change warning/info messages from to Logger in monitor core classes.
  *  ! - getConfigXML();
  */
@@ -72,7 +70,7 @@ import be.ac.umons.cooja.monitor.device.MonDevice;
 @PluginType(PluginType.SIM_PLUGIN)
 public class Monitor extends VisPlugin {
   private static final long serialVersionUID = 5359332460231108667L;
-  private static final String VERSION = "v1.2";
+  private static final String VERSION = "v1.3";
 
   private static final int GUI_SPACING = 5;
 
@@ -105,7 +103,7 @@ public class Monitor extends VisPlugin {
      * If an event is generated and no real backend is configured,
      * ErrorSkipMon will generate an exception. */
     stats   = new MonitorGUI(numEvents, numStates, numInfos, numSkipped, numNodes);
-    backend = new ErrorSkipMon(stats);
+    backend = new IgnoreSkipMon(stats);
 
     /* Create GUI. */
     JPanel mainPane = new JPanel();
@@ -128,10 +126,15 @@ public class Monitor extends VisPlugin {
     pack();
 
     selectBackend.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-          selectBackend();
-        }
-      });
+      public void actionPerformed(ActionEvent e) {
+        selectBackend();
+      }
+    });
+    enable.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        backend.setEnabled(enable.isSelected());
+      }
+    });    
 
     /* automatically add/delete motes */
     simulation.getEventCentral().addMoteCountListener(moteCountListener = new MoteCountListener() {

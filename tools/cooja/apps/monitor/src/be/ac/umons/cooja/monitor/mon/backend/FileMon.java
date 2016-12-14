@@ -31,6 +31,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteOrder;
 
+import org.apache.log4j.Logger;
+
 import be.ac.umons.cooja.monitor.mon.MonTimestamp;
 import be.ac.umons.cooja.monitor.Utils;
 
@@ -40,6 +42,8 @@ import org.contikios.cooja.Simulation;
  * Store events in a file.
  */
 public class FileMon extends MonBackend {
+  private static Logger logger = Logger.getLogger(FileMon.class);
+
   public static final int MAGIK = 0x63746b6d; /* 'ctkm' */
 
   private OutputStream out = null;
@@ -51,14 +55,14 @@ public class FileMon extends MonBackend {
 
   private void disable() {
     out = null;
-    System.out.println("(mon) log backend disabled!");
+    logger.info("(mon) log backend disabled!");
   }
 
   protected void initiated() {
     try {
       out = new BufferedOutputStream(new FileOutputStream(path));
     } catch(IOException e) {
-      System.out.println("(mon) cannot open '" + path + "' for writing.");
+      logger.error("(mon) cannot open '" + path + "' for writing.");
       disable();
     }
 
@@ -73,10 +77,10 @@ public class FileMon extends MonBackend {
       writeTime(getInfoOffset());
       writeTime(getByteOffset());
 
-      System.out.println("(mon) initiated!");
+      logger.info("(mon) initiated!");
     }
     catch (IOException e) {
-      System.out.println("(mon) write error!");
+      logger.error("(mon) write error!");
       disable();
     }
   }
@@ -120,7 +124,7 @@ public class FileMon extends MonBackend {
       out.write(Utils.toBytes((short)entity, getEndian()));
       out.write(Utils.toBytes((short)state, getEndian()));
     } catch (IOException e) {
-      System.out.println("(mon) write error!");
+      logger.error("(mon) write error!");
       disable();
     }
   }
@@ -137,7 +141,7 @@ public class FileMon extends MonBackend {
 
       out.write(info);
     } catch (IOException e) {
-      System.out.println("(mon) write error!");
+      logger.error("(mon) write error!");
       disable();
     }
   }
@@ -145,9 +149,9 @@ public class FileMon extends MonBackend {
   public void close() {
     try {
       out.close();
-      System.out.println("(mon) close!");
+      logger.info("(mon) close!");
     } catch (IOException e) {
-      System.out.println("(mon) close error!");
+      logger.error("(mon) close error!");
     }
 
     disable();

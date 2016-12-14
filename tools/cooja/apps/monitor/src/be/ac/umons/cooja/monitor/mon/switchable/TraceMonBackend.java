@@ -28,6 +28,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteOrder;
 
+import org.apache.log4j.Logger;
+
 import be.ac.umons.cooja.monitor.mon.MonException;
 import be.ac.umons.cooja.monitor.mon.MonTimestamp;
 import be.ac.umons.cooja.monitor.mon.multinode.Event;
@@ -44,6 +46,7 @@ import be.ac.umons.cooja.monitor.mon.multinode.TraceFile;
  */
 public class TraceMonBackend extends SwitchableMonBackend {
   private static short  DEFAULT_NODE_ID = 0;    /* Default node identifier used. */
+  private static Logger logger = Logger.getLogger(TraceMonBackend.class);
 
   /* Use an instance of this class to tell SwitchableMon how to create this backend. */
   static public class Creator implements SwitchableMonBackendCreator {
@@ -74,7 +77,7 @@ public class TraceMonBackend extends SwitchableMonBackend {
       throw new MonException("cannot open/create '" + file.getAbsolutePath() + "'");
     }
 
-    System.out.println("(mon) trace backend created!");
+    logger.info("(mon) trace backend created!");
   }
 
   @Override
@@ -99,7 +102,7 @@ public class TraceMonBackend extends SwitchableMonBackend {
   public void destroy() throws MonException {
     try {
       trace.destroy();
-      System.out.println("(mon) file backend closes!");
+      logger.info("(mon) file backend closes!");
     } catch (IOException e) {
       throw new MonException("close error");
     }
