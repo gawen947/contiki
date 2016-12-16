@@ -73,7 +73,7 @@ import be.ac.umons.cooja.monitor.device.MonDevice;
 @PluginType(PluginType.SIM_PLUGIN)
 public class Monitor extends VisPlugin {
   private static final long serialVersionUID = 5359332460231108667L;
-  private static final String VERSION = "v1.3.11";
+  private static final String VERSION = "v1.3.13";
 
   private static final int GUI_SPACING = 5;
 
@@ -113,6 +113,7 @@ public class Monitor extends VisPlugin {
     JPanel mainPane = new JPanel();
     mainPane.setLayout(new BoxLayout(mainPane, BoxLayout.PAGE_AXIS));
 
+    /* FIXME: will it work without GUI ? */
     mainPane.add(pluginVersion);
     mainPane.add(Box.createRigidArea(new Dimension(0, GUI_SPACING)));
     mainPane.add(enable);
@@ -224,12 +225,16 @@ public class Monitor extends VisPlugin {
   @Override
   public Collection<Element> getConfigXML() {
     List<Element> config = new ArrayList<>();
-    Element element;
+    Element eOutput, eEnabled;
 
-    element = new Element("output");
-    element.setText(outputFile.getAbsolutePath());
+    eOutput  = new Element("output");
+    eEnabled = new Element("enabled");
 
-    config.add(element);
+    eOutput.setText(outputFile.getAbsolutePath());
+    eEnabled.setText(enable.isSelected() ? "true" : "false");
+
+    config.add(eOutput);
+    config.add(eEnabled);
 
     stats.getConfigXML(config);
 
@@ -244,6 +249,18 @@ public class Monitor extends VisPlugin {
         logger.info("Select backend from config...");
         outputFile = new File(element.getValue());
         /* will be configured when plugin start */
+        break;
+      case "enabled":
+        switch(element.getValue()) {
+        case "true":
+          backend.setEnabled(true);
+          enable.setSelected(true);
+          break;
+        case "false":
+          backend.setEnabled(false);
+          enable.setSelected(false);
+          break;
+        }
         break;
       }
     }
