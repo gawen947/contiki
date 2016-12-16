@@ -66,15 +66,14 @@ import be.ac.umons.cooja.monitor.device.MemMon;
 import be.ac.umons.cooja.monitor.device.MonDevice;
 
 /* TODO:
- *  ! - Change warning/info messages from to Logger in monitor core classes.
- *  ! - getConfigXML();
+ *  ! - enabled from configXML
  */
 
 @ClassDescription("Monitor")
 @PluginType(PluginType.SIM_PLUGIN)
 public class Monitor extends VisPlugin {
   private static final long serialVersionUID = 5359332460231108667L;
-  private static final String VERSION = "v1.3.3";
+  private static final String VERSION = "v1.3.11";
 
   private static final int GUI_SPACING = 5;
 
@@ -114,7 +113,6 @@ public class Monitor extends VisPlugin {
     JPanel mainPane = new JPanel();
     mainPane.setLayout(new BoxLayout(mainPane, BoxLayout.PAGE_AXIS));
 
-    mainPane.add(Box.createRigidArea(new Dimension(GUI_SPACING, 0)));
     mainPane.add(pluginVersion);
     mainPane.add(Box.createRigidArea(new Dimension(0, GUI_SPACING)));
     mainPane.add(enable);
@@ -132,7 +130,8 @@ public class Monitor extends VisPlugin {
 
     selectBackend.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        selectBackend();
+        outputFile = chooseOutputFile();
+        setBackend(outputFile);
       }
     });
     enable.addActionListener(new ActionListener() {
@@ -201,13 +200,8 @@ public class Monitor extends VisPlugin {
   /* Configure the new backend. */
   private void setBackend(File file) {
     backend.selectBackend(new TraceMonBackend.Creator(file));
+    selectBackend.setToolTipText(outputFile.getAbsolutePath());
     logger.info("Monitor backend selected '" + outputFile.getAbsolutePath() + "'");
-  }
-
-  /* Select backend using a file chooser. */
-  private void selectBackend() {
-    outputFile = chooseOutputFile();
-    setBackend(outputFile);
   }
 
   private File chooseOutputFile() {
@@ -237,6 +231,8 @@ public class Monitor extends VisPlugin {
 
     config.add(element);
 
+    stats.getConfigXML(config);
+
     return config;
   }
 
@@ -246,12 +242,13 @@ public class Monitor extends VisPlugin {
       switch(element.getName()) {
       case "output":
         logger.info("Select backend from config...");
-
-        outputFile = new File(element.getName());
-        setBackend(outputFile);
+        outputFile = new File(element.getValue());
+        /* will be configured when plugin start */
         break;
       }
     }
+
+    stats.setConfigXML(configXML);
 
     return true;
   }
