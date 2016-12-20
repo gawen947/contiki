@@ -65,15 +65,11 @@ import be.ac.umons.cooja.monitor.mon.switchable.TraceMonBackend;
 import be.ac.umons.cooja.monitor.device.MemMon;
 import be.ac.umons.cooja.monitor.device.MonDevice;
 
-/* TODO:
- *  ! - enabled from configXML
- */
-
 @ClassDescription("Monitor")
 @PluginType(PluginType.SIM_PLUGIN)
 public class Monitor extends VisPlugin {
   private static final long serialVersionUID = 5359332460231108667L;
-  private static final String VERSION = "v1.3.13";
+  private static final String VERSION = "v1.3.14 (pi)";
 
   private static final int GUI_SPACING = 5;
 
@@ -84,14 +80,16 @@ public class Monitor extends VisPlugin {
   private final SwitchableMon backend;
   private final Hashtable<MonDevice, Integer> monDevices = new Hashtable<MonDevice, Integer>();
 
-  private final JCheckBox enable        = new JCheckBox("Enable monitor", true);
-  private final JButton   selectBackend = new JButton("Change output file...");
-  private final JLabel    pluginVersion = new JLabel("<html><b>" + VERSION + "</b></html>", SwingConstants.CENTER);
-  private final JLabel    numEvents     = new JLabel();
-  private final JLabel    numStates     = new JLabel();
-  private final JLabel    numInfos      = new JLabel();
-  private final JLabel    numSkipped    = new JLabel();
-  private final JLabel    numNodes      = new JLabel();
+  private final JCheckBox guiEnable;
+  private final JButton   guiSelectBackend;
+  private final JLabel    guiPluginVersion;
+  private final JLabel    guiNumEvents;
+  private final JLabel    guiNumStates;
+  private final JLabel    guiNumInfos;
+  private final JLabel    guiNumSkipped;
+  private final JLabel    guiNumNodes;
+
+  private boolean pluginEnabled = true;
 
   private MoteCountListener moteCountListener;
   private File              outputFile = new File("monitor.trace");
@@ -103,43 +101,70 @@ public class Monitor extends VisPlugin {
 
     this.simulation = simulation;
 
-    /* Ensure that we always have a backend for the output trace.
-     * If an event is generated and no real backend is configured,
-     * ErrorSkipMon will generate an exception. */
-    stats   = new MonitorGUI(numEvents, numStates, numInfos, numSkipped, numNodes);
+    if(gui.isVisualized()) {
+      guiEnable        = new JCheckBox("Enable monitor", true);
+      guiSelectBackend = new JButton("Change output file...");
+      guiPluginVersion = new JLabel("<html><b>" + VERSION + "</b></html>", SwingConstants.CENTER);
+      guiNumEvents     = new JLabel();
+      guiNumStates     = new JLabel();
+      guiNumInfos      = new JLabel();
+      guiNumSkipped    = new JLabel();
+      guiNumNodes      = new JLabel();
+
+      /* Ensure that we always have a backend for the output trace.
+       * If an event is generated and no real backend is configured,
+       * ErrorSkipMon will generate an exception. */
+      stats   = new MonitorStatsGUI(guiNumEvents,
+                                    guiNumStates,
+                                    guiNumInfos,
+                                    guiNumSkipped,
+                                    guiNumNodes);
+
+      /* Create GUI. */
+      JPanel mainPane = new JPanel();
+      mainPane.setLayout(new BoxLayout(mainPane, BoxLayout.PAGE_AXIS));
+
+      mainPane.add(guiPluginVersion);
+      mainPane.add(Box.createRigidArea(new Dimension(0, GUI_SPACING)));
+      mainPane.add(guiEnable);
+      mainPane.add(guiSelectBackend);
+      mainPane.add(Box.createRigidArea(new Dimension(0, GUI_SPACING)));
+      mainPane.add(guiNumEvents);
+      mainPane.add(guiNumStates);
+      mainPane.add(guiNumInfos);
+      mainPane.add(guiNumSkipped);
+      mainPane.add(guiNumNodes);
+      mainPane.add(Box.createRigidArea(new Dimension(0, 2*GUI_SPACING)));
+
+      add(mainPane);
+      pack();
+
+      guiSelectBackend.addActionListener(new ActionListener() {
+          public void actionPerformed(ActionEvent e) {
+            outputFile = chooseOutputFile();
+            setBackend(outputFile);
+          }
+        });
+      guiEnable.addActionListener(new ActionListener() {
+          public void actionPerformed(ActionEvent e) {
+            setPluginEnabled(!isPluginEnabled());
+            backend.setEnabled(isPluginEnabled());
+          }
+        });
+    } else {
+      stats = new MonitorStats();
+
+      guiEnable        = null;
+      guiSelectBackend = null;
+      guiPluginVersion = null;
+      guiNumEvents     = null;
+      guiNumStates     = null;
+      guiNumInfos      = null;
+      guiNumSkipped    = null;
+      guiNumNodes      = null;
+    }
+
     backend = new IgnoreSkipMon(stats);
-
-    /* Create GUI. */
-    JPanel mainPane = new JPanel();
-    mainPane.setLayout(new BoxLayout(mainPane, BoxLayout.PAGE_AXIS));
-
-    /* FIXME: will it work without GUI ? */
-    mainPane.add(pluginVersion);
-    mainPane.add(Box.createRigidArea(new Dimension(0, GUI_SPACING)));
-    mainPane.add(enable);
-    mainPane.add(selectBackend);
-    mainPane.add(Box.createRigidArea(new Dimension(0, GUI_SPACING)));
-    mainPane.add(numEvents);
-    mainPane.add(numStates);
-    mainPane.add(numInfos);
-    mainPane.add(numSkipped);
-    mainPane.add(numNodes);
-    mainPane.add(Box.createRigidArea(new Dimension(0, 2*GUI_SPACING)));
-
-    add(mainPane);
-    pack();
-
-    selectBackend.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        outputFile = chooseOutputFile();
-        setBackend(outputFile);
-      }
-    });
-    enable.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        backend.setEnabled(enable.isSelected());
-      }
-    });
 
     /* automatically add/delete motes */
     simulation.getEventCentral().addMoteCountListener(moteCountListener = new MoteCountListener() {
@@ -201,7 +226,7 @@ public class Monitor extends VisPlugin {
   /* Configure the new backend. */
   private void setBackend(File file) {
     backend.selectBackend(new TraceMonBackend.Creator(file));
-    selectBackend.setToolTipText(outputFile.getAbsolutePath());
+    guiSelectBackend.setToolTipText(outputFile.getAbsolutePath());
     logger.info("Monitor backend selected '" + outputFile.getAbsolutePath() + "'");
   }
 
@@ -222,6 +247,16 @@ public class Monitor extends VisPlugin {
       return new File("monitor.trace");
   }
 
+  private boolean isPluginEnabled() {
+    return pluginEnabled;
+  }
+
+  private void setPluginEnabled(boolean value) {
+    if(guiEnable != null)
+      guiEnable.setSelected(value);
+    pluginEnabled = value;
+  }
+
   @Override
   public Collection<Element> getConfigXML() {
     List<Element> config = new ArrayList<>();
@@ -231,7 +266,7 @@ public class Monitor extends VisPlugin {
     eEnabled = new Element("enabled");
 
     eOutput.setText(outputFile.getAbsolutePath());
-    eEnabled.setText(enable.isSelected() ? "true" : "false");
+    eEnabled.setText(isPluginEnabled() ? "true" : "false");
 
     config.add(eOutput);
     config.add(eEnabled);
@@ -254,11 +289,11 @@ public class Monitor extends VisPlugin {
         switch(element.getValue()) {
         case "true":
           backend.setEnabled(true);
-          enable.setSelected(true);
+          setPluginEnabled(true);
           break;
         case "false":
           backend.setEnabled(false);
-          enable.setSelected(false);
+          setPluginEnabled(false);
           break;
         }
         break;

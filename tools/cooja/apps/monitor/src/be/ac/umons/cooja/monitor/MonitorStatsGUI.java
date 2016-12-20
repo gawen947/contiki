@@ -38,14 +38,8 @@ import be.ac.umons.cooja.monitor.mon.MonStats;
 /**
    Report the statistics on a GUI.
  */
-public class MonitorGUI implements MonStats {
-  private static Logger logger = Logger.getLogger(Monitor.class);
-
-  private int numEvents  = 0;
-  private int numStates  = 0;
-  private int numInfos   = 0;
-  private int numSkipped = 0;
-  private int numNodes   = 0;
+public class MonitorStatsGUI extends MonitorStats {
+  private static Logger logger = Logger.getLogger(MonitorStatsGUI.class);
 
   /* GUI */
   private static final String NBR_EVENTS_S  = "Total events: ";
@@ -60,11 +54,13 @@ public class MonitorGUI implements MonStats {
   private final JLabel numSkippedLabel;
   private final JLabel numNodesLabel;
 
-  public MonitorGUI(JLabel numEvents,
-                    JLabel numStates,
-                    JLabel numInfos,
-                    JLabel numSkipped,
-                    JLabel numNodes) {
+  public MonitorStatsGUI(JLabel numEvents,
+                         JLabel numStates,
+                         JLabel numInfos,
+                         JLabel numSkipped,
+                         JLabel numNodes) {
+    super();
+
     this.numEventsLabel  = numEvents;
     this.numStatesLabel  = numStates;
     this.numInfosLabel   = numInfos;
@@ -80,8 +76,7 @@ public class MonitorGUI implements MonStats {
 
   @Override
   public void incStates() {
-    numStates++;
-    numEvents++;
+    super.incStates();
 
     numStatesLabel.setText(NBR_STATES_S + Integer.toString(numStates));
     numEventsLabel.setText(NBR_EVENTS_S + Integer.toString(numEvents));
@@ -89,8 +84,7 @@ public class MonitorGUI implements MonStats {
 
   @Override
   public void incInfos() {
-    numInfos++;
-    numEvents++;
+    super.incInfos();
 
     numInfosLabel.setText(NBR_INFOS_S + Integer.toString(numInfos));
     numEventsLabel.setText(NBR_EVENTS_S + Integer.toString(numEvents));
@@ -98,8 +92,7 @@ public class MonitorGUI implements MonStats {
 
   @Override
   public void incSkipped() {
-    numSkipped++;
-    numEvents++;
+    super.incSkipped();
 
     numSkippedLabel.setText(NBR_SKIPPED_S + Integer.toString(numSkipped));
     numEventsLabel.setText(NBR_EVENTS_S + Integer.toString(numEvents));
@@ -107,64 +100,21 @@ public class MonitorGUI implements MonStats {
 
   @Override
   public void incNodes() {
-    numNodes++;
+    super.incNodes();
 
     numNodesLabel.setText(NBR_NODES_S + Integer.toString(numNodes));
   }
 
   @Override
   public void decNodes() {
-    numNodes--;
+    super.decNodes();
 
     numNodesLabel.setText(NBR_NODES_S + Integer.toString(numNodes));
   }
 
   @Override
-  public void getConfigXML(List<Element> config) {
-    Element eStates, eInfos, eSkipped;
-
-    eStates  = new Element("states");
-    eInfos   = new Element("infos");
-    eSkipped = new Element("skipped");
-
-    eStates.setText(Integer.toString(numStates));
-    eInfos.setText(Integer.toString(numInfos));
-    eSkipped.setText(Integer.toString(numSkipped));
-
-    config.add(eStates);
-    config.add(eInfos);
-    config.add(eSkipped);
-  }
-
-  @Override
   public void setConfigXML(Collection<Element> configXML) {
-    for(Element element : configXML) {
-      switch(element.getName()) {
-      case "states":
-        try {
-          numStates = Integer.parseInt(element.getValue());
-        } catch (NumberFormatException e) {
-          logger.error("invalid states element in configuration");
-        }
-        break;
-      case "infos":
-        try {
-          numInfos = Integer.parseInt(element.getValue());
-        } catch (NumberFormatException e) {
-          logger.error("invalid infos element in configuration");
-        }
-        break;
-      case "skipped":
-        try {
-          numSkipped = Integer.parseInt(element.getValue());
-        } catch (NumberFormatException e) {
-          logger.error("invalid skippeds element in configuration");
-        }
-        break;
-      }
-    }
-
-    numEvents = numStates + numInfos + numSkipped;
+    super.setConfigXML(configXML);
 
     numStatesLabel.setText(NBR_STATES_S + Integer.toString(numStates));
     numInfosLabel.setText(NBR_INFOS_S + Integer.toString(numInfos));
