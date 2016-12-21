@@ -1,5 +1,5 @@
 Name: COOJA: Monitor
-Contact: David Hauweele <david@hauweele.net
+Contact: David Hauweele <david@hauweele.net>
 License: BSD
 Contiki: 3.0
 Intended platforms: TMote Sky
