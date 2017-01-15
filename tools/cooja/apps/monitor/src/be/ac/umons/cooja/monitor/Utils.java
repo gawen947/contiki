@@ -54,6 +54,15 @@ public class Utils {
     return buf.array();
   }
 
+  /** Convert a long integer to an array of byte using a specific endianness. */
+  public static byte[] toBytes(long value, ByteOrder byteOrder) {
+    ByteBuffer buf = ByteBuffer.allocate(Long.SIZE >> 3);
+    buf.order(byteOrder);
+    buf.putLong(value);
+
+    return buf.array();
+  }
+
   /** Convert a double to an array of byte using a specific endianness. */
   public static byte[] toBytes(double value, ByteOrder byteOrder) {
     ByteBuffer buf = ByteBuffer.allocate(Double.SIZE >> 3);
@@ -94,6 +103,10 @@ public class Utils {
   }
 
   public static void writeBytes(OutputStream out, int value, ByteOrder byteOrder) throws IOException {
+    out.write(Utils.toBytes(value, byteOrder));
+  }
+
+  public static void writeBytes(OutputStream out, long value, ByteOrder byteOrder) throws IOException {
     out.write(Utils.toBytes(value, byteOrder));
   }
 
