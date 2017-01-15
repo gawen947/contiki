@@ -188,7 +188,7 @@ static void process_scope(const struct scope *scope)
 
   if(scope->scope & SC_SIMULATION) {
     e  = list_add(&scope_list);
-    *e = (struct display_element){ "SIM_TIME_US", "Simulation time",
+    *e = (struct display_element){ "SIM_TIME_US", "Simulation time (micros.)",
                                    { T_TIME_US,
                                      .value.time_us = scope->sim_us } };
   }

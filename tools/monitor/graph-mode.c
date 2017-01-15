@@ -93,11 +93,11 @@ static const struct graph_metric avail_metric[] = {
 
 static const char * label_sim_us(const struct label_stats *stats)
 {
-  double min = stats->min_delta_sim_us;
-  double max = stats->max_delta_sim_us;
-  double avg = stats->sum_delta_sim_us / stats->count;
+  uint64_t min = stats->min_delta_sim_us;
+  uint64_t max = stats->max_delta_sim_us;
+  double avg = (double)stats->sum_delta_sim_us / stats->count;
 
-  snprintf(label_str, sizeof(label_str), "min=%.3f avg=%.3f max=%.3f", min, avg, max);
+  snprintf(label_str, sizeof(label_str), "min=%lu avg=%.3f max=%lu", min, avg, max);
 
   return label_str;
 }
@@ -195,9 +195,9 @@ static void destroy_context(struct mon_ctx *ctx)
 
 static void init_label_statistics(struct label_stats *label)
 {
+  label->min_delta_sim_us  = UINT64_MAX;
   label->min_delta_cycles  = UINT64_MAX;
   label->min_delta_node_ms = DBL_MAX;
-  label->min_delta_sim_us  = DBL_MAX;
 }
 
 static void update_label_statistics(struct label_stats *label, const struct label_info *info)
@@ -206,9 +206,9 @@ static void update_label_statistics(struct label_stats *label, const struct labe
 
   /* simulation event */
   if((info->source_last_scope.scope & SC_SIMULATION) && (info->destination_scope.scope & SC_SIMULATION)) {
-    double src_sim_us = info->source_last_scope.sim_us;
-    double dst_sim_us = info->destination_scope.sim_us;
-    double delta = dst_sim_us - src_sim_us;
+    uint64_t src_sim_us = info->source_last_scope.sim_us;
+    uint64_t dst_sim_us = info->destination_scope.sim_us;
+    uint64_t delta = dst_sim_us - src_sim_us;
 
     label->sum_delta_sim_us += delta;
     if(delta < label->min_delta_sim_us)

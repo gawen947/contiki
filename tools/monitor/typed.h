@@ -69,7 +69,7 @@ struct typed {
     } mon_state;
     double position;
     double time_ms;
-    double time_us;
+    uint64_t time_us;
     uint64_t cycles;
     struct {
       unsigned int length;

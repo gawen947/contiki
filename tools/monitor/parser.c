@@ -192,14 +192,16 @@ static int parse_scope(const struct trace *trace, struct scope *scope)
   case SC_T_SEPARATOR:
     return 1; /* signal separation */
   case SC_T_SIMULATION:
-    if(len != sizeof(double))
+    if(len != sizeof(uint64_t))
       return E_ICONST;
 
     scope->scope |= SC_SIMULATION;
 
-    ERR_ON_EOF(xiobuf_read(trace->input, &scope->sim_us, sizeof(double)));
+    ERR_ON_EOF(xiobuf_read(trace->input, &scope->sim_us, sizeof(uint64_t)));
 
-    scope->sim_us = betohD(scope->sim_us);
+    printf("BEFR %lu\n", scope->sim_us);
+    scope->sim_us = be64toh(scope->sim_us);
+    printf("READ %lu\n", scope->sim_us);
     break;
   case SC_T_NODE:
     if(len != (sizeof(uint64_t) + sizeof(double) + sizeof(uint16_t)))

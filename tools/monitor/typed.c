@@ -183,10 +183,10 @@ void display_typed_normal(const struct typed *t)
     break;
   case T_POSITION:
   case T_TIME_MS:
-  case T_TIME_US:
     printf("%f", t->value.position);
     break;
   case T_CYCLES:
+  case T_TIME_US:
     printf("%lu", t->value.cycles);
     break;
   case T_DATA:
@@ -225,7 +225,7 @@ void display_typed_human(const struct typed *t)
     printf("%f ms", t->value.time_ms);
     break;
   case T_TIME_US:
-    printf("%f us", t->value.time_us);
+    printf("%lu us", t->value.time_us);
     break;
   case T_CYCLES:
     printf("%lu cycles", t->value.cycles);

@@ -37,9 +37,9 @@ struct label_stats {
   double min_delta_node_ms;
   double max_delta_node_ms;
 
-  double sum_delta_sim_us;
-  double min_delta_sim_us;
-  double max_delta_sim_us;
+  uint64_t sum_delta_sim_us;
+  uint64_t min_delta_sim_us;
+  uint64_t max_delta_sim_us;
 
   unsigned int count; /* Number of time this transition has been taken. */
 };

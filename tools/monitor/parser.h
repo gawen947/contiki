@@ -30,7 +30,7 @@
 
 #include "iobuf.h"
 
-#define PARSER_MAJOR_VERSION 1
+#define PARSER_MAJOR_VERSION 2
 #define PARSER_MINOR_VERSION 0
 
 enum trace_error {
@@ -107,7 +107,7 @@ struct scope {
                      used for this event. */
 
   /* simulation scope */
-  double sim_us; /* Simulation time in microseconds. */
+  uint64_t sim_us; /* Simulation time in microseconds. */
 
   /* node scope */
   unsigned short nid;          /* node identifier */
