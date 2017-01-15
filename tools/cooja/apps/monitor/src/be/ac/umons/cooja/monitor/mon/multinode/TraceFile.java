@@ -39,49 +39,51 @@ import be.ac.umons.cooja.monitor.Utils;
 public class TraceFile {
   /* 'ctktrace' */
   public static final int MAGIK1 = 0x63746b74; /* 'ctkt' */
-  public static final int MAGIK2 = 0x72616365; /* 'race' */ 
-  
+  public static final int MAGIK2 = 0x72616365; /* 'race' */
+
   /* We have two versions for the file, MAJOR and MINOR.
    * The file structure is incompatible between MAJOR versions,
    * but forward compatible between MINOR versions. */
-  
+
   /* Increment when new feature or changes hinder
    * parsing (i.e. it is not possible to parse new
-   * traces with previous version of the parser). */ 
-  public static final int MAJOR_VERSION = 1;
-  
+   * traces with previous version of the parser). */
+  public static final int MAJOR_VERSION = 2;
+  /* major version changelog:
+   *  2: Use long instead of double for simulationTime */
+
   /* Increment when new features or changes do not
    * hinder parsing (i.e. the previous version of
    * the  parser can skip new features and changes). */
   public static final int MINOR_VERSION  = 0;
-  
+
   /* The endianness used for all fields. */
   public static final ByteOrder ENDIAN = ByteOrder.BIG_ENDIAN;
-  
-  
+
+
   private final OutputStream out;
-  
+
   public TraceFile(File file) throws IOException {
     out = new BufferedOutputStream(new FileOutputStream(file));
-    
+
     writeMagik();
     writeVersion();
   }
-  
+
   public void write(Event event) throws IOException {
     event.serialize(out);
   }
-  
+
   private void writeMagik() throws IOException {
     out.write(Utils.toBytes(MAGIK1, ByteOrder.BIG_ENDIAN));
     out.write(Utils.toBytes(MAGIK2, ByteOrder.BIG_ENDIAN));
   }
-  
+
   private void writeVersion() throws IOException {
     out.write(Utils.toBytes(MAJOR_VERSION, ByteOrder.BIG_ENDIAN));
     out.write(Utils.toBytes(MINOR_VERSION, ByteOrder.BIG_ENDIAN));
   }
-  
+
   public void destroy() throws IOException {
     out.close();
   }

@@ -89,7 +89,7 @@ public class FileMonBackend extends SwitchableMonBackend {
   }
 
   @Override
-  public void recordState(int context, int entity, int state, MonTimestamp timestamp, double simTime, short nodeID) throws MonException {
+  public void recordState(int context, int entity, int state, MonTimestamp timestamp, long simTime, short nodeID) throws MonException {
     try {
       out.write(timestamp.toBytes(endianness));
       out.write(Utils.toBytes(simTime, endianness));
@@ -104,7 +104,7 @@ public class FileMonBackend extends SwitchableMonBackend {
 
   @Override
   public void recordInfo(int context, int entity, byte[] info,
-                         MonTimestamp timestamp, double simTime, short nodeID) throws MonException {
+                         MonTimestamp timestamp, long simTime, short nodeID) throws MonException {
     try {
       out.write(timestamp.toBytes(endianness));
       out.write(Utils.toBytes(simTime, endianness));

@@ -115,7 +115,7 @@ public class FileMon extends MonBackend {
   }
 
   public void recordState(int context, int entity, int state,
-                          MonTimestamp timestamp, double simTime, short nodeID) {
+                          MonTimestamp timestamp, long simTime, short nodeID) {
     try {
       out.write(timestamp.toBytes(getEndian()));
       out.write(Utils.toBytes(simTime, getEndian()));
@@ -130,7 +130,7 @@ public class FileMon extends MonBackend {
   }
 
   public void recordInfo(int context, int entity, byte[] info,
-                         MonTimestamp timestamp, double simTime, short nodeID) {
+                         MonTimestamp timestamp, long simTime, short nodeID) {
     try {
       out.write(timestamp.toBytes(getEndian()));
       out.write(Utils.toBytes(simTime, getEndian()));

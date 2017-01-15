@@ -69,7 +69,7 @@ import be.ac.umons.cooja.monitor.device.MonDevice;
 @PluginType(PluginType.SIM_PLUGIN)
 public class Monitor extends VisPlugin {
   private static final long serialVersionUID = 5359332460231108667L;
-  private static final String VERSION = "v1.3.14 (pi)";
+  private static final String VERSION = "v1.3.15";
 
   private static final int GUI_SPACING = 5;
 

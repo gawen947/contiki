@@ -68,11 +68,11 @@ public class TraceMonBackend extends SwitchableMonBackend {
                          MonTimestamp byteOffset, ByteOrder byteOrder,
                          File file) throws MonException {
     super(recordOffset, infoOffset, byteOffset, byteOrder);
-    
+
     try {
       trace = new TraceFile(file);
 
-      writeEvent(new MonTimestamp(0, 0.), 0., (short)0, new MonCreateEvent(recordOffset, infoOffset, byteOffset, byteOrder));
+      writeEvent(new MonTimestamp(0, 0), 0, (short)0, new MonCreateEvent(recordOffset, infoOffset, byteOffset, byteOrder));
     } catch (IOException e) {
       throw new MonException("cannot open/create '" + file.getAbsolutePath() + "'");
     }
@@ -81,7 +81,7 @@ public class TraceMonBackend extends SwitchableMonBackend {
   }
 
   @Override
-  public void recordState(int context, int entity, int state, MonTimestamp timestamp, double simTime, short nodeID) throws MonException {
+  public void recordState(int context, int entity, int state, MonTimestamp timestamp, long simTime, short nodeID) throws MonException {
     try {
       writeEvent(timestamp, simTime, nodeID, new MonStateEvent(context, entity, state));
     } catch (IOException e) {
@@ -90,7 +90,7 @@ public class TraceMonBackend extends SwitchableMonBackend {
   }
 
   @Override
-  public void recordInfo(int context, int entity, byte[] info, MonTimestamp timestamp, double simTime, short nodeID) throws MonException {
+  public void recordInfo(int context, int entity, byte[] info, MonTimestamp timestamp, long simTime, short nodeID) throws MonException {
     try {
       writeEvent(timestamp, simTime, nodeID, new MonDataEvent(context, entity, info));
     } catch (IOException e) {
@@ -108,7 +108,7 @@ public class TraceMonBackend extends SwitchableMonBackend {
     }
   }
 
-  private void writeEvent(MonTimestamp timestamp, double simTime, short nodeID, EventElement eventElement) throws IOException {
+  private void writeEvent(MonTimestamp timestamp, long simTime, short nodeID, EventElement eventElement) throws IOException {
     Event event = new Event(eventElement);
 
     event.addScope(new NodeScope(timestamp, nodeID));

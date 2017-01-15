@@ -30,8 +30,8 @@ import be.ac.umons.cooja.monitor.mon.MonTimestamp;
  * Discard events, no output at all.
  */
 public class NullMon extends MonBackend {
-  protected void recordState(int context, int entity, int state, MonTimestamp timestamp, double simTime, short nodeID) {}
-  protected void recordInfo(int context, int entity, byte[] info, MonTimestamp timestamp, double simTime, short nodeID) {}
+  protected void recordState(int context, int entity, int state, MonTimestamp timestamp, long simTime, short nodeID) {}
+  protected void recordInfo(int context, int entity, byte[] info, MonTimestamp timestamp, long simTime, short nodeID) {}
   protected void initiated() {}
   public void close() {}
 }

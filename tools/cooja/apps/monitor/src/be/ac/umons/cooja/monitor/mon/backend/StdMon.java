@@ -52,7 +52,7 @@ public class StdMon extends MonBackend {
   }
 
   public void recordState(int context, int entity, int state,
-                          MonTimestamp timestamp, double simTime, short nodeID) {
+                          MonTimestamp timestamp, long simTime, short nodeID) {
     /* Since we display directly on stdout we must take care of endianness and offset. */
     context = xtohs(context);
     entity  = xtohs(entity);
@@ -66,7 +66,7 @@ public class StdMon extends MonBackend {
   }
 
   public void recordInfo(int context, int entity, byte[] info,
-                         MonTimestamp timestamp, double simTime, short nodeID) {
+                         MonTimestamp timestamp, long simTime, short nodeID) {
     /* Since we display directly on stdout we must take care of endianness and offset. */
     context = xtohs(context);
     entity  = xtohs(entity);

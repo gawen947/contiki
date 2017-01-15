@@ -38,9 +38,9 @@ public class IgnoreSkipMon extends SwitchableMon {
   
   /* We just ignore events when no backend has been configured. */
   @Override
-  protected void skipState(int context, int entity, int state, MonTimestamp timestamp, double simTime, short nodeID) {}
+  protected void skipState(int context, int entity, int state, MonTimestamp timestamp, long simTime, short nodeID) {}
   @Override
-  protected void skipInfo(int context, int entity, byte[] info, MonTimestamp timestamp, double simTime, short nodeID) {}
+  protected void skipInfo(int context, int entity, byte[] info, MonTimestamp timestamp, long simTime, short nodeID) {}
   @Override
   protected void initSkip(SwitchableMonBackend backend) {}
   @Override

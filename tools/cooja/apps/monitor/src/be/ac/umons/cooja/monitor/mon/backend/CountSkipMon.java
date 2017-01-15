@@ -52,12 +52,12 @@ public class CountSkipMon extends SwitchableMon {
   }
 
   @Override
-  protected void skipState(int context, int entity, int state, MonTimestamp timestamp, double simTime, short nodeID) {
+  protected void skipState(int context, int entity, int state, MonTimestamp timestamp, long simTime, short nodeID) {
     stateSkipped++;
   }
 
   @Override
-  protected void skipInfo(int context, int entity, byte[] info, MonTimestamp timestamp, double simTime, short nodeID) {
+  protected void skipInfo(int context, int entity, byte[] info, MonTimestamp timestamp, long simTime, short nodeID) {
     infoSkipped++;
   }
 

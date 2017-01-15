@@ -103,7 +103,7 @@ public abstract class MonBackend {
     return initState == MonInitState.INITIATED;
   }
 
-  public void state(int context, int entity, int state, MonTimestamp timestamp, double simTime, short nodeID) {
+  public void state(int context, int entity, int state, MonTimestamp timestamp, long simTime, short nodeID) {
     switch(initState) {
     case ENDIAN:
       /* If the source was already in network order,
@@ -146,7 +146,7 @@ public abstract class MonBackend {
     }
   }
 
-  public void info(int context, int entity, byte[] info, MonTimestamp timestamp, double simTime, short nodeID) {
+  public void info(int context, int entity, byte[] info, MonTimestamp timestamp, long simTime, short nodeID) {
     switch(initState) {
     case ENDIAN:
     case RECORD_OFFSET:
@@ -197,11 +197,11 @@ public abstract class MonBackend {
 
   /** Record an event into the backend. */
   protected abstract void recordState(int context, int entity, int state,
-                                      MonTimestamp timestamp, double simTime, short nodeID);
+                                      MonTimestamp timestamp, long simTime, short nodeID);
 
   /** Record information about an entity into the backend. */
   protected abstract void recordInfo(int context, int entity, byte[] info,
-                                     MonTimestamp timestamp, double simTime, short nodeID);
+                                     MonTimestamp timestamp, long simTime, short nodeID);
 
   /** Signal that the monitor protocol has been intiated.
       Offsets and endianness should be accessible. */

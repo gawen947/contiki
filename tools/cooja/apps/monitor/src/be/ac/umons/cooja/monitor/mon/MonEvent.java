@@ -39,10 +39,10 @@ public class MonEvent {
   private final byte[] info;
 
   private final MonTimestamp timestamp;
-  private final double       simTime;
+  private final long         simTime; /* micros */
   private final short        nodeID;
 
-  public MonEvent(int context, int entity, int state, MonTimestamp timestamp, double simTime, short nodeID) {
+  public MonEvent(int context, int entity, int state, MonTimestamp timestamp, long simTime, short nodeID) {
     this.context   = context;
     this.entity    = entity;
     this.state     = state;
@@ -52,7 +52,7 @@ public class MonEvent {
     this.nodeID    = nodeID;
   }
 
-  public MonEvent(int context, int entity, byte[] info, MonTimestamp timestamp, double simTime, short nodeID) {
+  public MonEvent(int context, int entity, byte[] info, MonTimestamp timestamp, long simTime, short nodeID) {
     this.context   = context;
     this.entity    = entity;
     this.state     = 0xffff;
@@ -89,7 +89,7 @@ public class MonEvent {
     return timestamp;
   }
 
-  public double getSimulationTime() {
+  public long getSimulationTime() {
     return simTime;
   }
 

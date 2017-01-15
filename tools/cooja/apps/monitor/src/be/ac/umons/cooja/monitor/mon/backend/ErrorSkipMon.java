@@ -41,13 +41,13 @@ public class ErrorSkipMon extends SwitchableMon {
   
   @Override
   protected void skipState(int context, int entity, int state,
-                           MonTimestamp timestamp, double simTime, short nodeID) throws MonException {
+                           MonTimestamp timestamp, long simTime, short nodeID) throws MonException {
     new MonError("event skipped, no backend selected");
   }
 
   @Override
   protected void skipInfo(int context, int entity, byte[] info,
-                          MonTimestamp timestamp, double simTime, short nodeID) throws MonException {
+                          MonTimestamp timestamp, long simTime, short nodeID) throws MonException {
     new MonError("event skipped, no backend selected");
   }
 

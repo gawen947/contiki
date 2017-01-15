@@ -34,16 +34,16 @@ import be.ac.umons.cooja.monitor.Utils;
  * That is most if not all events.
  */
 public class SimulationScope implements ScopeElement {
-  private final double timeUs; /* simulation time in microseconds */
-  
+  private final long timeUs; /* simulation time in microseconds */
+
   /**
    * Create a simulation scope element.
    * @param timeUs Simulation time in microseconds.
    */
-  public SimulationScope(double timeUs) {
+  public SimulationScope(long timeUs) {
     this.timeUs = timeUs;
   }
-  
+
   @Override
   public void serialize(OutputStream out) throws IOException {
     Utils.writeBytes(out, timeUs, TraceFile.ENDIAN);
@@ -56,6 +56,6 @@ public class SimulationScope implements ScopeElement {
 
   @Override
   public int getLength() {
-    return Double.SIZE >> 3;
+    return Long.SIZE >> 3;
   }
 }

@@ -44,12 +44,12 @@ public class BufferSkipMon extends SwitchableMon {
   }
   
   @Override
-  protected void skipState(int context, int entity, int state, MonTimestamp timestamp, double simTime, short nodeID) {
+  protected void skipState(int context, int entity, int state, MonTimestamp timestamp, long simTime, short nodeID) {
     buffer.add(new MonEvent(context, entity, state, timestamp, simTime, nodeID));
   }
 
   @Override
-  protected void skipInfo(int context, int entity, byte[] info, MonTimestamp timestamp, double simTime, short nodeID) {
+  protected void skipInfo(int context, int entity, byte[] info, MonTimestamp timestamp, long simTime, short nodeID) {
     buffer.add(new MonEvent(context, entity, info, timestamp, simTime, nodeID));
   }
 

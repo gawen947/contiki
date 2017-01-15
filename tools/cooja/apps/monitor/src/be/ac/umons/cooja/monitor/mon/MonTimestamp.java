@@ -37,7 +37,7 @@ import java.nio.ByteOrder;
 public class MonTimestamp {
   /* Size of a "serialized" MonTimestamp in bits. */
   static public final int SIZE = Long.SIZE + Double.SIZE;
-  
+
   private long   c;
   private double ms;
 
@@ -53,14 +53,14 @@ public class MonTimestamp {
   public double getMillis() {
     return ms;
   }
-  
+
   public byte[] toBytes(ByteOrder byteOrder) {
     ByteBuffer buf = ByteBuffer.allocate(MonTimestamp.SIZE >> 3);
     buf.order(byteOrder);
-    
+
     buf.putLong(getCycles());
     buf.putDouble(getMillis());
-    
+
     return buf.array();
   }
 
@@ -78,12 +78,3 @@ public class MonTimestamp {
     return reduce(offset, 1);
   }
 }
-
-
-
-
-
-
-
-
-
