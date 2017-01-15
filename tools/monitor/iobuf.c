@@ -47,6 +47,22 @@ struct iofile {
   char buf[IOBUF_SIZE * 2];
 };
 
+static ssize_t fill_buffer(iofile_t file)
+{
+  ssize_t partial_read = IOBUF_SIZE * 2; /* no refill */
+
+  if(file->read_size == 0) {
+    partial_read = read(file->fd, file->buf + IOBUF_SIZE, IOBUF_SIZE);
+    if(partial_read < 0) /* read error */
+      return partial_read;
+
+    file->read_size = partial_read;
+    file->read_buf  = file->buf + IOBUF_SIZE;
+  }
+
+  return partial_read;
+}
+
 int iobuf_flush(iofile_t file)
 {
   int write_size  = file->write_size;
@@ -101,6 +117,8 @@ ssize_t iobuf_write(iofile_t file, const void *buf, size_t count)
     ssize_t partial_write;
 
     partial_write = iobuf_flush(file);
+    if(partial_write < 0)
+      return partial_write;
 
     if(count > IOBUF_SIZE) {
       ssize_t full_write;
@@ -123,18 +141,9 @@ ssize_t iobuf_read(iofile_t file, void *buf, size_t count)
   ssize_t ret = count;
 
   do {
-    ssize_t partial_read;
-
-    if(file->read_size == 0) {
-      partial_read = read(file->fd, file->buf + IOBUF_SIZE, IOBUF_SIZE);
-      if(partial_read == 0) /* end-of-file */
-        return ret - count;
-      else if(partial_read < 0) /* read error */
-        return partial_read;
-
-      file->read_size = partial_read;
-      file->read_buf  = file->buf + IOBUF_SIZE;
-    }
+    ssize_t partial_read = fill_buffer(file);
+    if(partial_read <= 0)
+      return partial_read;
 
     partial_read = MIN(count, file->read_size);
     memcpy(buf, file->read_buf, partial_read);
@@ -181,6 +190,52 @@ int iobuf_putc(char c, iofile_t file)
   file->write_buf++;
 
   return c;
+}
+
+int iobuf_getc(iofile_t file)
+{
+  ssize_t partial_read = fill_buffer(file);
+  if(partial_read < 0)
+    return partial_read;
+  else if(!partial_read)
+    return GETC_EOF;
+
+  file->read_buf++;
+  file->read_size--;
+  return *file->read_buf;
+}
+
+ssize_t iobuf_gets(iofile_t file, void *buf, size_t count)
+{
+  ssize_t ret = 0;
+
+  do {
+    char *eol;
+    ssize_t partial_read = fill_buffer(file);
+    if(partial_read <= 0)
+      return partial_read;
+
+    partial_read = MIN(count, file->read_size);
+
+    eol = memchr(file->read_buf, '\n', partial_read);
+    if(eol) {
+      partial_read  = eol - file->read_buf + 1; /* keep newline */
+      count         = partial_read; /* will be zero and break */
+    }
+
+    memcpy(buf, file->read_buf, partial_read);
+
+    file->read_buf  += partial_read;
+    file->read_size -= partial_read;
+    count          -= partial_read;
+    buf            += partial_read;
+    ret            += partial_read;
+  } while(count);
+
+  /* mark EOL */
+  *(char *)buf = '\0';
+
+  return ret;
 }
 
 off_t iobuf_lseek(iofile_t file, off_t offset, int whence)
