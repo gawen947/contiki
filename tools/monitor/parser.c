@@ -199,9 +199,7 @@ static int parse_scope(const struct trace *trace, struct scope *scope)
 
     ERR_ON_EOF(xiobuf_read(trace->input, &scope->sim_us, sizeof(uint64_t)));
 
-    printf("BEFR %lu\n", scope->sim_us);
     scope->sim_us = be64toh(scope->sim_us);
-    printf("READ %lu\n", scope->sim_us);
     break;
   case SC_T_NODE:
     if(len != (sizeof(uint64_t) + sizeof(double) + sizeof(uint16_t)))
