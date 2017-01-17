@@ -69,7 +69,7 @@ import be.ac.umons.cooja.monitor.device.MonDevice;
 @PluginType(PluginType.SIM_PLUGIN)
 public class Monitor extends VisPlugin {
   private static final long serialVersionUID = 5359332460231108667L;
-  private static final String VERSION = "v1.3.18";
+  private static final String VERSION = "v1.3.24";
 
   private static final int GUI_SPACING = 5;
 
@@ -226,7 +226,8 @@ public class Monitor extends VisPlugin {
   /* Configure the new backend. */
   private void setBackend(File file) {
     backend.selectBackend(new TraceMonBackend.Creator(file));
-    guiSelectBackend.setToolTipText(outputFile.getAbsolutePath());
+    if(guiSelectBackend != null)
+      guiSelectBackend.setToolTipText(outputFile.getAbsolutePath());
     logger.info("Monitor backend selected '" + outputFile.getAbsolutePath() + "'");
   }
 
