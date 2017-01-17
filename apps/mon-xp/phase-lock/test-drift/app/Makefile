@@ -1,7 +1,7 @@
 CONTIKI = ../../../../..
 CONTIKI_PROJECT = drift
 
-CFLAGS += -DUIP_CONF_ND6_SEND_NA=1 -DUIP_CONF_ROUTER=1 -DNETSTACK_CONF_RDC=nullrdc_driver -DPROJECT_CONF_H8=\"project-conf.h\"
+CFLAGS += -DUIP_CONF_ND6_SEND_NA=1 -DUIP_CONF_ROUTER=1 -DNETSTACK_CONF_RDC=nullrdc_driver -DPROJECT_CONF_H=\"project-conf.h\"
 
 all: $(CONTIKI_PROJECT)
 
