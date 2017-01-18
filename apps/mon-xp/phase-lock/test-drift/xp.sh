@@ -172,8 +172,8 @@ prng() {
 }
 
 do_runs() {
-  clean_all
-  rebuild app
+  #clean_all
+  #rebuild app
 
   run_seed="$cmd_seed"
   for i in $(seq 1 "$cmd_runs")
