@@ -79,7 +79,7 @@ echo "# Drifts tested:  $*"        >> "$results"
 echo "#" >> $results
 cp "$results" "$results_reg"
 echo "# DRIFT RUN° RUN-SPECIFIC-SEED SIM-TIME CPU-CYCLES" >> "$results"
-echo "# DRIFT SLOP(CPU-cycles per microseconds) INTERCEPT R_VALUE P_VALUE STDERR" >> "$results_reg"
+echo "# DRIFT SLOP(CPU-cycles per microseconds) INTERCEPT R_VALUE P_VALUE STDERR OBSERVED/REQUESTED-drift-ratio" >> "$results_reg"
 
 clean() {
   # Makefile doesn't seems to clean correctly.
@@ -199,7 +199,10 @@ for drift in $cmd_drifts
 do
   echo -n "Doing drift ${drift}... "
   cat "$results" | awk "{ if(\$1 == $drift) print \$4,\$5}" > "$reg_data"
-  echo $drift $(python linear-reg.py "$reg_data" | tail -n 1) >> "$results_reg"
+  linear_reg=$(python linear-reg.py "$reg_data" | tail -n 1)
+  reg_value=$(echo "$linear_reg" | cut -d' ' -f1)
+  ratio=$(rpnc "$reg_value" "3.904173" / 100 .)
+  echo $drift $linear_reg $ratio >> "$results_reg"
   echo "done!"
 done
 
