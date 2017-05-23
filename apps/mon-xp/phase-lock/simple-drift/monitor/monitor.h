@@ -33,39 +33,17 @@
 /**
  * \file
  *         Monitor state changes across Contiki.
+ *
+ *         This version is adapted to be used outside Contiki.
  * \author
  *         David Hauweele <david@hauweele.net>
  */
 
+#ifndef MONITOR_H_
+#define MONITOR_H_
+
 #include <stdint.h>
 
-#include "memmon.h"
-#include "context.h"
-#include "context/control.h"
-#include "monitor.h"
+void monitor_init(void);
 
-/* This function should be called in the platform's main. It allows
-   the monitor device to take endianness into account and reduce the
-   duration of the record functions from the timestamps. */
-void monitor_init(void)
-{
-  uint16_t info = 0xd00d;
-
-  /* Initialize the monitoring device. */
-  mon_init();
-
-  /* Check endianness. */
-  mon_record(MON_CT_CONTROL, MON_ENT_CAL, MON_ST_CHECK);
-
-  /* Check record duration. */
-  mon_record(MON_CT_CONTROL, MON_ENT_CAL, 0);
-
-  /* Check info duration. We do this two times to know additional number
-     of cycles per byte in the info buffer.
-     But first a dummy call to ensure uniform calling.
-     Otherwise we have an extra operation to fetch the
-     function pointer and the cycle count would be wrong. */
-  mon_info(MON_CT_CONTROL, MON_ENT_CAL, &info, 1);
-  mon_info(MON_CT_CONTROL, MON_ENT_CAL, &info, 1);
-  mon_info(MON_CT_CONTROL, MON_ENT_CAL, &info, 2);
-}
+#endif /* MONITOR_H_ */
