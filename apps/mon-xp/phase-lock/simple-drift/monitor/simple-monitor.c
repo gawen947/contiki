@@ -4,13 +4,16 @@
 #include "context.h"
 #include "memmon.h"
 
-#define BUSY_CYCLES (unsigned int)-1
+#define BUSY_CYCLES_B 1024
+#define BUSY_CYCLES_A (unsigned int)-1
 
 static void busy()
 {
-  unsigned int n;
-  for(n = BUSY_CYCLES ; n ; n--)
-    __no_operation();
+  unsigned int n,m;
+  for(m = BUSY_CYCLES_B ; m ; m--) {
+    for(n = BUSY_CYCLES_A ; n ; n--)
+      __no_operation();
+  }
 }
 
 int main()
