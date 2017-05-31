@@ -34,6 +34,9 @@ TOOLS="../../../../tools/"
 TARGET_DIR="monitor"
 TARGET_FIRMWARE="simple-monitor.sky"
 
+# DCO CLOCK frequency in MHz
+DCOCLK_FRQ="2.4576"
+
 # Fancies BSDs peculiarities.
 case "$(uname -s)" in
 FreeBSD)
@@ -202,7 +205,7 @@ do
   cat "$results" | awk "{ if(\$1 == $drift) print \$4,\$5}" > "$reg_data"
   linear_reg=$(python linear-reg.py "$reg_data" | tail -n 1)
   reg_value=$(echo "$linear_reg" | cut -d' ' -f1)
-  ratio=$(rpnc "$reg_value" "3.904173" / 100 .)
+  ratio=$(rpnc "$reg_value" "$DCOCLK_FREQ" / 100 .)
   echo $drift $linear_reg $ratio >> "$results_reg"
   echo "done!"
 done
