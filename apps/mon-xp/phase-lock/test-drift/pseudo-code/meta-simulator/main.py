@@ -8,6 +8,8 @@ REF_FRQ=4.0 # MHz
 firmwareConfig = firmwares.RandomFirmwareConfig(min_exec=1000, max_exec=20000,
                                                 min_sleep=4000, max_sleep=100000,
                                                 send_probability=0.3)
+#firmwareConfigNoSleep = firmwares.NoSleepRandomFirmwareConfig(min_exec=1000, max_exec=20000,
+#                                                              send_probability=0.3)
 class Result(object):
     def __init__(self, simTime, cycTime, frqMHz, obsDev, reqDev):
         self.simTime = simTime
@@ -31,6 +33,7 @@ def run_sim(time, nMotes, deviation):
     simMotes = []
     for i in range(nMotes):
         mote = simulation.createMote(motes.LegacyCoojaMote, firmwares.RandomFirmware, firmwareConfig)
+        #mote = simulation.createMote(motes.LegacyCoojaMote, firmwares.NoSleepRandomFirmware, firmwareConfigNoSleep)
         mote.setDeviation(deviation)
         simMotes.append(mote)
 
@@ -48,7 +51,7 @@ def run_sim(time, nMotes, deviation):
 
     return results
 
-for dev in (0.1, 0.5, 0.7, 1.0):
+for dev in (0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1):
     rs = run_sim(30, 1, dev)
     for r in rs:
         print r
