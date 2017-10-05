@@ -1,3 +1,5 @@
+import math
+
 import cooja
 
 class LegacyCoojaMote(cooja.Mote):
@@ -38,6 +40,39 @@ class LegacyCoojaMote(cooja.Mote):
         self.old_t = t
 
         self.total += 1
+
+    def moteInterrupt(self, t, irq):
+        self.mspsim.interrupt(irq)
+
+class NewdriftCoojaMote(cooja.Mote):
+    """
+    Same mote as Cooja but with a new
+    implementation of the drift parameter.
+    """
+
+    def __init__(self, simulation, mspSim, ID):
+        cooja.Mote.__init__(self, simulation, mspSim, ID)
+        self.deviation  = 1.0
+        self.old_t      = 0
+        self.deviationError = 0.
+
+    def setDeviation(self, deviation):
+        self.deviation = deviation
+
+    def moteExecute(self, t, duration):
+        coojaDelta     = t - self.old_t
+        mspExactDelta  = coojaDelta * self.deviation
+        mspDelta       = int(math.floor(mspExactDelta))
+
+        self.deviationError += mspExactDelta - mspDelta
+
+        if self.deviationError > 0.5:
+            mspDelta += 1
+            self.deviationError -= 1.0
+
+        new_t = self.mspsim.stepOneMicro(mspDelta, duration) + t + duration
+        self.simulation.scheduleNextExec(new_t, self)
+        self.old_t = t
 
     def moteInterrupt(self, t, irq):
         self.mspsim.interrupt(irq)

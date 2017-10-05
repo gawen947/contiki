@@ -14,67 +14,9 @@ DURATION = 1
 MIN_RADIO_DELAY=10
 MAX_RADIO_DELAY=1000
 
-@total_ordering
-class SimulationEvent(object):
-    """
-    The simulation class schedules the execution of the motes
-    and propagates simulation event (such as radio packet or
-    physical interaction) to the motes.
-
-    Each event is represented as an instance of this class (or subclass).
-    """
-
-    def __init__(self, t, targetMotes):
-        self.t           = t
-        self.targetMotes = targetMotes
-
-    def process(self):
-        for mote in self.targetMotes:
-            self.processMote(mote)
-
-    def processMote(self, mote):
-        raise Exception("cannot process base type SimulationEvent")
-
-    def __eq__(self, other):
-        return (self.t == other.t) and \
-               (set(self.targetMotes) == set(other.targetMotes)) and \
-               (type(self) == type(other))
-
-    def __ne__(self, other):
-        return (self.t != other.t) or \
-               (set(self.targetMotes) != set(other.targetMotes)) or \
-               (type(self) != type(other))
-
-    def __lt__(self, other):
-        return self.t < other.t
-
-class ExecEvent(SimulationEvent):
-    """
-    Event representing the execution of a mote.
-    """
-
-    def __repr__(self):
-        motes = map(lambda m: m.getID(), self.targetMotes)
-        return "ExecEvent(t=%d,motes=%s)" % (self.t, motes)
-
-    def processMote(self, mote):
-        mote.execute(self.t, DURATION)
-
-class InterruptEvent(SimulationEvent):
-    """
-    Interruption event from the simulation.
-    """
-
-    def __init__(self, t, targetMotes, irq = 0):
-        SimulationEvent.__init__(self, t, targetMotes)
-        self.irq = irq
-
-    def __repr__(self):
-        motes = map(lambda m: m.getID(), self.targetMotes)
-        return "InterruptionEvent(t=%d,motes=%s,irq=%d)" % (self.t, motes, self.irq)
-
-    def processMote(self, mote):
-        mote.interrupt(self.t, self.irq)
+class SimulationEvent(object): pass
+class ExecEvent(SimulationEvent): pass
+class RadioEvent(SimulationEvent): pass
 
 class Mote(object):
     """
@@ -108,6 +50,12 @@ class Mote(object):
     def getID(self):
         return self.ID
 
+    def __eq__(self, other):
+        return other.ID == self.ID
+
+    def __ne__(self, other):
+        return other.ID != self.ID
+
     def __repr__(self):
         return "Mote(%d)" % (self.ID,)
 
@@ -137,6 +85,7 @@ class Simulation(object):
         self.started    = False
         self.limit      = limit
         self.eventQueue = [] # heap
+        self.eventSet   = set()
         self.motes      = []
         self.layout     = []
 
@@ -171,24 +120,38 @@ class Simulation(object):
         while True:
             try:
                 event = heapq.heappop(self.eventQueue)
-                if len(self.eventQueue) > 20:
-                    for e in self.eventQueue:
-                        print e
-                    return
-                if self.limit and event.t > self.limit:
+                evTime, evType, evMote = event
+                self.eventSet.remove(event)
+
+                if self.limit and evTime > self.limit:
                     return
             except IndexError:
                 raise Exception("no more events")
-            event.process()
 
-    def pushEvent(self, event):
-        if event in self.eventQueue:
+            if evType == ExecEvent:
+                self.processExecEvent(evTime, evMote)
+            elif evType == RadioEvent:
+                self.processRadioEvent(evTime, evMote)
+            else:
+                raise Exception("unknown event")
+
+    def processRadioEvent(self, evTime, evSourceMote):
+        for mote in self.motes:
+            if evSourceMote != mote:
+                mote.interrupt(evTime, mspsim.RADIO_IRQ)
+
+    def processExecEvent(self, evTime, evMote):
+        evMote.execute(evTime, DURATION)
+
+    def pushEvent(self, evTime, evType, evMote):
+        event = (evTime, evType, evMote)
+        if event in self.eventSet:
             return # ignore duplicates
+        self.eventSet.add(event)
         heapq.heappush(self.eventQueue, event)
 
     def scheduleNextExec(self, t, mote):
-        event = ExecEvent(t, [mote])
-        self.pushEvent(event)
+        self.pushEvent(t, ExecEvent, mote)
 
     def broadcastRadio(self, t, mote):
         try:
@@ -196,7 +159,4 @@ class Simulation(object):
         except IndexError:
             raise Exception("non-existent mote")
 
-        targetMotes = [target for target in self.motes if target != mote]
-
-        event = InterruptEvent(t + radioDelay, targetMotes, irq = mspsim.RADIO_IRQ)
-        self.pushEvent(event)
+        self.pushEvent(t + radioDelay, RadioEvent, mote)

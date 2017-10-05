@@ -5,8 +5,12 @@ import motes
 MICROSEC=1000000
 REF_FRQ=4.0 # MHz
 
-firmwareConfig = firmwares.RandomFirmwareConfig(min_exec=1000, max_exec=20000,
-                                                min_sleep=4000, max_sleep=100000,
+# Original firmware configuration:
+#firmwareConfig = firmwares.RandomFirmwareConfig(min_exec=1000, max_exec=20000,
+#                                                min_sleep=4000, max_sleep=100000,
+#                                                send_probability=0.3)
+firmwareConfig = firmwares.RandomFirmwareConfig(min_exec=60, max_exec=120,
+                                                min_sleep=7000, max_sleep=8000,
                                                 send_probability=0.3)
 #firmwareConfigNoSleep = firmwares.NoSleepRandomFirmwareConfig(min_exec=1000, max_exec=20000,
 #                                                              send_probability=0.3)
@@ -32,7 +36,7 @@ def run_sim(time, nMotes, deviation):
 
     simMotes = []
     for i in range(nMotes):
-        mote = simulation.createMote(motes.LegacyCoojaMote, firmwares.RandomFirmware, firmwareConfig)
+        mote = simulation.createMote(motes.NewdriftCoojaMote, firmwares.RandomFirmware, firmwareConfig)
         #mote = simulation.createMote(motes.LegacyCoojaMote, firmwares.NoSleepRandomFirmware, firmwareConfigNoSleep)
         mote.setDeviation(deviation)
         simMotes.append(mote)
@@ -51,7 +55,10 @@ def run_sim(time, nMotes, deviation):
 
     return results
 
-for dev in (0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1):
+runs=[x / 100. for x in range(1,101)]
+print "# Deviation ratio:"
+print "# RequestedDevR ObservedDevR"
+for dev in runs:
     rs = run_sim(30, 1, dev)
     for r in rs:
-        print r
+        print r.reqDev, r.obsDev
