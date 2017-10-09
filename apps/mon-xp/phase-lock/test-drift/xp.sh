@@ -55,6 +55,7 @@ fi
 cmd_time="$1"
 cmd_seed="$2"
 cmd_runs="$3"
+
 shift; shift; shift;
 cmd_drifts="$*"
 
@@ -79,7 +80,8 @@ echo "# Drifts tested:  $*"        >> "$results"
 echo "#" >> $results
 cp "$results" "$results_reg"
 echo "# DRIFT RUN° RUN-SPECIFIC-SEED SIM-TIME CPU-CYCLES" >> "$results"
-echo "# DRIFT SLOP(CPU-cycles per microseconds) INTERCEPT R_VALUE P_VALUE STDERR OBSERVED/REQUESTED-drift-ratio" >> "$results_reg"
+echo "# DRIFT SLOP(CPU-cycles per microseconds) INTERCEPT R_VALUE P_VALUE STDERR OBSERVED/REQUESTED-drift-ratio" \
+     " USR-TIME(avg) USR-TIME(stddev) SYS-TIME(avg) SYS-TIME(stddev) REAL-TIME(avg) REAL-TIME(stddev)" >> "$results_reg"
 
 clean() {
   # Makefile doesn't seems to clean correctly.
@@ -141,8 +143,24 @@ do_xp_run() {
   # Start the simulation.
   # This should generate the mspsim.trace
   echo "Starting simulation..."
-  java -mx512m -jar "$TOOLS"/cooja/dist/cooja.jar -nogui="$temp_csc"
+  time java -mx512m -jar "$TOOLS"/cooja/dist/cooja.jar -nogui="$temp_csc" > cooja.log 2>&1
   echo
+
+  # Count scheduled events
+  case "$(uname -s)" in
+    FreeBSD)
+      usr_time=$(cat cooja.log | grep -Eo "[[:digit:]]+\.[[:digit:]]+ user" | sed 's/ user//g')
+      sys_time=$(cat cooja.log | grep -Eo "[[:digit:]]+\.[[:digit:]]+ sys" | sed 's/ sys//g')
+      real_time=$(cat cooja.log | grep -Eo "[[:digit:]]+\.[[:digit:]]+ real" | sed 's/ real//g')
+      ;;
+    *)
+      usr_time=$(cat cooja.log | grep -Eo "[[:digit:]]+\.[[:digit:]]+user" | sed 's/user//g')
+      sys_time=$(cat cooja.log | grep -Eo "[[:digit:]]+\.[[:digit:]]+system" | sed 's/system//g')
+      real_time=$(cat cooja.log | grep -Eo "[[:digit:]]+\.[[:digit:]]+elapsed" | sed 's/elapsed//g')
+      ;;
+  esac
+  rm cooja.log
+  echo "DRIFT=$drift RUN=$run TIME=$time $usr_time $sys_time $real_time" >> time.log
 
   # Parse the trace. The resulting file can be very large (~100MB)
   echo -n "Parsing resulting trace... "
@@ -174,6 +192,7 @@ prng() {
 do_runs() {
   clean_all
   rebuild app
+  rm -f time.log cooja.log
 
   run_seed="$cmd_seed"
   for i in $(seq 1 "$cmd_runs")
@@ -189,6 +208,17 @@ do_runs() {
   done
 }
 
+average_time() {
+  drift=$1
+
+  cat time.log | grep "DRIFT=$drift" > time-avg.log
+  avg_usr_time=$(cat time-avg.log | cut -d' ' -f 4 | python avg-stddev.py)
+  avg_sys_time=$(cat time-avg.log | cut -d' ' -f 5 | python avg-stddev.py)
+  avg_real_time=$(cat time-avg.log | cut -d' ' -f 6 | python avg-stddev.py)
+
+  echo "$avg_usr_time $avg_sys_time $avg_real_time"
+}
+
 do_runs
 
 echo "Now extracting measured drift:"
@@ -202,10 +232,13 @@ do
   linear_reg=$(python linear-reg.py "$reg_data" | tail -n 1)
   reg_value=$(echo "$linear_reg" | cut -d' ' -f1)
   ratio=$(rpnc "$reg_value" "3.904173" / 100 .)
-  echo $drift $linear_reg $ratio >> "$results_reg"
+
+  avg_time=$(average_time "$drift")
+
+  echo $drift $linear_reg $ratio $avg_time >> "$results_reg"
   echo "done!"
 done
 
-rm -f "$temp_csc" "$trace" "$reg_data" trace.txt
+rm -f "$temp_csc" "$trace" "$reg_data" trace.txt time.log time-avg.log
 rm -f mspsim.txt
 rm -f COOJA.log COOJA.testlog
