@@ -54,23 +54,39 @@ class NewdriftCoojaMote(cooja.Mote):
         cooja.Mote.__init__(self, simulation, mspSim, ID)
         self.deviation  = 1.0
         self.old_t      = 0
+        self.jumpOffset = 0
         self.deviationError = 0.
 
     def setDeviation(self, deviation):
         self.deviation = deviation
 
     def moteExecute(self, t, duration):
-        jump       = t - self.old_t
-        exactJump  = jump * self.deviation
-        jump       = int(math.floor(exactJump))
+        jump        = t - self.old_t + self.jumpOffset
+        simDuration = duration
 
-        self.deviationError += exactJump - jump
+        if self.deviation < 1.0:
+            exactJump  = jump * self.deviation
+            jump       = int(math.floor(exactJump))
 
-        if self.deviationError > 0.5:
-            jump += 1
-            self.deviationError -= 1.0
+            self.deviationError += exactJump - jump
 
-        new_t = self.mspsim.stepOneMicro(jump, duration) + t + duration
+            if self.deviationError > 0.5:
+                jump += 1
+                self.deviationError -= 1.0
+        else:
+            # FIXME: works without sleep
+            exactDuration = duration * self.deviation
+            duration   = int(math.floor(exactDuration))
+
+            self.deviationError += exactDuration - duration
+
+            if self.deviationError > 0.5:
+                duration += 1
+                self.deviationError -= 1.0
+
+            self.jumpOffset = duration - simDuration
+
+        new_t = self.mspsim.stepOneMicro(jump, duration) + t + simDuration
         self.simulation.scheduleNextExec(new_t, self)
         self.old_t = t
 
