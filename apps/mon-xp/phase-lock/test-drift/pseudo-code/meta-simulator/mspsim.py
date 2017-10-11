@@ -51,6 +51,7 @@ class MSPSim(object):
         # When a IRQ line is enabled and
         # an interrupt received, the CPU
         # is awoken and the interruption
+        self.jumpOffset = 2
         # sent back to the firmware.
         # Thus enabling/disabling an IRQ
         # line is the standard way to
@@ -62,7 +63,16 @@ class MSPSim(object):
 
     def stepOneMicro(self, jump, duration):
         self.micros += jump
-        deadline     = ((self.micros + duration) * DCO_FREQ) / 1000000
+
+        # check jump length
+        deadline = (self.micros * DCO_FREQ) / 1000000
+        if self.sleeping and (deadline > self.wakeup):
+            raise Exception("jump beyond next wakeup (deadline=%d, wakeup=%d)" % (deadline, self.wakeup))
+        elif (deadline > self.cycles):
+            raise Exception("jump beyond current cycles (deadline=%d, cycles=%d)" % (deadline, self.cycles))
+
+
+        deadline = ((self.micros + duration) * DCO_FREQ) / 1000000
 
         while (self.cycles < deadline):
             if self.sleeping:
