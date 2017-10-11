@@ -66,11 +66,11 @@ class MSPSim(object):
 
         # check jump length
         deadline = (self.micros * DCO_FREQ) / 1000000
-        if self.sleeping and (deadline > self.wakeup):
-            raise Exception("jump beyond next wakeup (deadline=%d, wakeup=%d)" % (deadline, self.wakeup))
+        if self.sleeping:
+            if deadline > self.wakeup:
+                raise Exception("jump beyond next wakeup (deadline=%d, wakeup=%d)" % (deadline, self.wakeup))
         elif (deadline > self.cycles):
             raise Exception("jump beyond current cycles (deadline=%d, cycles=%d)" % (deadline, self.cycles))
-
 
         deadline = ((self.micros + duration) * DCO_FREQ) / 1000000
 
