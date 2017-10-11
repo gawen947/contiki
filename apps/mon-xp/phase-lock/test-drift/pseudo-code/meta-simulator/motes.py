@@ -52,42 +52,38 @@ class NewdriftCoojaMote(cooja.Mote):
 
     def __init__(self, simulation, mspSim, ID):
         cooja.Mote.__init__(self, simulation, mspSim, ID)
-        self.deviation  = 1.0
-        self.old_t      = 0
-        self.jumpOffset = 0
-        self.deviationError = 0.
+        self.deviation         = 1.0
+        self.invDeviation      = 1.0 / self.deviation
+        self.old_t             = 0
+        self.jumpError         = 0.
+        self.executeDeltaError = 0.
 
     def setDeviation(self, deviation):
         self.deviation = deviation
 
     def moteExecute(self, t, duration):
-        jump        = t - self.old_t + self.jumpOffset
-        simDuration = duration
+        jump = t - self.old_t
+        exactJump = jump * self.deviation
+        jump      = int(math.floor(exactJump))
 
-        if self.deviation < 1.0:
-            exactJump  = jump * self.deviation
-            jump       = int(math.floor(exactJump))
+        self.jumpError += exactJump - jump
 
-            self.deviationError += exactJump - jump
+        if self.jumpError > 0.5:
+            jump += 1
+            self.jumpError -= 1.0
 
-            if self.deviationError > 0.5:
-                jump += 1
-                self.deviationError -= 1.0
-        else:
-            # FIXME: works without sleep
-            exactDuration = duration * self.deviation
-            duration   = int(math.floor(exactDuration))
+        executeDelta = self.mspsim.stepOneMicro(jump, duration) + duration
 
-            self.deviationError += exactDuration - duration
+        exactExecuteDelta = executeDelta * self.invDeviation
+        executeDelta = int(math.floor(exactExecuteDelta))
 
-            if self.deviationError > 0.5:
-                duration += 1
-                self.deviationError -= 1.0
+        self.executeDeltaError += exactExecuteDelta - executeDelta
 
-            self.jumpOffset = duration - simDuration
+        if self.executeDeltaError > 0.5:
+            executeDelta += 1
+            self.executeDeltaError -= 1.0
 
-        new_t = self.mspsim.stepOneMicro(jump, duration) + t + simDuration
-        self.simulation.scheduleNextExec(new_t, self)
+        self.simulation.scheduleNextExec(t + executeDelta, self)
         self.old_t = t
 
     def moteInterrupt(self, t, irq):
