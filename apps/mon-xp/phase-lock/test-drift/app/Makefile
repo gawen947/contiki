@@ -1,6 +1,10 @@
 CONTIKI = ../../../../..
 CONTIKI_PROJECT = drift
 
+ifdef ENABLE_LPM
+	CFLAGS += -DENABLE_SKY_LPM=1
+endif
+
 CFLAGS += -DUIP_CONF_ND6_SEND_NA=1 -DUIP_CONF_ROUTER=1 -DNETSTACK_CONF_RDC=nullrdc_driver -DPROJECT_CONF_H=\"project-conf.h\"
 
 all: $(CONTIKI_PROJECT)
