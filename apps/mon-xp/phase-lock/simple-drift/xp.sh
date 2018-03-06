@@ -31,12 +31,6 @@ TARGET=sky
 # Path to the tools directory.
 TOOLS="../../../../tools/"
 
-TARGET_DIR="monitor"
-TARGET_FIRMWARE="simple-monitor.sky"
-
-# DCO CLOCK frequency in MHz
-DCOCLK_FRQ="2.4576"
-
 # Fancies BSDs peculiarities.
 case "$(uname -s)" in
 FreeBSD)
@@ -61,13 +55,17 @@ fi
 cmd_time="$1"
 cmd_seed="$2"
 cmd_runs="$3"
+
 shift; shift; shift;
 cmd_drifts="$*"
 
-echo "Time:   $cmd_time"   >  "results/command.info"
-echo "Seed:   $cmd_seed"   >> "results/command.info"
-echo "Runs:   $cmd_runs"   >> "results/command.info"
-echo "Drifts: $cmd_drifts" >> "results/command.info"
+
+
+rm -f command.info
+echo "Time:   $cmd_time"   >  command.info
+echo "Seed:   $cmd_seed"   >> command.info
+echo "Runs:   $cmd_runs"   >> command.info
+echo "Drifts: $cmd_drifts" >> command.info
 
 results_reg="results/linear.data"
 results="results/output.data"
@@ -82,7 +80,8 @@ echo "# Drifts tested:  $*"        >> "$results"
 echo "#" >> $results
 cp "$results" "$results_reg"
 echo "# DRIFT RUN° RUN-SPECIFIC-SEED SIM-TIME CPU-CYCLES" >> "$results"
-echo "# DRIFT SLOP(CPU-cycles per microseconds) INTERCEPT R_VALUE P_VALUE STDERR OBSERVED/REQUESTED-drift-ratio" >> "$results_reg"
+echo "# DRIFT SLOP(CPU-cycles per microseconds) INTERCEPT R_VALUE P_VALUE STDERR OBSERVED/REQUESTED-drift-ratio" \
+     " USR-TIME(avg) USR-TIME(stddev) SYS-TIME(avg) SYS-TIME(stddev) REAL-TIME(avg) REAL-TIME(stddev)" >> "$results_reg"
 
 clean() {
   # Makefile doesn't seems to clean correctly.
@@ -90,7 +89,8 @@ clean() {
   firmware_path="$1"
   bin="$2"
 
-  rm -rfv "$firmware_path"/obj_"$TARGET"
+  rm -rfv "$firmware_path"/*.o
+  rm -rfv "$firmware_path"/*.d
   rm -vf  "$firmware_path"/"$bin"
 }
 
@@ -111,6 +111,7 @@ rebuild() {
     touch $*
   fi
 
+  #$GNUMAKE TARGET=$TARGET
   $GNUMAKE
 
   echo
@@ -118,7 +119,7 @@ rebuild() {
 }
 
 clean_all() {
-  clean "$TARGET_DIR" "$TARGET_FIRMWARE"
+  clean monitor-sleep simple-monitor.sky
 }
 
 do_xp_run() {
@@ -134,7 +135,6 @@ do_xp_run() {
     sed "s/##TIMEOUT##/$time/g" | \
     sed "s/##SEED##/$seed/g" | \
     sed "s/##DEVIATION##/$drift/g" | \
-    sed "s/##FIRMWARE##/$TARGET_DIR\/$TARGET_FIRMWARE/g" | \
     sed "s;##MONITOR##;$trace;g" > "$temp_csc"
 
   echo "Starting run=$run, drift=$drift, seed=$seed!"
@@ -145,8 +145,33 @@ do_xp_run() {
   # Start the simulation.
   # This should generate the mspsim.trace
   echo "Starting simulation..."
-  java -mx512m -jar "$TOOLS"/cooja/dist/cooja.jar -nogui="$temp_csc"
+  time java -mx512m -jar "$TOOLS"/cooja/dist/cooja.jar -nogui="$temp_csc" > cooja.log 2>&1
   echo
+
+  # Count scheduled events
+  case "$(uname -s)" in
+    FreeBSD)
+      usr_time=$(cat cooja.log | grep -Eo "[[:digit:]]+\.[[:digit:]]+ user" | sed 's/ user//g')
+      sys_time=$(cat cooja.log | grep -Eo "[[:digit:]]+\.[[:digit:]]+ sys" | sed 's/ sys//g')
+      real_time=$(cat cooja.log | grep -Eo "[[:digit:]]+\.[[:digit:]]+ real" | sed 's/ real//g')
+      ;;
+    *)
+      usr_time=$(cat cooja.log | grep -Eo "[[:digit:]]+\.[[:digit:]]+user" | sed 's/user//g')
+      sys_time=$(cat cooja.log | grep -Eo "[[:digit:]]+\.[[:digit:]]+system" | sed 's/system//g')
+      real_time=$(cat cooja.log | grep -Eo "[[:digit:]]+\.[[:digit:]]+elapsed" | sed 's/elapsed//g')
+      ;;
+  esac
+
+  # Extract ALPHA_FACTOR
+  alpha_factor=$(cat cooja.log | grep "ALPHA_FACTOR" | cut -d'=' -f 2)
+  exec_frame=$(cat cooja.log | grep "NUMBER_EXEC_FRAMES" | cut -d'=' -f 2)
+
+  # Distribution of sleep (jump) periods
+  cat cooja.log | grep "SLEEP_DISTRIB" > sleep-distrib.log
+
+  rm cooja.log
+  echo "DRIFT=$drift RUN=$run TIME=$time $usr_time $sys_time $real_time" >> time.log
+  echo "DRIFT=$drift RUN=$run ALPHA=$alpha_factor NUMBER_EXEC_FRAMES=$exec_frame" >> alpha.log
 
   # Parse the trace. The resulting file can be very large (~100MB)
   echo -n "Parsing resulting trace... "
@@ -177,7 +202,8 @@ prng() {
 
 do_runs() {
   clean_all
-  rebuild "$TARGET_DIR"
+  rebuild monitor-sleep
+  rm -f time.log cooja.log alpha.log
 
   run_seed="$cmd_seed"
   for i in $(seq 1 "$cmd_runs")
@@ -193,6 +219,17 @@ do_runs() {
   done
 }
 
+average_time() {
+  drift=$1
+
+  cat time.log | grep "DRIFT=$drift" > time-avg.log
+  avg_usr_time=$(cat time-avg.log | cut -d' ' -f 4 | python avg-stddev.py)
+  avg_sys_time=$(cat time-avg.log | cut -d' ' -f 5 | python avg-stddev.py)
+  avg_real_time=$(cat time-avg.log | cut -d' ' -f 6 | python avg-stddev.py)
+
+  echo "$avg_usr_time $avg_sys_time $avg_real_time"
+}
+
 do_runs
 
 echo "Now extracting measured drift:"
@@ -205,11 +242,14 @@ do
   cat "$results" | awk "{ if(\$1 == $drift) print \$4,\$5}" > "$reg_data"
   linear_reg=$(python linear-reg.py "$reg_data" | tail -n 1)
   reg_value=$(echo "$linear_reg" | cut -d' ' -f1)
-  ratio=$(rpnc "$reg_value" "$DCOCLK_FREQ" / 100 .)
-  echo $drift $linear_reg $ratio >> "$results_reg"
+  ratio=$(rpnc "$reg_value" "3.904173" / 100 .)
+
+  avg_time=$(average_time "$drift")
+
+  echo $drift $linear_reg $ratio $avg_time >> "$results_reg"
   echo "done!"
 done
 
-#rm -f "$temp_csc" "$trace" "$reg_data" trace.txt
-#rm -f mspsim.txt
+rm -f "$temp_csc" "$trace" "$reg_data" trace.txt time.log time-avg.log
+rm -f mspsim.txt
 rm -f COOJA.log COOJA.testlog

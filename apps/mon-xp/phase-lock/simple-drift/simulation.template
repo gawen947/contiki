@@ -24,7 +24,7 @@
       org.contikios.cooja.mspmote.SkyMoteType
       <identifier>test-node</identifier>
       <description>Test node</description>
-      <firmware EXPORT="copy">[CONTIKI_DIR]/apps/mon-xp/phase-lock/simple-drift/##FIRMWARE##</firmware>
+      <firmware EXPORT="copy">[CONTIKI_DIR]/apps/mon-xp/phase-lock/simple-drift/monitor-sleep/simple-monitor.sky</firmware>
       <moteinterface>org.contikios.cooja.interfaces.Position</moteinterface>
       <moteinterface>org.contikios.cooja.interfaces.RimeAddress</moteinterface>
       <moteinterface>org.contikios.cooja.interfaces.IPAddress</moteinterface>
