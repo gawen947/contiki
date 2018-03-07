@@ -40,6 +40,7 @@ import java.util.Hashtable;
 
 import org.apache.log4j.Logger;
 import org.jdom.Element;
+import org.contikios.cooja.ShowAlpha;
 import org.contikios.cooja.ContikiError;
 import org.contikios.cooja.Cooja;
 import org.contikios.cooja.Mote;
@@ -91,6 +92,9 @@ public abstract class MspMote extends AbstractEmulatedMote implements Mote, Watc
   {
     Visualizer.registerVisualizerSkin(CodeVisualizerSkin.class);
   }
+
+  /* Compute the alpha characteristic */
+  private long sum_sleep_minus_one = 0;
 
   private CommandHandler commandHandler;
   private MSP430 myCpu = null;
@@ -316,6 +320,7 @@ public abstract class MspMote extends AbstractEmulatedMote implements Mote, Watc
       throw new RuntimeException("MSPSim requested simulation stop");
     }
 
+
     if (lastExecute < 0) {
       /* Always execute one microsecond the first time */
       lastExecute = t;
@@ -324,11 +329,18 @@ public abstract class MspMote extends AbstractEmulatedMote implements Mote, Watc
       throw new RuntimeException("Bad event ordering: " + lastExecute + " < " + t);
     }
 
+    /* sum sleep for alpha factor */
+    long j = t - lastExecute;
+    if(j > 1)
+      ShowAlpha.registerSleep(j);
+
     if (((1-deviation) * executed) > skipped) {
       lastExecute = lastExecute + duration; // (t+duration) - (t-lastExecute);
       nextExecute = t+duration;
       skipped += duration;
       scheduleNextWakeup(nextExecute);
+
+      ShowAlpha.registerSkipped();
     }
     
     /* Execute MSPSim-based mote */
@@ -349,6 +361,7 @@ public abstract class MspMote extends AbstractEmulatedMote implements Mote, Watc
 
     /*logger.debug(t + ": Schedule next wakeup at " + nextExecute);*/
     executed += duration; 
+    ShowAlpha.registerTotal();
     scheduleNextWakeup(nextExecute);
 
     if (stopNextInstruction) {

@@ -3138,10 +3138,12 @@ public class Cooja extends Observable {
    * @param args
    *          null
    */
+  public static ShowAlpha alpha = new ShowAlpha(0, 100, 10000);
   public static void main(String[] args) {
     String logConfigFile = null;
     Long randomSeed = null;
     
+    Runtime.getRuntime().addShutdownHook(alpha);
     
     for (String element : args) {
       if (element.startsWith("-log4j=")) {

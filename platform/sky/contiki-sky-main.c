@@ -477,6 +477,8 @@ main(int argc, char **argv)
       energest_type_set(ENERGEST_TYPE_IRQ, irq_energest);
       watchdog_stop();
       /* check if the DCO needs to be on - if so - only LPM 1 */
+#ifdef ENABLE_SKY_LPM
+# warning "Sky LPM enabled!"
       if (msp430_dco_required) {
 	_BIS_SR(GIE | CPUOFF); /* LPM1 sleep for DMA to work!. */
       } else {
@@ -487,6 +489,9 @@ main(int argc, char **argv)
 						interrupt that sets
 						the wake up flag. */
       }
+#else
+# warning "Sky LPM disabled!"
+#endif
       /* We get the current processing time for interrupts that was
 	 done during the LPM and store it for next time around.  */
       dint();

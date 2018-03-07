@@ -36,7 +36,7 @@ int main()
      should start counting right now. Each interrupt
      happens every 4 seconds. */
   TACTL = TACLR | TASSEL0 | ID0 | MC1 | TAIE;
-  _BIS_SR(GIE | CPUOFF);
+  _BIS_SR(GIE | SCG0 | SCG1 | CPUOFF); /* LPM3 */
 
   /* We ensure that we are in the sleep mode,
      if we weren't the LED2 would be activated. */

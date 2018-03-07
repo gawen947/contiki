@@ -159,8 +159,17 @@ do_xp_run() {
       real_time=$(cat cooja.log | grep -Eo "[[:digit:]]+\.[[:digit:]]+elapsed" | sed 's/elapsed//g')
       ;;
   esac
+
+  # Extract ALPHA_FACTOR
+  alpha_factor=$(cat cooja.log | grep "ALPHA_FACTOR" | cut -d'=' -f 2)
+  exec_frame=$(cat cooja.log | grep "NUMBER_EXEC_FRAMES" | cut -d'=' -f 2)
+
+  # Distribution of sleep (jump) periods
+  cat cooja.log | grep "SLEEP_DISTRIB" > sleep-distrib.log
+
   rm cooja.log
   echo "DRIFT=$drift RUN=$run TIME=$time $usr_time $sys_time $real_time" >> time.log
+  echo "DRIFT=$drift RUN=$run ALPHA=$alpha_factor NUMBER_EXEC_FRAMES=$exec_frame" >> alpha.log
 
   # Parse the trace. The resulting file can be very large (~100MB)
   echo -n "Parsing resulting trace... "
@@ -192,7 +201,7 @@ prng() {
 do_runs() {
   clean_all
   rebuild app
-  rm -f time.log cooja.log
+  rm -f time.log cooja.log alpha.log
 
   run_seed="$cmd_seed"
   for i in $(seq 1 "$cmd_runs")
