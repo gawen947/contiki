@@ -167,11 +167,11 @@ do_xp_run() {
   exec_frame=$(cat cooja.log | grep "NUMBER_EXEC_FRAMES" | cut -d'=' -f 2)
 
   # Distribution of sleep (jump) periods
-  cat cooja.log | grep "SLEEP_DISTRIB" > sleep-distrib.log
+  cat cooja.log | grep "SLEEP_DISTRIB" > results/sleep-distrib.log
 
   rm cooja.log
   echo "DRIFT=$drift RUN=$run TIME=$time $usr_time $sys_time $real_time" >> time.log
-  echo "DRIFT=$drift RUN=$run ALPHA=$alpha_factor NUMBER_EXEC_FRAMES=$exec_frame" >> alpha.log
+  echo "DRIFT=$drift RUN=$run ALPHA=$alpha_factor NUMBER_EXEC_FRAMES=$exec_frame" >> results/alpha.log
 
   # Parse the trace. The resulting file can be very large (~100MB)
   echo -n "Parsing resulting trace... "
@@ -203,7 +203,7 @@ prng() {
 do_runs() {
   clean_all
   rebuild monitor-sleep
-  rm -f time.log cooja.log alpha.log
+  rm -f time.log cooja.log results/alpha.log
 
   run_seed="$cmd_seed"
   for i in $(seq 1 "$cmd_runs")
@@ -250,6 +250,6 @@ do
   echo "done!"
 done
 
-rm -f "$temp_csc" "$trace" "$reg_data" trace.txt time.log time-avg.log
+rm -f "$temp_csc" "$trace" "$reg_data" trace.txt
 rm -f mspsim.txt
 rm -f COOJA.log COOJA.testlog
