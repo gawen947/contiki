@@ -23,6 +23,10 @@ SRC  = $(wildcard *.c)
 OBJ  = $(foreach obj, $(SRC:.c=.o), $(notdir $(obj)))
 DEP  = $(SRC:.c=.d)
 
+ifdef TIMER
+CFLAGS += -DTIMER=$(TIMER)
+endif
+
 ifdef DEBUG
 CFLAGS += -ggdb
 endif
