@@ -179,13 +179,20 @@ do_xp_run() {
   echo "done!"
 
   echo -n "Analysing trace... "
-  cat trace.txt | grep "ENT=TEST STATE=0001" | while read line
-  do
-    cpu_cycles=$(echo "$line" | cut -d' ' -f6 | cut -d'=' -f2 | sed 's/:.*//g')
-    sim_time=$(echo "$line" | cut -d' ' -f3 | cut -d'=' -f2)
 
-    echo "$drift $run $seed $sim_time $cpu_cycles" >> "$results"
-  done
+  # quick-analyze display $sim_time $cpu_cycles for each line in the trace
+  # with classical analyzis a XP with 1s sleep on 86400s for dev 1.0 is:
+  # 414.36 real       180.39 user       492.32 sys
+  # with the new quick-analyzis:
+  # 9.67 real        13.32 user         0.87 sys
+  cat trace.txt | quick-analyze/quick-analyze "$drift $run $seed " >> "$results"
+  #cat trace.txt | grep "ENT=TEST STATE=0001" | while read line
+  #do
+  #  cpu_cycles=$(echo "$line" | cut -d' ' -f6 | cut -d'=' -f2 | sed 's/:.*//g')
+  #  sim_time=$(echo "$line" | cut -d' ' -f3 | cut -d'=' -f2)
+  #
+  #  echo "$drift $run $seed $sim_time $cpu_cycles" >> "$results"
+  #done
   echo "done!"
   echo
 }
