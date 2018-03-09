@@ -261,7 +261,7 @@ reg_data="linear.data"
 for drift in $cmd_drifts
 do
   echo -n "Doing drift ${drift}... "
-  linear_reg=$(cat "$results_drifts/drift_d:$drift.data" | python linear-reg.py | tail -n 1)
+  linear_reg=$(cat "$results_drifts/drift_d:$drift.data" | grep -v "^#" | awk '{ print $3, $4 }' | python linear-reg.py | tail -n 1)
   reg_value=$(echo "$linear_reg" | cut -d' ' -f1)
   ratio=$(rpnc "$reg_value" "3.904173" / 100 .)
 
