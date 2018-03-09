@@ -271,6 +271,9 @@ do
   echo "done!"
 done
 
+# We delete them because they take up a LOT of space (~4GB for TIMER=32 and SIM_DURATION=3600s)
+rm -rf "$results_drifts"
+
 rm -f "$temp_csc" "$trace" "$reg_data" trace.txt
 rm -f mspsim.txt
 rm -f COOJA.log COOJA.testlog
