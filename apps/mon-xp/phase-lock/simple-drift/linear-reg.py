@@ -1,17 +1,11 @@
 import sys
+import fileinput
 import scipy.stats
-
-try:
-    reg_file=sys.argv[1]
-except IndexError:
-    print "usage: %s REG_DATA_FILE" % (sys.argv[0],)
-    sys.exit(1)
 
 simtimes_x=[]
 cputimes_y=[]
 
-f = open(reg_file)
-for line in f:
+for line in fileinput.input():
     fields=line.split(' ')
     try:
         fields[0] = float(fields[0])
