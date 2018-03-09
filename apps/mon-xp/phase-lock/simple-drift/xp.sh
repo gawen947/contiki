@@ -60,7 +60,7 @@ shift; shift; shift;
 cmd_drifts="$*"
 
 mkdir -p "results"
-rm -rf "results/*"
+rm -rf "results/"*
 
 echo "Time:   $cmd_time"   >  results/command.info
 echo "Seed:   $cmd_seed"   >> results/command.info
