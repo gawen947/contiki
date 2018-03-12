@@ -16,7 +16,7 @@ MCU        = msp430f1611
 MSP_CFLAGS  = -mmcu=$(MCU)
 MSP_LDFLAGS =
 
-CFLAGS  := -std=c99 -O2 -Wall $(MSP_CFLAGS)
+CFLAGS  := -std=c99 -O2 -Wall $(MSP_CFLAGS) -DF_CPU=3900000
 LDFLAGS :=
 
 SRC  = $(wildcard *.c)
