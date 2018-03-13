@@ -59,29 +59,39 @@ cmd_runs="$3"
 shift; shift; shift;
 cmd_drifts="$*"
 
+mkdir -p "results"
+rm -rf "results/"*
+
+echo "Time:   $cmd_time"   >  results/command.info
+echo "Seed:   $cmd_seed"   >> results/command.info
+echo "Runs:   $cmd_runs"   >> results/command.info
+echo "Drifts: $cmd_drifts" >> results/command.info
+if [ -n "$TIMER" ]
+then
+  echo "Timer value: $TIMER" >> results/command.info
+else
+  echo "Timer value: default (32768)" >> results/command.info
+fi
 
 
-rm -f command.info
-echo "Time:   $cmd_time"   >  command.info
-echo "Seed:   $cmd_seed"   >> command.info
-echo "Runs:   $cmd_runs"   >> command.info
-echo "Drifts: $cmd_drifts" >> command.info
-
+results_alpha="results/alpha.data"
 results_reg="results/linear.data"
-results="results/output.data"
+results_drifts="results/drift/"
+results_sleeps="results/sleep/"
 trace="$(pwd)/output.trace"
 temp_csc="$(pwd)/run.csc"
 
 # Output result keys
-echo "# Time:           $cmd_time" >  "$results"
-echo "# Initial seed:   $cmd_seed" >> "$results"
-echo "# Number of runs: $cmd_runs" >> "$results"
-echo "# Drifts tested:  $*"        >> "$results"
-echo "#" >> $results
-cp "$results" "$results_reg"
-echo "# DRIFT RUN° RUN-SPECIFIC-SEED SIM-TIME CPU-CYCLES" >> "$results"
+echo "# Time:           $cmd_time" >  "$results_reg"
+echo "# Initial seed:   $cmd_seed" >> "$results_reg"
+echo "# Number of runs: $cmd_runs" >> "$results_reg"
+echo "# Drifts tested:  $*"        >> "$results_reg"
+echo "#" >> $results_reg
 echo "# DRIFT SLOP(CPU-cycles per microseconds) INTERCEPT R_VALUE P_VALUE STDERR OBSERVED/REQUESTED-drift-ratio" \
      " USR-TIME(avg) USR-TIME(stddev) SYS-TIME(avg) SYS-TIME(stddev) REAL-TIME(avg) REAL-TIME(stddev)" >> "$results_reg"
+mkdir -p "$results_drifts"
+mkdir -p "$results_sleeps"
+echo "# drift(%) run alpha number_exec_frames" > "$results_alpha"
 
 clean() {
   # Makefile doesn't seems to clean correctly.
@@ -89,7 +99,8 @@ clean() {
   firmware_path="$1"
   bin="$2"
 
-  rm -rfv "$firmware_path"/obj_"$TARGET"
+  rm -rfv "$firmware_path"/*.o
+  rm -rfv "$firmware_path"/*.d
   rm -vf  "$firmware_path"/"$bin"
 }
 
@@ -165,11 +176,12 @@ do_xp_run() {
   exec_frame=$(cat cooja.log | grep "NUMBER_EXEC_FRAMES" | cut -d'=' -f 2)
 
   # Distribution of sleep (jump) periods
-  cat cooja.log | grep "SLEEP_DISTRIB" > sleep-distrib.log
+  cat cooja.log | grep "SLEEP_DISTRIB" > "$results_sleeps/sleep-distrib_d:${drift}_run:${run}.data"
 
   rm cooja.log
   echo "DRIFT=$drift RUN=$run TIME=$time $usr_time $sys_time $real_time" >> time.log
-  echo "DRIFT=$drift RUN=$run ALPHA=$alpha_factor NUMBER_EXEC_FRAMES=$exec_frame" >> alpha.log
+
+  echo "$drift $run $alpha_factor $exec_frame" >> "$results_alpha"
 
   # Parse the trace. The resulting file can be very large (~100MB)
   echo -n "Parsing resulting trace... "
@@ -177,13 +189,24 @@ do_xp_run() {
   echo "done!"
 
   echo -n "Analysing trace... "
-  cat trace.txt | grep "ENT=TEST STATE=0001" | while read line
-  do
-    cpu_cycles=$(echo "$line" | cut -d' ' -f6 | cut -d'=' -f2 | sed 's/:.*//g')
-    sim_time=$(echo "$line" | cut -d' ' -f3 | cut -d'=' -f2)
 
-    echo "$drift $run $seed $sim_time $cpu_cycles" >> "$results"
-  done
+  results_drift="$results_drifts/drift_d:$drift.data"
+  echo "# DRIFT $drift" > "$results_drift"
+  echo "# RUN° RUN-SEED SIM-TIME CPU-CYCLES" >> "$results_drift"
+
+  # quick-analyze display $sim_time $cpu_cycles for each line in the trace
+  # with classical analyzis a XP with 1s sleep on 86400s for dev 1.0 is:
+  # 414.36 real       180.39 user       492.32 sys
+  # with the new quick-analyzis:
+  # 9.67 real        13.32 user         0.87 sys
+  cat trace.txt | quick-analyze/quick-analyze "$run $seed " >> "$results_drift"
+  #cat trace.txt | grep "ENT=TEST STATE=0001" | while read line
+  #do
+  #  cpu_cycles=$(echo "$line" | cut -d' ' -f6 | cut -d'=' -f2 | sed 's/:.*//g')
+  #  sim_time=$(echo "$line" | cut -d' ' -f3 | cut -d'=' -f2)
+  #
+  #  echo "$drift $run $seed $sim_time $cpu_cycles" >> "$results"
+  #done
   echo "done!"
   echo
 }
@@ -201,7 +224,7 @@ prng() {
 do_runs() {
   clean_all
   rebuild app
-  rm -f time.log cooja.log alpha.log
+  rm -f time.log cooja.log
 
   run_seed="$cmd_seed"
   for i in $(seq 1 "$cmd_runs")
@@ -237,8 +260,7 @@ reg_data="linear.data"
 for drift in $cmd_drifts
 do
   echo -n "Doing drift ${drift}... "
-  cat "$results" | awk "{ if(\$1 == $drift) print \$4,\$5}" > "$reg_data"
-  linear_reg=$(python linear-reg.py "$reg_data" | tail -n 1)
+  linear_reg=$(cat "$results_drifts/drift_d:$drift.data" | grep -v "^#" | awk '{ print $3, $4 }' | python linear-reg.py | tail -n 1)
   reg_value=$(echo "$linear_reg" | cut -d' ' -f1)
   ratio=$(rpnc "$reg_value" "3.904173" / 100 .)
 
@@ -248,6 +270,9 @@ do
   echo "done!"
 done
 
-rm -f "$temp_csc" "$trace" "$reg_data" trace.txt time.log time-avg.log
+# We delete them because they take up a LOT of space (~4GB for TIMER=32 and SIM_DURATION=3600s)
+rm -rf "$results_drifts"
+
+rm -f "$temp_csc" "$trace" "$reg_data" trace.txt
 rm -f mspsim.txt
 rm -f COOJA.log COOJA.testlog
