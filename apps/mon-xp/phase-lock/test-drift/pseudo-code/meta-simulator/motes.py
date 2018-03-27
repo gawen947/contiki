@@ -15,19 +15,12 @@ class LegacyCoojaMote(cooja.Mote):
         self.skipped   = 0
         self.old_t     = 0
 
-        self.sum_s     = 0
-        self.n_s       = 0
-
     def setDeviation(self, deviation):
         self.deviation = deviation
 
     def moteExecute(self, t, duration):
         if duration != 1:
             raise Exception("except duration of 1 for simple model")
-
-        if (t - self.old_t) >= 2:
-            self.n_s   += 1
-            self.sum_s += t - self.old_t - 1
 
         if (1.0 - self.deviation) * self.total > self.skipped:
             """
