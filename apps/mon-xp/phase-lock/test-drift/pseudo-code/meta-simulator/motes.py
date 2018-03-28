@@ -44,7 +44,9 @@ class LegacyCoojaMote(cooja.Mote):
     def moteInterrupt(self, t, irq):
         self.mspsim.interrupt(irq)
 
-class NewdriftCoojaMote(cooja.Mote):
+# Does not work in real Cooja/MSPSim with:
+# simple-drift, sim=3600s, seed=1234, d=0.8
+class Newdrift_1_CoojaMote(cooja.Mote):
     """
     Same mote as Cooja but with a new
     implementation of the drift parameter.
@@ -84,6 +86,55 @@ class NewdriftCoojaMote(cooja.Mote):
 
         if self.executeDeltaError > 1.0:
             executeDelta += 1
+            self.executeDeltaError -= 1.0
+
+        self.simulation.scheduleNextExec(t + executeDelta, self)
+        self.old_t = t
+
+    def moteInterrupt(self, t, irq):
+        self.mspsim.interrupt(irq)
+
+class Newdrift_2_CoojaMote(cooja.Mote):
+    """
+    Same mote as Cooja but with a new
+    implementation of the drift parameter.
+    """
+
+    def __init__(self, simulation, mspSim, ID):
+        cooja.Mote.__init__(self, simulation, mspSim, ID)
+        self.deviation         = 1.0
+        self.invDeviation      = 1.0 / self.deviation
+        self.old_t             = 0
+        self.jumpError         = 0.
+        self.executeDeltaError = 0.
+
+    def setDeviation(self, deviation):
+        self.deviation = deviation
+
+    def moteExecute(self, t, duration):
+        jump = t - self.old_t
+        exactJump = jump * self.deviation
+        jump      = int(math.floor(exactJump))
+
+        self.jumpError += exactJump - jump
+
+        # We permit ourselves a larger error
+        # to ensure we stay behind the limits
+        # of MPSSim regarding cycles bounds checks.
+        if self.jumpError > 1.0:
+            jump += 1
+            self.jumpError -= 1.0
+
+        executeDelta = self.mspsim.stepOneMicro(jump, duration) + duration
+
+        exactExecuteDelta = executeDelta * self.invDeviation
+        executeDelta = int(math.floor(exactExecuteDelta))
+
+        self.executeDeltaError += exactExecuteDelta - executeDelta
+
+        if self.executeDeltaError > 1.0:
+            # We report the error on jump to avoid double rounding errors
+            self.jumpError += deviation
             self.executeDeltaError -= 1.0
 
         self.simulation.scheduleNextExec(t + executeDelta, self)

@@ -36,8 +36,8 @@ def run_sim(time, nMotes, deviation):
 
     simMotes = []
     for i in range(nMotes):
-        #mote = simulation.createMote(motes.NewdriftCoojaMote, firmwares.RandomFirmware, firmwareConfig)
-        mote = simulation.createMote(motes.LegacyCoojaMote, firmwares.RandomFirmware, firmwareConfig)
+        mote = simulation.createMote(motes.Newdrift_2_CoojaMote, firmwares.RandomFirmware, firmwareConfig)
+        #mote = simulation.createMote(motes.LegacyCoojaMote, firmwares.RandomFirmware, firmwareConfig)
         mote.setDeviation(deviation)
         simMotes.append(mote)
 

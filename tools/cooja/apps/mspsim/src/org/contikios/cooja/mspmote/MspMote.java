@@ -307,7 +307,7 @@ public abstract class MspMote extends AbstractEmulatedMote implements Mote, Watc
     double invDeviation = 1.0 / deviation;
     long drift = clock.getDrift();
     long jump, executeDelta;
-    double exactJump, exactExecuteDelta;
+    double exactJump, jumpInstError, executeDeltaInstError, exactExecuteDelta;
 
     /* Wait until mote boots */
     if (!booted && clock.getTime() < 0) {
@@ -333,9 +333,11 @@ public abstract class MspMote extends AbstractEmulatedMote implements Mote, Watc
     jump = Math.max(0, t - lastExecute);
     exactJump = jump * deviation;
     jump = (int)Math.floor(exactJump);
-    jumpError += exactJump - jump;
+    jumpInstError = exactJump - jump;
+    jumpError += jumpInstError;
 
-    if(jumpError > 1.0) {
+    if(jumpError > 1.0 && jumpInstError > 1.0) {
+      System.out.printf("jump inst-err=%3.3f fix-err=%3.3f\n", jump - exactJump, jump - exactJump + 1.0);
       jump++;
       jumpError -= 1.0;
     }
@@ -353,9 +355,11 @@ public abstract class MspMote extends AbstractEmulatedMote implements Mote, Watc
 
     exactExecuteDelta = executeDelta * invDeviation;
     executeDelta = (int)Math.floor(exactExecuteDelta);
-    executeDeltaError += exactExecuteDelta - executeDelta;
+    executeDeltaInstError = exactExecuteDelta - executeDelta;
+    executeDeltaError += executeDeltaInstError;
 
-    if(executeDeltaError > 1.0) {
+    if(executeDeltaError > 1.0 && executeDeltaInstError > 1.0) {
+      System.out.printf("nextExec inst-err=%3.3f fix-err=%3.3f\n", executeDelta - exactExecuteDelta, executeDelta - exactExecuteDelta + 1.0);
       executeDelta++;
       executeDeltaError -= 1.0;
     }
