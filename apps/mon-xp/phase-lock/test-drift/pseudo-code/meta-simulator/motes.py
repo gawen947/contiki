@@ -68,6 +68,9 @@ class NewdriftCoojaMote(cooja.Mote):
 
         self.jumpError += exactJump - jump
 
+        # We permit ourselves a larger error
+        # to ensure we stay behind the limits
+        # of MPSSim regarding cycles bounds checks.
         if self.jumpError > 1.0:
             jump += 1
             self.jumpError -= 1.0
