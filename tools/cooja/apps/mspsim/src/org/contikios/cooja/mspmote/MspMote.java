@@ -353,12 +353,6 @@ public abstract class MspMote extends AbstractEmulatedMote implements Mote, Watc
 
     exactExecuteDelta = executeDelta * invDeviation;
     executeDelta = (int)Math.floor(exactExecuteDelta);
-    executeDeltaError += exactExecuteDelta - executeDelta;
-
-    if(executeDeltaError > 1.0) {
-      //jumpError += deviation;
-      executeDeltaError -= 1.0;
-    }
 
     nextExecute = executeDelta + t;
 
