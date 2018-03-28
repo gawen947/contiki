@@ -40,7 +40,6 @@ import java.util.Hashtable;
 
 import org.apache.log4j.Logger;
 import org.jdom.Element;
-import org.contikios.cooja.ShowAlpha;
 import org.contikios.cooja.ContikiError;
 import org.contikios.cooja.Cooja;
 import org.contikios.cooja.Mote;
@@ -92,9 +91,6 @@ public abstract class MspMote extends AbstractEmulatedMote implements Mote, Watc
   {
     Visualizer.registerVisualizerSkin(CodeVisualizerSkin.class);
   }
-
-  /* Compute the alpha characteristic */
-  private long sum_sleep_minus_one = 0;
 
   private CommandHandler commandHandler;
   private MSP430 myCpu = null;
@@ -209,9 +205,9 @@ public abstract class MspMote extends AbstractEmulatedMote implements Mote, Watc
    */
   protected void prepareMote(File fileELF, GenericNode node) throws IOException {
     this.commandHandler = new CommandHandler(System.out, System.err);
-    
+
     this.mspNode = node;
-    
+
     node.setCommandHandler(commandHandler);
 
     ConfigManager config = new ConfigManager();
@@ -220,20 +216,20 @@ public abstract class MspMote extends AbstractEmulatedMote implements Mote, Watc
     this.myCpu = node.getCPU();
     this.myCpu.setMonitorExec(true);
     this.myCpu.setTrace(0); /* TODO Enable */
-    
+
     LogListener ll = new LogListener() {
       private Logger mlogger = Logger.getLogger("MSPSim");
       @Override
       public void log(Loggable source, String message) {
         mlogger.debug("" + getID() + ": " + source.getID() + ": " + message);
       }
-      
+
       @Override
       public void logw(Loggable source, WarningType type, String message) throws EmulationException {
         mlogger.warn("" + getID() +": " + "# " + source.getID() + "[" + type + "]: " + message);
       }
     };
-    
+
     this.myCpu.getLogger().addLogListener(ll);
 
     logger.info("Loading firmware from: " + fileELF.getAbsolutePath());
@@ -294,10 +290,13 @@ public abstract class MspMote extends AbstractEmulatedMote implements Mote, Watc
 
   private long lastExecute = -1; /* Last time mote executed */
   private long nextExecute;
-  
+
+  private double jumpError = 0.;
+  private double executeDeltaError =  0.;
+
   private long executed = 0;
   private long skipped = 0;
-  
+
   public void execute(long time) {
     execute(time, EXECUTE_DURATION_US);
   }
@@ -305,7 +304,10 @@ public abstract class MspMote extends AbstractEmulatedMote implements Mote, Watc
   public void execute(long t, int duration) {
     MspClock clock = ((MspClock) (myMoteInterfaceHandler.getClock()));
     double deviation = clock.getDeviation();
+    double invDeviation = 1.0 / deviation;
     long drift = clock.getDrift();
+    long jump, executeDelta;
+    double exactJump, exactExecuteDelta;
 
     /* Wait until mote boots */
     if (!booted && clock.getTime() < 0) {
@@ -320,7 +322,6 @@ public abstract class MspMote extends AbstractEmulatedMote implements Mote, Watc
       throw new RuntimeException("MSPSim requested simulation stop");
     }
 
-
     if (lastExecute < 0) {
       /* Always execute one microsecond the first time */
       lastExecute = t;
@@ -329,24 +330,20 @@ public abstract class MspMote extends AbstractEmulatedMote implements Mote, Watc
       throw new RuntimeException("Bad event ordering: " + lastExecute + " < " + t);
     }
 
-    /* sum sleep for alpha factor */
-    long j = t - lastExecute;
-    if(j > 1)
-      ShowAlpha.registerSleep(j);
+    jump = Math.max(0, t - lastExecute);
+    exactJump = jump * deviation;
+    jump = (int)Math.floor(exactJump);
+    jumpError += exactJump - jump;
 
-    if (((1-deviation) * executed) > skipped) {
-      lastExecute = lastExecute + duration; // (t+duration) - (t-lastExecute);
-      nextExecute = t+duration;
-      skipped += duration;
-      scheduleNextWakeup(nextExecute);
-
-      ShowAlpha.registerSkipped();
+    if(jumpError > 1.0) {
+      jump++;
+      jumpError -= 1.0;
     }
-    
+
     /* Execute MSPSim-based mote */
     /* TODO Try-catch overhead */
     try {
-      nextExecute = myCpu.stepMicros(Math.max(0, t-lastExecute), duration) + t + duration;
+      executeDelta = myCpu.stepMicros(jump, duration) + duration;
       lastExecute = t;
     } catch (EmulationException e) {
       String trace = e.getMessage() + "\n\n" + getStackTrace();
@@ -354,14 +351,23 @@ public abstract class MspMote extends AbstractEmulatedMote implements Mote, Watc
       new ContikiError(trace).initCause(e);
     }
 
+    exactExecuteDelta = executeDelta * invDeviation;
+    executeDelta = (int)Math.floor(exactExecuteDelta);
+    executeDeltaError += exactExecuteDelta - executeDelta;
+
+    if(executeDeltaError > 1.0) {
+      executeDelta++;
+      executeDeltaError -= 1.0;
+    }
+
+    nextExecute = executeDelta + t;
+
     /* Schedule wakeup */
     if (nextExecute < t) {
       throw new RuntimeException(t + ": MSPSim requested early wakeup: " + nextExecute);
     }
 
     /*logger.debug(t + ": Schedule next wakeup at " + nextExecute);*/
-    executed += duration; 
-    ShowAlpha.registerTotal();
     scheduleNextWakeup(nextExecute);
 
     if (stopNextInstruction) {
