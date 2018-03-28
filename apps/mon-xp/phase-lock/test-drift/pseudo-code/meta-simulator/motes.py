@@ -68,7 +68,7 @@ class NewdriftCoojaMote(cooja.Mote):
 
         self.jumpError += exactJump - jump
 
-        if self.jumpError > 0.5:
+        if self.jumpError > 1.0:
             jump += 1
             self.jumpError -= 1.0
 
@@ -79,7 +79,7 @@ class NewdriftCoojaMote(cooja.Mote):
 
         self.executeDeltaError += exactExecuteDelta - executeDelta
 
-        if self.executeDeltaError > 0.5:
+        if self.executeDeltaError > 1.0:
             executeDelta += 1
             self.executeDeltaError -= 1.0
 
