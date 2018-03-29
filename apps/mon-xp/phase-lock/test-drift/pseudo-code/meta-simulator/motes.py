@@ -145,6 +145,7 @@ class Newdrift_2_CoojaMote(cooja.Mote):
     def moteInterrupt(self, t, irq):
         self.mspsim.interrupt(irq)
 
+# Working solution for d <= 1.0
 class Newdrift_3_CoojaMote(cooja.Mote):
     """
     Same mote as Cooja but with a new
@@ -160,7 +161,8 @@ class Newdrift_3_CoojaMote(cooja.Mote):
         self.executeDeltaError = 0.
 
     def setDeviation(self, deviation):
-        self.deviation = deviation
+        self.deviation    = deviation
+        self.invDeviation = 1.0 / self.deviation
 
     def moteExecute(self, t, duration):
         jump = t - self.old_t
@@ -181,8 +183,74 @@ class Newdrift_3_CoojaMote(cooja.Mote):
         exactExecuteDelta = executeDelta * self.invDeviation
         executeDelta = int(math.floor(exactExecuteDelta))
 
-        # For some reason (yet unknown) it's better and it works
-        # by not reporting the error on floor(executeDelta).
+        # We don't accumulate error on floor(executeDelta).
+        # If we wake-up early, MSPSim will handle the approximation
+        # and just return a longer possible sleep next time.
+
+        self.simulation.scheduleNextExec(t + executeDelta, self)
+        self.old_t = t
+
+    def moteInterrupt(self, t, irq):
+        self.mspsim.interrupt(irq)
+
+# Tentative solution for d > 1.0
+class Newdrift_4_CoojaMote(cooja.Mote):
+    """
+    Same mote as Cooja but with a new
+    implementation of the drift parameter.
+    """
+
+    def __init__(self, simulation, mspSim, ID):
+        cooja.Mote.__init__(self, simulation, mspSim, ID)
+        self.deviation         = 1.0
+        self.invDeviation      = 1.0 / self.deviation
+        self.old_t             = 0
+        self.jumpCorr          = 0.
+        self.jumpError         = 0.
+        self.executeDeltaError = 0.
+
+    def setDeviation(self, deviation):
+        self.deviation    = deviation
+        self.invDeviation = 1.0 / self.deviation
+
+    def moteExecute(self, t, duration):
+        jump = t - self.old_t
+
+        if self.deviation > 1.0:
+            # Correction for nextExec ceil.
+            corr       = min(jump, self.jumpCorr)
+            exactJump  = jump - corr
+            oldJump    = jump
+            jump       = int(math.floor(exactJump))
+
+            self.jumpCorr -= oldJump - jump
+
+
+        exactJump = jump * self.deviation
+        jump      = int(math.floor(exactJump))
+
+        self.jumpError += exactJump - jump
+
+        # We permit ourselves a larger error
+        # to ensure we stay behind the limits
+        # of MPSSim regarding cycles bounds checks.
+        if self.jumpError > 1.0:
+            jump += 1
+            self.jumpError -= 1.0
+
+        executeDelta = self.mspsim.stepOneMicro(jump, duration) + duration
+
+        exactExecuteDelta = executeDelta * self.invDeviation
+
+        if self.deviation <= 1.0:
+            executeDelta = int(math.floor(exactExecuteDelta))
+        else:
+            executeDelta = int(math.ceil(exactExecuteDelta))
+            self.jumpCorr += executeDelta - exactExecuteDelta
+
+        # We don't accumulate error on floor(executeDelta).
+        # If we wake-up early, MSPSim will handle the approximation
+        # and just return a longer possible sleep next time.
 
         self.simulation.scheduleNextExec(t + executeDelta, self)
         self.old_t = t
