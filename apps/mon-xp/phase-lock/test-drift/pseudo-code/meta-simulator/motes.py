@@ -257,3 +257,4 @@ class Newdrift_4_CoojaMote(cooja.Mote):
 
     def moteInterrupt(self, t, irq):
         self.mspsim.interrupt(irq)
+
