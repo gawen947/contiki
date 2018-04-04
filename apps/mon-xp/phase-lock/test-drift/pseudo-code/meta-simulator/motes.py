@@ -158,7 +158,6 @@ class Newdrift_3_CoojaMote(cooja.Mote):
         self.invDeviation      = 1.0 / self.deviation
         self.old_t             = 0
         self.jumpError         = 0.
-        self.executeDeltaError = 0.
 
     def setDeviation(self, deviation):
         self.deviation    = deviation
