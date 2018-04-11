@@ -3,6 +3,8 @@ SAMPLES=100
 DEV=1.00
 TIMER=32
 
+export TIMER
+
 echo "# Duration for:" > duration.data
 echo "# dev        = $DEV%" >> duration.data
 echo "# samples    = $SAMPLES runs" >> duration.data
