@@ -302,6 +302,78 @@ public abstract class MspMote extends AbstractEmulatedMote implements Mote, Watc
 
   public void execute(long t, int duration) {
     MspClock clock = ((MspClock) (myMoteInterfaceHandler.getClock()));
+    if(clock.getDeviation() == 1.0)
+      regularExecute(clock, t, duration);
+    else
+      driftExecute(clock, t, duration);
+  }
+
+  private void regularExecute(MspClock clock, long t, int duration) {
+    long nextExecute = 0;
+    long drift = clock.getDrift();
+
+    /* Wait until mote boots */
+    if (!booted && clock.getTime() < 0) {
+      scheduleNextWakeup(t - clock.getTime());
+      return;
+    }
+    booted = true;
+
+    if (stopNextInstruction) {
+      stopNextInstruction = false;
+      scheduleNextWakeup(t);
+      throw new RuntimeException("MSPSim requested simulation stop");
+    }
+
+    if (lastExecute < 0) {
+      /* Always execute one microsecond the first time */
+      lastExecute = t;
+    }
+    if (t < lastExecute) {
+      throw new RuntimeException("Bad event ordering: " + lastExecute + " < " + t);
+    }
+
+    /* Execute MSPSim-based mote */
+    /* TODO Try-catch overhead */
+    try {
+      nextExecute = myCpu.stepMicros(Math.max(0, t - lastExecute), duration) + duration + t;
+      lastExecute = t;
+    } catch (EmulationException e) {
+      String trace = e.getMessage() + "\n\n" + getStackTrace();
+      throw (ContikiError)
+      new ContikiError(trace).initCause(e);
+    }
+
+    /* Schedule wakeup */
+    if (nextExecute < t) {
+      throw new RuntimeException(t + ": MSPSim requested early wakeup: " + nextExecute);
+    }
+
+    /*logger.debug(t + ": Schedule next wakeup at " + nextExecute);*/
+    scheduleNextWakeup(nextExecute);
+
+    if (stopNextInstruction) {
+      stopNextInstruction = false;
+      throw new RuntimeException("MSPSim requested simulation stop");
+    }
+
+    /* XXX TODO Reimplement stack monitoring using MSPSim internals */
+    /*if (monitorStackUsage) {
+      int newStack = cpu.reg[MSP430.SP];
+      if (newStack < stackPointerLow && newStack > 0) {
+        stackPointerLow = cpu.reg[MSP430.SP];
+
+        // Check if stack is writing in memory
+        if (stackPointerLow < heapStartAddress) {
+          stackOverflowObservable.signalStackOverflow();
+          stopNextInstruction = true;
+          getSimulation().stopSimulation();
+        }
+      }
+    }*/
+  }
+
+  private void driftExecute(MspClock clock, long t, int duration) {
     double deviation = clock.getDeviation();
     double invDeviation = 1.0 / deviation;
     long drift = clock.getDrift();
