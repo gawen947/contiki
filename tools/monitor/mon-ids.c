@@ -31,6 +31,7 @@
 #include "../../core/mon/context/control.h"
 #include "../../core/mon/context/mon-ct-radio.h"
 #include "../../core/mon/context/mon-ct-powercycle.h"
+#include "../../core/mon/context/mon-xp.h"
 
 /* Macro to ease registering context, state, entities names. */
 #define REG_CTX(context) reg_context_name(MON_CT_ ## context, #context)
@@ -41,6 +42,7 @@
 
 #define REG_RADIO_ST(state) reg_state_name(MON_CT_RADIO, MON_ST_RADIO_ ## state, #state)
 #define REG_POWERCYCLE_ST(state) reg_state_name(MON_CT_POWERCYCLE, MON_ST_POWERCYCLE_ ## state, #state)
+#define REG_XP_ST(state) reg_state_name(MON_CT_CONTROL, MON_XP_ ## state, #state)
 
 static void register_mon_ids_radio(void)
 {
@@ -102,6 +104,13 @@ static void register_mon_ids_control(void)
   /* Register control entities names. */
   REG_ENT(MON_CT_CONTROL, CAL); /* MON_ENT_CAL */
   REG_ENT(MON_CT_CONTROL, TEST);
+
+  /* Register XP states names. */
+  REG_XP_ST(ACLK);
+  REG_XP_ST(MCLK);
+  REG_XP_ST(BLINK);
+  REG_XP_ST(LFXT1OF);
+  REG_XP_ST(OFIFG);
 
   /* Register control states names. */
   REG_ST(MON_CT_CONTROL, CHECK); /* MON_ST_CHECK */

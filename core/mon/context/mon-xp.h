@@ -37,23 +37,18 @@
  *         David Hauweele <david@hauweele.net>
  */
 
-#ifndef CONTROL_H_
-#define CONTROL_H_
+#ifndef MON_XP_H_
+#define MON_XP_H_
 
+/* Entities for the MON_CT_CONTROL, MON_ENT_XP
+   for experiments signalling and events. */
 enum {
-  /** Establish endianness and device calls duration. */
-  MON_ENT_CAL, /* must be zero */
-
-  /** Used for testing. */
-  MON_ENT_TEST,
-
-  /** Experiments signalling and events. */
-  MON_ENT_XP,
+  /** Study impact of clock drift. */
+  MON_XP_ACLK,    /* ACLK clock signal */
+  MON_XP_MCLK,    /* MCLK clock signal */
+  MON_XP_BLINK,   /* Blinking LED */
+  MON_XP_LFXT1OF, /* LFXT1OF oscillator fault */
+  MON_XP_OFIFG,   /* OFIFG oscillator fault */
 };
-
-/** Endianness states. This is just a number
-    that is used to check endianness in the
-    virtual device. */
-#define MON_ST_CHECK 0xaabb
 
 #endif /* CONTROL_H_ */
