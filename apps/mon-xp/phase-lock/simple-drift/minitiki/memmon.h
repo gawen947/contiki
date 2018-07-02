@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, David Hauweele <david@hauweele.net>
+ * Copyright (c) 2016, David Hauweele <david@hauweele.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,23 +32,20 @@
 
 /**
  * \file
- *         List of state machine (context) available to monitor.
+ *         A fast cross-platform monitor for simulated motes
+ *         that relies on symbols in the firmware to communicate
+ *         state changes to the monitoring device.
+ *
+ *         This version is adapted to be used outside Contiki.
  * \author
  *         David Hauweele <david@hauweele.net>
  */
 
-#ifndef MON_XP_H_
-#define MON_XP_H_
+#ifndef MEMMON_H_
+#define MEMMON_H_
 
-/* Entities for the MON_CT_CONTROL, MON_ENT_XP
-   for experiments signalling and events. */
-enum {
-  /** Study impact of clock drift. */
-  MON_XP_ACLK,    /* ACLK clock signal */
-  MON_XP_MCLK,    /* MCLK clock signal */
-  MON_XP_BLINK,   /* Blinking LED */
-  MON_XP_LFXT1OF, /* LFXT1OF oscillator fault */
-  MON_XP_OFIFG,   /* OFIFG oscillator fault */
-};
+void mon_record(int context, int entity, int state);
+void mon_info(int context, int entity, const void *info, int len);
+void mon_init(void);
 
-#endif /* MON_XP_H_ */
+#endif /* MEMMON_H_ */

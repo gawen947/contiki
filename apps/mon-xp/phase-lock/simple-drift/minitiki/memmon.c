@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, David Hauweele <david@hauweele.net>
+ * Copyright (c) 2016, David Hauweele <david@hauweele.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,23 +32,41 @@
 
 /**
  * \file
- *         List of state machine (context) available to monitor.
+ *         A fast cross-platform monitor for simulated motes
+ *         that relies on symbols in the firmware to communicate
+ *         state changes to the monitoring device.
+ *
+ *         This version is adapted to be used outside Contiki.
  * \author
  *         David Hauweele <david@hauweele.net>
  */
 
-#ifndef MON_XP_H_
-#define MON_XP_H_
+#include <stdint.h>
 
-/* Entities for the MON_CT_CONTROL, MON_ENT_XP
-   for experiments signalling and events. */
-enum {
-  /** Study impact of clock drift. */
-  MON_XP_ACLK,    /* ACLK clock signal */
-  MON_XP_MCLK,    /* MCLK clock signal */
-  MON_XP_BLINK,   /* Blinking LED */
-  MON_XP_LFXT1OF, /* LFXT1OF oscillator fault */
-  MON_XP_OFIFG,   /* OFIFG oscillator fault */
-};
+volatile unsigned int memmon_reg_ctx;
+volatile unsigned int memmon_reg_ent;
+volatile unsigned int memmon_reg_sti;
+volatile unsigned int memmon_reg_ctl;
 
-#endif /* MON_XP_H_ */
+void mon_record(int context, int entity, int state)
+{
+  memmon_reg_ctx = context;
+  memmon_reg_ent = entity;
+  memmon_reg_sti = state;
+
+  /* trigger */
+  memmon_reg_ctl = 0x100;
+}
+
+void mon_info(int context, int entity, const void *info, int len)
+{
+  memmon_reg_ctx = context;
+  memmon_reg_ent = entity;
+  memmon_reg_sti = (unsigned int)info;
+
+  /* set len and trigger */
+  memmon_reg_ctl = len | 0x300;
+}
+
+void mon_init(void) {}
+

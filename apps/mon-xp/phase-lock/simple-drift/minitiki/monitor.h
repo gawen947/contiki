@@ -32,23 +32,18 @@
 
 /**
  * \file
- *         List of state machine (context) available to monitor.
+ *         Monitor state changes across Contiki.
+ *
+ *         This version is adapted to be used outside Contiki.
  * \author
  *         David Hauweele <david@hauweele.net>
  */
 
-#ifndef MON_XP_H_
-#define MON_XP_H_
+#ifndef MONITOR_H_
+#define MONITOR_H_
 
-/* Entities for the MON_CT_CONTROL, MON_ENT_XP
-   for experiments signalling and events. */
-enum {
-  /** Study impact of clock drift. */
-  MON_XP_ACLK,    /* ACLK clock signal */
-  MON_XP_MCLK,    /* MCLK clock signal */
-  MON_XP_BLINK,   /* Blinking LED */
-  MON_XP_LFXT1OF, /* LFXT1OF oscillator fault */
-  MON_XP_OFIFG,   /* OFIFG oscillator fault */
-};
+#include <stdint.h>
 
-#endif /* MON_XP_H_ */
+void monitor_init(void);
+
+#endif /* MONITOR_H_ */
