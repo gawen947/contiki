@@ -64,7 +64,9 @@ int main()
      if we weren't the LED2 would be activated. */
   while(1) {
     unsigned int i, j;
-    P5OUT ^= BIT5; /* toggle LED2 */
+
+    event_NOSLEEP();
+
     for(j = 0 ; j < 32 ; j++) {
       for(i = 0 ; i < 32768 ; i++)
         __no_operation();

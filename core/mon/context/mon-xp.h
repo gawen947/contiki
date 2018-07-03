@@ -49,6 +49,7 @@ enum {
   MON_XP_BLINK,   /* Blinking LED */
   MON_XP_LFXT1OF, /* LFXT1OF oscillator fault */
   MON_XP_OFIFG,   /* OFIFG oscillator fault */
+  MON_XP_NOSLEEP, /* signal that the node did not switch correctly into sleep mode */
 };
 
 #endif /* MON_XP_H_ */

@@ -33,5 +33,6 @@ void configure_events(void);
 void event_BLINK(void);
 void event_LFXT1OF(void);
 void event_OFIFG(void);
+void event_NOSLEEP(void);
 
 #endif /* _EVENTS_H_ */

@@ -111,6 +111,7 @@ static void register_mon_ids_control(void)
   REG_XP_ST(BLINK);
   REG_XP_ST(LFXT1OF);
   REG_XP_ST(OFIFG);
+  REG_XP_ST(NOSLEEP);
 
   /* Register control states names. */
   REG_ST(MON_CT_CONTROL, CHECK); /* MON_ST_CHECK */
