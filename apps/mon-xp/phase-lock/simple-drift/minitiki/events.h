@@ -25,14 +25,16 @@
 #ifndef _EVENTS_H_
 #define _EVENTS_H_
 
+#include <stdbool.h>
+
 /* Initialize the monitor and ports. */
 void configure_events(void);
 
 /* Available events sent to either
    the pins or the monitor. */
 void event_BLINK(void);
-void event_LFXT1OF(void);
-void event_OFIFG(void);
+void event_LFXT1OF(bool state);
+void event_OFIFG(bool state);
 void event_NOSLEEP(void);
 
 #endif /* _EVENTS_H_ */

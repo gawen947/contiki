@@ -23,6 +23,7 @@
  */
 
 #include <msp430.h>
+#include <stdbool.h>
 
 #include "context/control.h"
 #include "context/mon-xp.h"
@@ -78,26 +79,34 @@ void event_BLINK(void)
 #endif
 }
 
-void event_LFXT1OF(void)
+void event_LFXT1OF(bool state)
 {
 #ifdef CONFIG_EVENT_LFXT1OF
 # ifdef CONFIG_EVENT_SYSTEM_PIN
-  POUT(CONFIG_EVENT_LFXT1OF_PORT) ^= CONFIG_EVENT_LFXT1OF_PIN;
+  if(state)
+    POUT(CONFIG_EVENT_LFXT1OF_PORT) ^= CONFIG_EVENT_LFXT1OF_PIN;
+  else
+    POUT(CONFIG_EVENT_LFXT1OF_PORT) &= ~CONFIG_EVENT_LFXT1OF_PIN;
 # endif
 # ifdef CONFIG_EVENT_SYSTEM_MONITOR
-  record_event(MON_XP_LFXT1OF);
+  if(state)
+    record_event(MON_XP_LFXT1OF);
 # endif
 #endif
 }
 
-void event_OFIFG(void)
+void event_OFIFG(bool state)
 {
 #ifdef CONFIG_EVENT_OFIFG
 # ifdef CONFIG_EVENT_SYSTEM_PIN
-  POUT(CONFIG_EVENT_OFIFG_PORT) ^= CONFIG_EVENT_OFIFG_PIN;
+  if(state)
+    POUT(CONFIG_EVENT_OFIFG_PORT) ^= CONFIG_EVENT_OFIFG_PIN;
+  else
+    POUT(CONFIG_EVENT_OFIFG_PORT) &= ~CONFIG_EVENT_OFIFG_PIN;
 # endif
 # ifdef CONFIG_EVENT_SYSTEM_MONITOR
-  record_event(MON_XP_OFIFG);
+  if(state)
+    record_event(MON_XP_OFIFG);
 # endif
 #endif
 }
@@ -106,7 +115,7 @@ void event_NOSLEEP(void)
 {
 #ifdef CONFIG_EVENT_NOSLEEP
 # ifdef CONFIG_EVENT_SYSTEM_PIN
-  POUT(CONFIG_EVENT_NOSLEEP_PORT) ^= CONFIG_EVENT_NOSLEEP_PIN;
+  POUT(CONFIG_EVENT_NOSLEEP_PORT) |= CONFIG_EVENT_NOSLEEP_PIN;
 # endif
 # ifdef CONFIG_EVENT_SYSTEM_MONITOR
   record_event(MON_XP_NOSLEEP);
