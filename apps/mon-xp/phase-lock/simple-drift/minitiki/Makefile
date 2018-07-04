@@ -7,7 +7,7 @@ OBJCOPY  = msp430-objcopy
 STRIP    = msp430-strip
 BSL      = msp430-bsl
 
-TARGET=simple-monitor
+TARGET=minitiki
 
 PLATFORM   = sky
 MCU        = msp430f1611

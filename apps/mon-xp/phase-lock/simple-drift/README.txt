@@ -12,4 +12,4 @@ There are also other experiments:
 
  5) [xp-overshoot.sh] Measure the overshoot with MSPSim instrumentalisation.
  6) [monitor-led] Simulate a simple RDC MAC layer with blinking LEDs (same application as used on real node)
- 7) [xp-led.sh]
+ 7) [xp-led.sh] Compare the drift of two motes. Simulate a basic RDC with a blinking LED. Count the number of overlaping ON LEDs as a virtual-PDR.

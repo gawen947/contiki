@@ -10,6 +10,19 @@
 #include "events.h"
 #include "config.h"
 
+void enable_hz(void)
+{
+  TACCR0   = CONFIG_PERIOD;
+  TACCR1   = 32768; /* FIXME: do we need TACCR1 */
+  TACCTL0  = CCIE; /* enable capture/compare interruption */
+  TACTL    = TACLR | TASSEL0 | MC1 /* | TAIE */; /* timer configured at ACLK/1 up mode. */
+}
+
+void disable_hz(void)
+{
+  TACTL = 0;
+}
+
 /* For some reason up mode (MC0) doesn't work at all.
    So I use continuous mode (MC1) and reset the counter on each interrupt.
    see:
@@ -37,9 +50,13 @@ void __attribute__((interrupt (TIMERA0_VECTOR))) timer_a0(void)
     blink_count = CONFIG_BLINK_PERIOD;
   }
   if(CONFIG_DCO_SYNC_PERIOD && dco_sync_count-- <= 0) {
+    disable_hz();
     dco_sync();
     dco_sync_count = CONFIG_DCO_SYNC_PERIOD;
+    enable_hz();
   }
+
+  /* FIXME: LFXTO1, OFIFG */
 
   /* we cannot reset the timer with TAR = 0, it does not work,
      instead with increment it continuously. */
@@ -52,13 +69,10 @@ int main()
 
   dco_sync();
   configure_events();
+  enable_hz();
 
-  /* configure clock */
-  TACCR0   = CONFIG_PERIOD;
-  TACCR1   = 32768; /* FIXME: do we need TACCR1 */
-  TACCTL0  = CCIE; /* enable capture/compare interruption */
-  TACTL    = TACLR | TASSEL0 | MC1 /* | TAIE */; /* timer configured at ACLK/1 up mode. */
-  _BIS_SR(GIE | SCG0 | SCG1 | CPUOFF); /* LPM3 */
+  /* go to sleep (LPM3) */
+  _BIS_SR(GIE | SCG0 | SCG1 | CPUOFF);
 
   /* We ensure that we are in the sleep mode,
      if we weren't the LED2 would be activated. */
