@@ -26,7 +26,8 @@
    That is either from the DCO regularly synced with ACLK.
    Or directly from ACLK. */
 #define CONFIG_MCLK_FROM_DCO_SYNC 1
-/* #define CONFIG_MCLK_FROM_ACLK   1 */
+/* #define CONFIG_MCLK_FROM_LFXT1  1 */
+/* #define CONFIG_LFXT1_EXTERNAL   1 */
 
 /* Number of timer cycles (see CONFIG_PERIOD) to issue a DCO sync.
    Use 0 to disable regular DCO sync beyond the first one. */
