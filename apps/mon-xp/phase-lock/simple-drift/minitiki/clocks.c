@@ -28,69 +28,49 @@
 #include "events.h"
 #include "config.h"
 
-void enable_timer(void)
+void __attribute__((interrupt (NMI_VECTOR))) nmi(void)
 {
-  TACCR0   = CONFIG_PERIOD;
-  TACCR1   = 32768; /* FIXME: do we need TACCR1 */
-  TACCTL0  = CCIE; /* enable capture/compare interruption */
-  TACTL    = TACLR | TASSEL0 | MC1 /* | TAIE */; /* timer configured at ACLK/1 up mode. */
-}
-
-void disable_timer(void)
-{
-  TACTL = 0;
-}
-
-/* For some reason up mode (MC0) doesn't work at all.
-   So I use continuous mode (MC1) and reset the counter on each interrupt.
-   see:
-
-   https://github.com/contiki-ng/mspsim/pull/29/commits/0118e6f1e2375e78e41fc0fe16ff26d2b6392007
- */
-
-/* See msp430/isr_compat.h.
-   In this case the MSPGCC way.
-   TAIFG is in TIMERA1_VECTOR (not TIMERA0). */
-void __attribute__((interrupt (TIMERA0_VECTOR))) timer_a0(void)
-{
-  static int blink_count    = CONFIG_BLINK_PERIOD;
-  static int dco_sync_count = CONFIG_DCO_SYNC_PERIOD;
-
-  /* We need to reset the interrupt or it will be triggered constantly.
-     This is only needed for TIMERA1_VECTOR though. */
-  /*
-  volatile unsigned reset_flag = TAIV;
-  (void)reset_flag;
-  */
-
-  if(blink_count-- <= 0) {
-    event_BLINK();
-    blink_count = CONFIG_BLINK_PERIOD;
-  }
-#ifdef CONFIG_MCLK_FROM_DCO_SYNC
-  if(CONFIG_DCO_SYNC_PERIOD && dco_sync_count-- <= 0) {
-    disable_timer();
-    dco_sync();
-    dco_sync_count = CONFIG_DCO_SYNC_PERIOD;
-    enable_timer();
-  }
-#endif
-
-  /* Disable oscillator fault if necessary. */
+  /* NMI catches OFIFG and LFXT1OF. */
 #ifdef CONFIG_EVENT_OFIFG
-  if(!(IFG1 & OFIFG))
-    event_OFIFG(false);
+  if(IFG1 & OFIFG)
+    event_OFIFG(true);
 #endif
 #ifdef CONFIG_EVENT_LFXT1OF
 # ifdef BCSCTL3
-  if(!(BCSCTL3 & LFXT1OF))
-    event_LFXT1OF(false);
+  if(BCSCTL3 & LFXT1OF)
+    event_LFXT1OF(true);
 # else
 #  error "platform does not support LFXT1OF"
 # endif
 #endif
 
-  /* we cannot reset the timer with TAR = 0, it does not work,
-     instead with increment it continuously. */
-  TACCR0 += CONFIG_PERIOD;
+  /* The Oscillator Fault flag is not cleared by default.
+     It must be cleared otherwise MCLK would be sourced
+     from the DCO. */
+  IFG1 &= ~OFIFG;
+}
+
+void configure_clocks(void)
+{
+#ifdef CONFIG_LFXT1_EXTERNAL
+# ifdef BCSCTL3
+  /* use an external clock (that his not a crystal) on XIN/XOUT */
+  _BIC_SR(OSCOFF);
+  BCSCTL3 |= LFXT1S_3;
+  BCSCTL3 &= ~(XCAP1 | XCAP0 ); /* internal capacity = 1 pF */
+# endif
+#endif
+
+#if defined(CONFIG_MCLK_FROM_DCO_SYNC)
+  dco_sync();
+#elif defined(CONFIG_MCLK_FROM_LFXT1)
+  /* select LFXT1 as (S)MCLK source */
+  BCSCTL2 |= SELM_3;
+  BCSCTL2 |= SELS;
+#else
+# error "unsupported clock source for MCLK"
+#endif
+
+  /* enable oscillator fault interrupts */
+  IE1 |= OFIE;
 }
