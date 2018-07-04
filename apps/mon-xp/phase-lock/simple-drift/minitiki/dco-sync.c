@@ -24,12 +24,15 @@
 
 #include <msp430.h>
 
+#include "config.h"
+
 #ifdef F_CPU
 # define MSP430_CPU_SPEED F_CPU
 #else
 # define MSP430_CPU_SPEED 2457600UL
 #endif
 
+#ifdef CONFIG_MCLK_FROM_DCO_SYNC
 void dco_sync(void)
 {
   /* Taken directly from Contiki DCO sync code for the MSP430 f1xxx (and reformatted). */
@@ -93,3 +96,4 @@ void dco_sync(void)
 
   BCSCTL1 &= ~(DIVA1 + DIVA0); /* remove /8 divisor from ACLK again */
 }
+#endif
