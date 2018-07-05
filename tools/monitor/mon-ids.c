@@ -104,6 +104,7 @@ static void register_mon_ids_control(void)
   /* Register control entities names. */
   REG_ENT(MON_CT_CONTROL, CAL); /* MON_ENT_CAL */
   REG_ENT(MON_CT_CONTROL, TEST);
+  REG_ENT(MON_CT_CONTROL, XP);
 
   /* Register XP states names. */
   REG_XP_ST(ACLK);
