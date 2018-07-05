@@ -24,6 +24,8 @@
 
 package be.ac.umons.cooja.monitor.mon.backend;
 
+import java.util.Hashtable;
+import java.util.Map;
 import java.nio.ByteOrder;
 
 import be.ac.umons.cooja.monitor.Utils;
@@ -32,58 +34,47 @@ import be.ac.umons.cooja.monitor.mon.MonTimestamp;
 
 /**
  * Specify where and how the events should be recorded.
+ * This works for multiple motes.
  */
 public abstract class MonBackend {
-  /* The monitor has to be initialized with
-     the source endianness and the duration
-     of monitor functions (record/info). */
-  private enum MonInitState {
-    ENDIAN,          /* check up byte order */
-    RECORD_OFFSET,   /* record duration */
-    INFO_FETCH,      /* fetch info pointer */
-    INFO_U8_OFFSET,  /* info with one byte buffer */
-    INFO_U16_OFFSET, /* info with two bytes buffer */
-    INITIATED,       /* monitor initiated */
-    DISABLED         /* error occured during initialisation */
-  }
+  private Map<Short,MonMoteBackend> motes = new Hashtable<Short,MonMoteBackend>();
 
-  /* MON_CT_CONTROL and MON_ENT_CAL values of zero
-     ensure that there are always the same in any
-     endianness, so the endianness messages is always
-     understood. */
-  private static final int MON_CT_CONTROL = 0;
-  private static final int MON_ENT_CAL    = 0;
-  private static final int MON_ST_CHECK   = 0xaabb;
+  private boolean oneMoteInitiated = false;
 
-  private MonInitState initState = MonInitState.ENDIAN;
+  /* Used for comparison between all motes.
+     For now all motes must share the same
+     offsets value and endianess. This is
+     because the functions do not take the
+     nodeId in argument. So the value has
+     to hold for all motes.
+
+     In this case only the first initiated
+     mote counts. */
   private ByteOrder    byteOrder;
-  private MonTimestamp last;
 
   private MonTimestamp recordOffset;
-  private MonTimestamp infoOffsetU8;
   private MonTimestamp infoOffset;
   private MonTimestamp byteOffset;
 
-  /** Return the duration of a record (state) message. */
   protected MonTimestamp getRecordOffset() {
     /* these are errors instead of exception because
        the backend must not access them if the protocol
        has not been initialized properly. */
-    if(initState != MonInitState.INITIATED)
+    if(!oneMoteInitiated)
       throw new MonError("protocol not initiated");
     return recordOffset;
   }
 
   /** Return the duration of an info message with a zero bytes buffer. */
   protected MonTimestamp getInfoOffset() {
-    if(initState != MonInitState.INITIATED)
+    if(!oneMoteInitiated)
       throw new MonError("protocol not initiated");
     return infoOffset;
   }
 
   /** Return the processing duration of one byte in the info message buffer. */
   protected MonTimestamp getByteOffset() {
-    if(initState != MonInitState.INITIATED)
+    if(!oneMoteInitiated)
       throw new MonError("protocol not initiated");
     return byteOffset;
   }
@@ -93,106 +84,52 @@ public abstract class MonBackend {
       should only store the endianness. It is up to the extracting
       tool to display data in the correct endiannes. */
   protected ByteOrder getEndian() {
-    if(initState != MonInitState.INITIATED)
+    if(!oneMoteInitiated)
       throw new MonError("protocol not initiated");
     return byteOrder;
   }
 
   /** Return true if the monitor has been initiated. */
   protected boolean isInitiated() {
-    return initState == MonInitState.INITIATED;
+    return oneMoteInitiated;
+  }
+
+  private void checkMoteState(MonMoteBackend mote) {
+    if(oneMoteInitiated)
+      return;
+
+    if(mote.isInitiated()) {
+      this.recordOffset = mote.getRecordOffset();
+      this.infoOffset   = mote.getInfoOffset();
+      this.byteOffset   = mote.getByteOffset();
+      this.byteOrder    = mote.getEndian();
+      this.oneMoteInitiated    = true;
+      initiated();
+    }
   }
 
   public void state(int context, int entity, int state, MonTimestamp timestamp, long simTime, short nodeID) {
-    switch(initState) {
-    case ENDIAN:
-      /* If the source was already in network order,
-         we don't need to change anything. Unlikely
-         though because we know its an MSP430. */
-      if(state == Utils.htons(MonBackend.MON_ST_CHECK))
-        byteOrder = ByteOrder.BIG_ENDIAN;
-      else
-        byteOrder = ByteOrder.LITTLE_ENDIAN;
+    MonMoteBackend mote = motes.get(nodeID);
 
-      last = timestamp;
-
-      initState  = MonInitState.RECORD_OFFSET;
-      break;
-    case RECORD_OFFSET:
-      /* Messages are sent consecutively. Since we
-         recorded the time of the last message, we
-         can now compute the duration of one record
-         message. */
-      recordOffset = last.diff(timestamp);
-
-      initState = MonInitState.INFO_FETCH;
-      break;
-    case INFO_FETCH:
-    case INFO_U8_OFFSET:
-    case INFO_U16_OFFSET:
-      /* we should not get here, this is an error */
-      error("unexpected state");
-      initState = MonInitState.DISABLED;
-      break;
-    case INITIATED:
-      /* The protocol has been initiated so we
-         just transmit the message to the backend
-         implementation. */
-      recordState(context, entity, state, timestamp, simTime, nodeID);
-      break;
-    case DISABLED:
-      /* an error occured */
-      return;
+    if(mote == null) {
+      mote = new MonMoteBackend(this);
+      motes.put(nodeID, mote);
     }
+
+    mote.state(context, entity, state, timestamp, simTime, nodeID);
+    checkMoteState(mote);
   }
 
   public void info(int context, int entity, byte[] info, MonTimestamp timestamp, long simTime, short nodeID) {
-    switch(initState) {
-    case ENDIAN:
-    case RECORD_OFFSET:
-      /* we should not get here, this is an error */
-      error("unexpected state");
-      initState = MonInitState.DISABLED;
-      break;
-    case INFO_FETCH:
-      last = timestamp;
+    MonMoteBackend mote = motes.get(nodeID);
 
-      initState = MonInitState.INFO_U8_OFFSET;
-      break;
-    case INFO_U8_OFFSET:
-      /* We received an info message with a one
-         byte info buffer. We can compute its
-         duration. */
-      infoOffsetU8 = last.diff(timestamp);
-      last         = timestamp;
-
-      initState = MonInitState.INFO_U16_OFFSET;
-      break;
-    case INFO_U16_OFFSET:
-      /* Now we received a buffer with a different
-         length, so we can compute the offset per
-         byte and compute the real info offset. */
-      MonTimestamp infoOffsetU16 = last.diff(timestamp);
-      byteOffset = infoOffsetU16.diff(infoOffsetU8);
-      infoOffset = infoOffsetU8.diff(byteOffset);
-
-      /* free ref */
-      last         = null;
-      infoOffsetU8 = null;
-
-      initState = MonInitState.INITIATED;
-      initiated();
-      break;
-    case INITIATED:
-      /* The protocol has been initiated so we
-         just transmit the message to the backend
-         implementation. */
-      recordInfo(context, entity, info, timestamp, simTime, nodeID);
-      break;
-    case DISABLED:
-      /* an error occured */
-      return;
+    if(mote == null) {
+      mote = new MonMoteBackend(this);
+      motes.put(nodeID, mote);
     }
+
+    mote.info(context, entity, info, timestamp, simTime, nodeID);
+    checkMoteState(mote);
   }
 
   /** Record an event into the backend. */
@@ -203,7 +140,7 @@ public abstract class MonBackend {
   protected abstract void recordInfo(int context, int entity, byte[] info,
                                      MonTimestamp timestamp, long simTime, short nodeID);
 
-  /** Signal that the monitor protocol has been intiated.
+  /** Signal that the monitor protocol has been initiated.
       Offsets and endianness should be accessible. */
   protected abstract void initiated();
 
