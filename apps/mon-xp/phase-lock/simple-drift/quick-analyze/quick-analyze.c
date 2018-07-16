@@ -38,7 +38,7 @@
 
 #define BUF_SIZE (4096)
 
-#define SUFFIX      "ENT=TEST STATE=0001"
+#define SUFFIX      "ENT=TEST STATE=MCLK"
 #define SUFFIX_LEN  (strlen(SUFFIX))
 #define SUFFIX_LAST (SUFFIX + SUFFIX_LEN)
 

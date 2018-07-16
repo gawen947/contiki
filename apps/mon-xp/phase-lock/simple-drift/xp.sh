@@ -29,7 +29,10 @@ set -e
 TARGET=sky
 
 # Path to the tools directory.
-TOOLS="../../../../tools/"
+if [ -n "$TOOLS" ]
+then
+  TOOLS="../../../../tools/"
+fi
 
 # Fancies BSDs peculiarities.
 case "$(uname -s)" in
@@ -72,6 +75,7 @@ then
 else
   echo "Timer value: default (32768)" >> results/command.info
 fi
+echo "Tools: $TOOLS" >> results/command.info
 
 
 results_alpha="results/alpha.data"
@@ -172,12 +176,15 @@ do_xp_run() {
       ;;
   esac
 
-  # Extract ALPHA_FACTOR
-  alpha_factor=$(cat cooja.log | grep "ALPHA_FACTOR" | cut -d'=' -f 2)
-  exec_frame=$(cat cooja.log | grep "NUMBER_EXEC_FRAMES" | cut -d'=' -f 2)
-
-  # Distribution of sleep (jump) periods
-  cat cooja.log | grep "SLEEP_DISTRIB" > "$results_sleeps/sleep-distrib_d:${drift}_run:${run}.data"
+  # Disabled ALPHA_FACTOR and SLEEP_DISTRIB now.
+  # We don't need them, and it's not available
+  # in the release version of the monitor and newdrift.
+  ## Extract ALPHA_FACTOR
+  #alpha_factor=$(cat cooja.log | grep "ALPHA_FACTOR" | cut -d'=' -f 2)
+  #exec_frame=$(cat cooja.log | grep "NUMBER_EXEC_FRAMES" | cut -d'=' -f 2)
+  #
+  ## Distribution of sleep (jump) periods
+  #cat cooja.log | grep "SLEEP_DISTRIB" > "$results_sleeps/sleep-distrib_d:${drift}_run:${run}.data"
 
   rm cooja.log
   echo "DRIFT=$drift RUN=$run TIME=$time $usr_time $sys_time $real_time" >> time.log
