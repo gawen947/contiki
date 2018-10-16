@@ -29,7 +29,7 @@ set -e
 TARGET=sky
 
 # Path to the tools directory.
-if [ -n "$TOOLS" ]
+if [ -z "$TOOLS" ]
 then
   TOOLS="../../../../tools/"
 fi
