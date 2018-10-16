@@ -30,12 +30,14 @@ void __attribute__((interrupt (TIMERA0_VECTOR))) timer_a0(void)
   (void)reset_flag;
   */
 
-  P5OUT ^= BIT4; /* blink led */
+  P5OUT ^= BIT4; /* blink LED1 */
 
   /* we cannot reset the timer with TAR = 0, it does not work,
-     instead with increment it continuously. */
+     instead we increment it continuously. */
   TACCR0 += TIMER;
 
+  /* Each record would report both the simulation (in microsec) and CPU time (in cycles).
+     This call is 27 cyc. long (iirc). */
   mon_record(MON_CT_CONTROL, MON_ENT_TEST, 1);
 }
 
@@ -43,7 +45,7 @@ int main()
 {
   WDTCTL = WDTPW | WDTHOLD; /* stop watchdog timer */
   P5DIR |= BIT4;            /* configure LED1 (P5.4 on TMote Sky) */
-  P5OUT |= BIT4;            /* start with LED1 off (?) */
+  P5OUT |= BIT4;            /* start with LED1 high */
 
   P5DIR |= BIT5;            /* also configure LED2 */
   P5OUT |= BIT5;            /* start in same state */
