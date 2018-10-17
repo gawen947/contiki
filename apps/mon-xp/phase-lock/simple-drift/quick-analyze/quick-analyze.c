@@ -36,6 +36,16 @@
 #include <gawen/iobuf.h>
 #include <gawen/string.h>
 
+#ifdef __linux__
+/* memmem in Linux requires _GNU_SOURCE
+   but it also declares basename() with
+   a GNU specific prototype which conflict
+   with libgawen. */
+void *memmem(const void *haystack, size_t haystacklen,
+             const void *needle, size_t needlelen);
+#endif
+
+
 #define BUF_SIZE (4096)
 
 #define SUFFIX      "ENT=TEST STATE=MCLK"
