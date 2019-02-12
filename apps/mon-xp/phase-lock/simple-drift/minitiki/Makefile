@@ -26,6 +26,9 @@ DEP  = $(SRC:.c=.d)
 ifdef TIMER
 CFLAGS += -DTIMER=$(TIMER)
 endif
+ifdef DISABLE_SLEEP
+CLFLAGS += -DDISABLE_SLEEP=1
+endif
 
 ifdef DEBUG
 CFLAGS += -ggdb

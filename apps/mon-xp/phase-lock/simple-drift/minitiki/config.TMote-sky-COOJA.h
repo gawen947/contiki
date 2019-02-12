@@ -72,6 +72,6 @@
 #define CONFIG_EVENT_OFIFG_PIN             BIT1
 
 /* Output the NOSLEEP oscillator fault. */
-#define CONFIG_EVENT_NOSLEEP               1
+/* #define CONFIG_EVENT_NOSLEEP               1 */
 #define CONFIG_EVENT_NOSLEEP_PORT          P5
 #define CONFIG_EVENT_NOSLEEP_PIN           BIT5

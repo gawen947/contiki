@@ -20,8 +20,10 @@ int main()
   configure_events();
   enable_timer();
 
+#ifndef DISABLE_SLEEP
   /* go to sleep (LPM3) */
   _BIS_SR(GIE | SCG0 | SCG1 | CPUOFF);
+#endif
 
   /* We ensure that we are in the sleep mode,
      and that all events are handled from the
