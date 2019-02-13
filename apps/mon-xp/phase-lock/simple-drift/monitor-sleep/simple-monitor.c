@@ -57,8 +57,13 @@ int main()
   TACCR1   = 32768;
   TACCTL0  = CCIE; /* enable capture/compare interruption */
   TACTL    = TACLR | TASSEL0 | MC1 /* | TAIE */; /* timer configured at ACLK/1 up mode. */
+#ifdef DISABLE_SLEEP
+# warning "Sleep mode disabled."
+  _BIS_SR(GIE); /* No sleep, we just enable interrupt */
+#else
+# warning "Sleep mode enabled."
   _BIS_SR(GIE | SCG0 | SCG1 | CPUOFF); /* LPM3 */
-  //_BIS_SR(GIE); /* No sleep, we just enable interrupt */
+#endif
 
   /* We ensure that we are in the sleep mode,
      if we weren't the LED2 would be activated. */

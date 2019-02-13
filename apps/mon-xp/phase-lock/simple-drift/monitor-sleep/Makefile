@@ -24,7 +24,11 @@ OBJ  = $(foreach obj, $(SRC:.c=.o), $(notdir $(obj)))
 DEP  = $(SRC:.c=.d)
 
 ifdef TIMER
-CFLAGS += -DTIMER=$(TIMER)
+	CFLAGS += -DTIMER=$(TIMER)
+endif
+
+ifdef DISABLE_SLEEP
+	CFLAGS += -DDISABLE_SLEEP=1
 endif
 
 ifdef DEBUG
