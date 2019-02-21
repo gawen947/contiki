@@ -129,6 +129,16 @@ public class FileMonBackend extends SwitchableMonBackend {
     }
   }
 
+  @Override
+  public void flush() throws MonException {
+    try {
+      out.flush();
+      logger.info("(mon) file backend flushed!");
+    } catch (IOException e) {
+      throw new MonException("flush error");
+    }
+  }
+
 
   private void writeMagik() throws IOException {
     if(out == null)

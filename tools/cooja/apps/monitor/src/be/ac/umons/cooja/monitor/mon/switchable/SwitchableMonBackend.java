@@ -48,5 +48,6 @@ abstract public class SwitchableMonBackend {
   abstract public void recordState(int context, int entity, int state, MonTimestamp timestamp, long simTime, short nodeID) throws MonException;
   abstract public void recordInfo(int context, int entity, byte[] info, MonTimestamp timestamp, long simTime, short nodeID) throws MonException;
 
+  abstract public void flush() throws MonException;
   abstract public void destroy() throws MonException;
 }

@@ -125,12 +125,12 @@ public abstract class SwitchableMon extends MonBackend {
   public boolean isEnabled() {
     return enabled;
   }
-  
+
   public void setEnabled(boolean enabled) {
     logger.info("(mon) backend " + (enabled ? "enabled" : "disabled"));
     this.enabled = enabled;
   }
-  
+
   public void close() {
     if(this.backend != null) {
       /* tell the backend to finalize any pending operation */
@@ -144,7 +144,19 @@ public abstract class SwitchableMon extends MonBackend {
       unselect();
     }
   }
-  
+
+  public void flush() {
+    if(this.backend != null) {
+      /* tell the backend to finalize any pending operation */
+      try {
+        this.backend.flush();
+      } catch (MonException e) {
+        /* If we cannot flush the backend, mark it as erroneous. */
+        backendError(e);
+      }
+    }
+  }
+
   private void createBackend(SwitchableMonBackendCreator backendCreator) {
     /* create the backend instance now */
     try {

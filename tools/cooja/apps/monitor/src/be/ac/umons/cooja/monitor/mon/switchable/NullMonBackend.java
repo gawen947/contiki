@@ -53,4 +53,6 @@ public class NullMonBackend extends SwitchableMonBackend {
 
   @Override
   public void destroy() {}
+  @Override
+  public void flush() {}
 }

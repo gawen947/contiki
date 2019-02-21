@@ -108,6 +108,16 @@ public class TraceMonBackend extends SwitchableMonBackend {
     }
   }
 
+  @Override
+  public void flush() throws MonException {
+    try {
+      trace.flush();
+      logger.info("(mon) file backend flushed!");
+    } catch (IOException e) {
+      throw new MonException("flush error");
+    }
+  }
+
   private void writeEvent(MonTimestamp timestamp, long simTime, short nodeID, EventElement eventElement) throws IOException {
     Event event = new Event(eventElement);
 

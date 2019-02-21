@@ -69,7 +69,7 @@ import be.ac.umons.cooja.monitor.device.MonDevice;
 @PluginType(PluginType.SIM_PLUGIN)
 public class Monitor extends VisPlugin {
   private static final long serialVersionUID = 5359332460231108667L;
-  private static final String VERSION = "v1.3.24";
+  private static final String VERSION = "v1.3.25";
 
   private static final int GUI_SPACING = 5;
 
@@ -88,6 +88,7 @@ public class Monitor extends VisPlugin {
   private final JLabel    guiNumInfos;
   private final JLabel    guiNumSkipped;
   private final JLabel    guiNumNodes;
+  private final JButton   guiFlush;
 
   private boolean pluginEnabled = true;
 
@@ -110,6 +111,7 @@ public class Monitor extends VisPlugin {
       guiNumInfos      = new JLabel();
       guiNumSkipped    = new JLabel();
       guiNumNodes      = new JLabel();
+      guiFlush         = new JButton("Flush trace file");
 
       /* Ensure that we always have a backend for the output trace.
        * If an event is generated and no real backend is configured,
@@ -151,6 +153,11 @@ public class Monitor extends VisPlugin {
             backend.setEnabled(isPluginEnabled());
           }
         });
+      guiFlush.addActionListener(new ActionListener() {
+          public void actionPerformed(ActionEvent e) {
+            backend.flush();
+          }
+      });
     } else {
       stats = new MonitorStats();
 
@@ -162,6 +169,7 @@ public class Monitor extends VisPlugin {
       guiNumInfos      = null;
       guiNumSkipped    = null;
       guiNumNodes      = null;
+      guiFlush         = null;
     }
 
     backend = new IgnoreSkipMon(stats);

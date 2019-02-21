@@ -87,4 +87,8 @@ public class TraceFile {
   public void destroy() throws IOException {
     out.close();
   }
+
+  public void flush() throws IOException {
+    out.flush();
+  }
 }

@@ -94,7 +94,10 @@ public class StdMonBackend extends SwitchableMonBackend {
   public void destroy() throws MonException {
     logger.info("(mon) close!");
   }
-
+  @Override
+  public void flush() throws MonException {
+    logger.info("(mon) flush!");
+  }
 
   private int xtohs(int value) {
     return Utils.xtohs(value, byteOrder);
