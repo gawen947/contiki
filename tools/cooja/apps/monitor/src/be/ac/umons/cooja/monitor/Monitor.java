@@ -137,6 +137,8 @@ public class Monitor extends VisPlugin {
       mainPane.add(guiNumSkipped);
       mainPane.add(guiNumNodes);
       mainPane.add(Box.createRigidArea(new Dimension(0, 2*GUI_SPACING)));
+      mainPane.add(guiFlush);
+      mainPane.add(Box.createRigidArea(new Dimension(0, 2*GUI_SPACING)));
 
       add(mainPane);
       pack();
