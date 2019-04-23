@@ -7,4 +7,4 @@ for line in fileinput.input():
 
     xs.append(value)
 ns=np.array(xs)
-print np.average(ns), np.std(ns)
+print(np.average(ns), np.std(ns))

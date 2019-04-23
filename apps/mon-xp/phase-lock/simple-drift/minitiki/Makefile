@@ -23,11 +23,12 @@ SRC  = $(wildcard *.c)
 OBJ  = $(foreach obj, $(SRC:.c=.o), $(notdir $(obj)))
 DEP  = $(SRC:.c=.d)
 
+ifdef DISABLE_SLEEP
+CFLAGS += -DDISABLE_SLEEP=1
+endif
+
 ifdef TIMER
 CFLAGS += -DTIMER=$(TIMER)
-endif
-ifdef DISABLE_SLEEP
-CLFLAGS += -DDISABLE_SLEEP=1
 endif
 
 ifdef DEBUG

@@ -11,8 +11,8 @@ for line in fileinput.input():
         fields[0] = float(fields[0])
         fields[1] = float(fields[1])
     except:
-        print "parsing error on line:"
-        print line
+        print("parsing error on line:")
+        print(line)
         sys.exit(1)
 
     simtimes_x.append(fields[0])
@@ -20,5 +20,5 @@ for line in fileinput.input():
 
 slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(simtimes_x, cputimes_y)
 
-print "# SLOP INTERCEPT R_VALUE P_VALUE STDERR"
-print slope, intercept, r_value, p_value, std_err
+print("# SLOP INTERCEPT R_VALUE P_VALUE STDERR")
+print(slope, intercept, r_value, p_value, std_err)

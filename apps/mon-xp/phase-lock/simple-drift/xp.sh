@@ -75,6 +75,10 @@ then
 else
   echo "Timer value: default (32768)" >> results/command.info
 fi
+if [ -n "$DISABLE_SLEEP" ]
+then
+  echo "Disable sleep: $DISABLE_SLEEP" >> results/command.info
+fi
 echo "Tools: $TOOLS" >> results/command.info
 
 
